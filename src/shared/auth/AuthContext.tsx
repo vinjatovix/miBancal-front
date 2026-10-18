@@ -9,6 +9,7 @@ import {
 import {
   activate as serviceActivate,
   authenticateWithGoogle as serviceGoogleLogin,
+  authenticateWithGithub as serviceGithubLogin,
   forgotPassword as serviceForgotPassword,
   login as serviceLogin,
   refreshToken as serviceRefreshToken,
@@ -19,6 +20,7 @@ import {
 import type {
   ActivateAccountData,
   AuthenticateWithGoogleData,
+  AuthenticateWithGithubData,
   AuthSession,
   ForgotPasswordData,
   LoginCredentials,
@@ -68,6 +70,22 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await serviceGoogleLogin(data);
+      const nextSession = buildSessionFromToken(response.token);
+      if (!nextSession) {
+        clearStoredToken();
+        throw new Error('Token de sesión no válido');
+      }
+      setStoredToken(response.token);
+      setSession(nextSession);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const githubLogin = useCallback(async (data: AuthenticateWithGithubData) => {
+    setIsLoading(true);
+    try {
+      const response = await serviceGithubLogin(data);
       const nextSession = buildSessionFromToken(response.token);
       if (!nextSession) {
         clearStoredToken();
@@ -171,6 +189,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
       register,
       activate,
       googleLogin,
+      githubLogin,
       forgotPassword,
       resetPassword,
       updatePassword,
@@ -183,6 +202,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
       register,
       activate,
       googleLogin,
+      githubLogin,
       forgotPassword,
       resetPassword,
       updatePassword,

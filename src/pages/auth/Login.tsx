@@ -1,41 +1,30 @@
-import { useState, type FormEvent } from 'react';
 import {
-  Link,
-  Navigate,
-  useLocation,
-  useNavigate,
-  type Location
-} from 'react-router-dom';
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent
+} from 'react';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 
-import { GOOGLE_CLIENT_ID } from '../../config/env';
-import { FEATURE_SSO_PREVIEW } from '../../config/features';
+import { GOOGLE_CLIENT_ID, GITHUB_CLIENT_ID } from '../../config/env';
 import { t } from '../../i18n/core/t';
 import { useAuth } from '../../shared/auth/useAuth';
 import { validateLoginForm } from '../../shared/auth/validation';
 import { ApiError } from '../../shared/errors/ApiError';
+import type { LoginNavigationState } from '../../types/auth';
 import './authPages.css';
 import GoogleAuthButton from './components/GoogleAuthButton';
 import PasswordField from './components/PasswordField';
-import SsoPreviewButtons from './components/SsoPreviewButtons';
+import './ssoButtons.css';
+import GitHubAuthButton from './components/GitHubAuthButton';
 import { resolveAuthErrorText } from './utils/authErrorText';
+import { resolveRedirectDestination } from './utils/destination';
+import { classifySsoError } from './utils/ssoError';
 
 interface ServerErrorState {
   readonly message: string;
   readonly notice?: string;
-}
-
-function resolveRedirectDestination(locationState: unknown): string {
-  const from = (locationState as { from?: Location })?.from;
-  if (
-    !from?.pathname ||
-    !from.pathname.startsWith('/') ||
-    from.pathname.startsWith('//') ||
-    from.pathname === '/login' ||
-    from.pathname === '/register'
-  ) {
-    return '/';
-  }
-  return `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`;
 }
 
 export default function Login() {
@@ -43,12 +32,43 @@ export default function Login() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const navState = location.state as LoginNavigationState | null;
+  const initialSsoError = navState?.ssoError ?? navState?.error;
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<ServerErrorState | null>(null);
+  const [ssoError, setSsoError] = useState<string | null>(
+    () => initialSsoError ?? null
+  );
 
   const destination = resolveRedirectDestination(location.state);
+
+  const handleGoogleCredential = useCallback(
+    async (idToken: string) => {
+      setServerError(null);
+      setSsoError(null);
+      try {
+        await googleLogin({ idToken });
+        navigate(destination, { replace: true });
+      } catch (error) {
+        setSsoError(classifySsoError(error, 'google'));
+      }
+    },
+    [googleLogin, destination, navigate]
+  );
+
+  const purgedRef = useRef(false);
+  useEffect(() => {
+    if (!purgedRef.current && (navState?.ssoError || navState?.error)) {
+      purgedRef.current = true;
+      navigate(location.pathname, {
+        replace: true,
+        state: { from: navState.from }
+      });
+    }
+  }, [location.pathname, navState, navigate]);
 
   if (isAuthenticated) {
     return <Navigate to={destination} replace />;
@@ -57,6 +77,7 @@ export default function Login() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setServerError(null);
+    setSsoError(null);
 
     const errors = validateLoginForm(email, password);
     setFieldErrors(errors);
@@ -89,27 +110,10 @@ export default function Login() {
     }
   };
 
-  const handleGoogleCredential = async (idToken: string) => {
-    try {
-      await googleLogin({ idToken });
-      navigate(destination, { replace: true });
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 429) {
-        setServerError({
-          message: t('auth.rate_limit_notice')
-        });
-        return;
-      }
-      setServerError({
-        message: error instanceof Error ? error.message : t('errors.app.title')
-      });
-    }
-  };
-
   const emailErrorText = resolveAuthErrorText(fieldErrors.email);
   const passwordErrorText = resolveAuthErrorText(fieldErrors.password);
 
-  const hasSso = Boolean(GOOGLE_CLIENT_ID.trim()) || FEATURE_SSO_PREVIEW;
+  const hasSso = Boolean(GOOGLE_CLIENT_ID || GITHUB_CLIENT_ID);
 
   return (
     <div className="auth-container">
@@ -176,12 +180,26 @@ export default function Login() {
           <div className="auth-sso-separator">
             <span>{t('auth.sso_separator')}</span>
           </div>
-          <GoogleAuthButton
-            onCredential={handleGoogleCredential}
-            disabled={isLoading}
-          />
-          <SsoPreviewButtons />
+          <div
+            className="auth-sso-buttons"
+            onClick={() => {
+              setServerError(null);
+              setSsoError(null);
+            }}
+          >
+            <GoogleAuthButton
+              onCredential={handleGoogleCredential}
+              disabled={isLoading}
+            />
+            <GitHubAuthButton disabled={isLoading} />
+          </div>
         </>
+      )}
+
+      {ssoError && (
+        <div className="auth-alert-error auth-sso-alert-error" role="alert">
+          <div>{ssoError}</div>
+        </div>
       )}
 
       <div className="auth-footer">

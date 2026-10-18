@@ -16,8 +16,10 @@ function toFlag(value: boolean | undefined): SafetyFlag {
   return value ? 'yes' : 'no';
 }
 
-export function readPlantSafety(plant: Pick<Plant, 'traits'>): PlantSafety {
-  const { edible, toxic, toxicityNotes } = plant.traits.ecological ?? {};
+export function readPlantSafety(
+  plant: { traits?: Partial<Plant['traits']> } | null | undefined
+): PlantSafety {
+  const { edible, toxic, toxicityNotes } = plant?.traits?.ecological ?? {};
   const safety: PlantSafety = {
     edible: toFlag(edible),
     toxic: toFlag(toxic),

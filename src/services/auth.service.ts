@@ -1,6 +1,8 @@
 import type {
   ActivateAccountData,
   AuthenticateWithGoogleData,
+  AuthenticateWithGithubData,
+  AuthServiceContract,
   AuthTokenResponse,
   ForgotPasswordData,
   LoginCredentials,
@@ -11,18 +13,7 @@ import type {
 } from '../types/auth';
 import { apiFetch } from './api';
 
-export interface AuthServiceContract {
-  register(dto: RegisterData): Promise<void>;
-  activate(dto: ActivateAccountData): Promise<void>;
-  login(dto: LoginCredentials): Promise<AuthTokenResponse>;
-  authenticateWithGoogle(
-    dto: AuthenticateWithGoogleData
-  ): Promise<AuthTokenResponse>;
-  refreshToken(): Promise<AuthTokenResponse>;
-  forgotPassword(dto: ForgotPasswordData): Promise<void>;
-  resetPassword(dto: ResetPasswordData): Promise<void>;
-  updatePassword(dto: UpdatePasswordData): Promise<UpdatePasswordResponse>;
-}
+export type { AuthServiceContract };
 
 export async function register(dto: RegisterData): Promise<void> {
   return apiFetch<void>('/api/v1/auth/register', {
@@ -49,6 +40,15 @@ export async function authenticateWithGoogle(
   dto: AuthenticateWithGoogleData
 ): Promise<AuthTokenResponse> {
   return apiFetch<AuthTokenResponse>('/api/v1/auth/google', {
+    method: 'POST',
+    body: JSON.stringify(dto)
+  });
+}
+
+export async function authenticateWithGithub(
+  dto: AuthenticateWithGithubData
+): Promise<AuthTokenResponse> {
+  return apiFetch<AuthTokenResponse>('/api/v1/auth/github', {
     method: 'POST',
     body: JSON.stringify(dto)
   });
@@ -88,6 +88,7 @@ export const authService: AuthServiceContract = {
   activate,
   login,
   authenticateWithGoogle,
+  authenticateWithGithub,
   refreshToken,
   forgotPassword,
   resetPassword,

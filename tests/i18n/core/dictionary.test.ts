@@ -16,6 +16,10 @@ describe('auth and admin dictionary keys', () => {
     ['auth.hide_password', 'Ocultar contraseña'],
     ['auth.register', 'Crear cuenta'],
     ['auth.logout', 'Cerrar sesión'],
+    [
+      'auth.rate_limit_notice',
+      'Demasiados intentos. Por favor, inténtalo más tarde.'
+    ],
     ['admin.heading', 'Administración']
   ] as const)('translates %s to %s', (key, expected) => {
     const result = t(key);
@@ -53,6 +57,41 @@ describe('settings dictionary keys', () => {
     [
       'settings.password_must_be_different',
       'La nueva contraseña debe ser diferente de la anterior'
+    ]
+  ] as const)('translates %s to %s', (key, expected) => {
+    const result = t(key);
+
+    expect(result).toBe(expected);
+  });
+});
+
+describe('sso dictionary keys', () => {
+  it.each([
+    ['auth.github_login', 'Continuar con GitHub'],
+    ['auth.sso_processing', 'Procesando autenticación...'],
+    [
+      'auth.sso_access_denied',
+      'Has cancelado la autorización con el proveedor externo.'
+    ],
+    [
+      'auth.sso_google_invalid',
+      'El token de Google no es válido o la cuenta no tiene un correo verificado.'
+    ],
+    [
+      'auth.sso_github_invalid',
+      'La autorización de GitHub no es válida, ha caducado o no tiene un correo verificado.'
+    ],
+    [
+      'auth.sso_security_error',
+      'Error de validación de seguridad durante la autenticación. Por favor, inténtalo de nuevo.'
+    ],
+    [
+      'auth.sso_unavailable',
+      'El servicio de autenticación externa no está disponible en este momento. Inténtalo más tarde o accede con correo y contraseña.'
+    ],
+    [
+      'auth.sso_conflict',
+      'El correo proporcionado ya está vinculado a otro método o cuenta de acceso.'
     ]
   ] as const)('translates %s to %s', (key, expected) => {
     const result = t(key);

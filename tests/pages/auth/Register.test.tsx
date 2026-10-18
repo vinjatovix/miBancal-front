@@ -1,7 +1,15 @@
-import { screen } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../../../src/config/env', () => ({
+  GOOGLE_CLIENT_ID: 'test-client-id',
+  GITHUB_CLIENT_ID: 'test-github-client-id'
+}));
+vi.mock('../../../src/shared/auth/googleSdk', () => ({
+  loadGoogleSdk: vi.fn().mockResolvedValue(undefined)
+}));
 
 import Register from '../../../src/pages/auth/Register';
 import * as authServiceModule from '../../../src/services/auth.service';
@@ -10,6 +18,8 @@ import {
   setStoredToken
 } from '../../../src/shared/auth/session';
 import { ApiError } from '../../../src/shared/errors/ApiError';
+import { NetworkError } from '../../../src/shared/errors/NetworkError';
+import { t } from '../../../src/i18n/core/t';
 import { VALID_TEST_TOKEN } from '../../fixtures/auth/authFixtures';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
@@ -344,4 +354,158 @@ describe('Register Page - password visibility toggle', () => {
       expect(repeatPasswordInput).toHaveAttribute('type', expectedRepeatType);
     }
   );
+});
+
+describe('Register Page - SSO Error Handling & Placement', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    clearStoredToken();
+    vi.restoreAllMocks();
+  });
+
+  it('positions sso error alert immediately after sso buttons and before footer link when arriving with ssoError', () => {
+    const { container } = renderWithProviders(<TestApp />, {
+      route: {
+        pathname: '/register',
+        state: { ssoError: 'Error en proveedor SSO' }
+      }
+    });
+
+    const ssoButtons = container.querySelector('.auth-sso-buttons');
+    const alert = screen.getByRole('alert');
+    const footer = container.querySelector('.auth-footer');
+
+    expect(alert).toHaveClass('auth-sso-alert-error');
+    expect(
+      Boolean(
+        ssoButtons &&
+        ssoButtons.compareDocumentPosition(alert) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      )
+    ).toBe(true);
+    expect(
+      Boolean(
+        footer &&
+        alert.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING
+      )
+    ).toBe(true);
+  });
+
+  it('positions general form error alert above the form when registration fails with 429', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(authServiceModule, 'register').mockRejectedValueOnce(
+      new ApiError('Too many requests', 429)
+    );
+    const { container } = renderWithProviders(<TestApp />, {
+      route: '/register'
+    });
+
+    await user.type(
+      screen.getByLabelText(/Correo electrónico/i),
+      'hortelano@example.com'
+    );
+    await user.type(screen.getByLabelText(/Nombre de usuario/i), 'hortelano');
+    await user.type(screen.getByLabelText(/^Contraseña/i), 'Password123!');
+    await user.type(
+      screen.getByLabelText(/Repetir contraseña/i),
+      'Password123!'
+    );
+    await user.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+
+    const alert = await screen.findByRole('alert');
+    const form = container.querySelector('.auth-form');
+
+    expect(
+      Boolean(
+        form &&
+        alert.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING
+      )
+    ).toBe(true);
+  });
+
+  it('dismisses sso error alert when clicking sso button container', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<TestApp />, {
+      route: {
+        pathname: '/register',
+        state: { ssoError: 'Error inicial' }
+      }
+    });
+
+    const githubButton = screen.getByRole('button', {
+      name: /continuar con github/i
+    });
+    await user.click(githubButton);
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('dismisses sso error alert when submitting registration form', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(authServiceModule, 'register').mockResolvedValueOnce(undefined);
+    renderWithProviders(<TestApp />, {
+      route: {
+        pathname: '/register',
+        state: { ssoError: 'Error inicial' }
+      }
+    });
+
+    await user.type(
+      screen.getByLabelText(/Correo electrónico/i),
+      'hortelano@example.com'
+    );
+    await user.type(screen.getByLabelText(/Nombre de usuario/i), 'hortelano');
+    await user.type(screen.getByLabelText(/^Contraseña/i), 'Password123!');
+    await user.type(
+      screen.getByLabelText(/Repetir contraseña/i),
+      'Password123!'
+    );
+    const submitButton = screen.getByRole('button', { name: 'Crear cuenta' });
+    await user.click(submitButton);
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('displays sso error alert below sso buttons when Google SSO encounters network failure', async () => {
+    let capturedCallback: ((res: { credential: string }) => void) | undefined;
+    vi.stubGlobal('google', {
+      accounts: {
+        id: {
+          initialize: vi.fn(
+            (config: { callback: (res: { credential: string }) => void }) => {
+              capturedCallback = config.callback;
+            }
+          ),
+          renderButton: vi.fn(),
+          prompt: vi.fn()
+        }
+      }
+    });
+    vi.spyOn(authServiceModule, 'authenticateWithGoogle').mockRejectedValueOnce(
+      new NetworkError(new Error('Network request failed'))
+    );
+
+    const { container } = renderWithProviders(<TestApp />, {
+      route: '/register'
+    });
+
+    await waitFor(() => expect(capturedCallback).toBeDefined());
+
+    await act(async () => {
+      capturedCallback?.({ credential: 'test-id-token' });
+    });
+
+    const alert = await screen.findByRole('alert');
+    const ssoButtons = container.querySelector('.auth-sso-buttons');
+
+    expect(alert).toHaveClass('auth-sso-alert-error');
+    expect(alert).toHaveTextContent(t('auth.sso_unavailable'));
+    expect(
+      Boolean(
+        ssoButtons &&
+        ssoButtons.compareDocumentPosition(alert) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      )
+    ).toBe(true);
+  });
 });

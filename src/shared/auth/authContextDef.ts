@@ -3,6 +3,7 @@ import { createContext } from 'react';
 import type {
   ActivateAccountData,
   AuthenticateWithGoogleData,
+  AuthenticateWithGithubData,
   AuthSession,
   AuthUser,
   ForgotPasswordData,
@@ -22,6 +23,7 @@ export interface AuthContextValue {
   register(data: RegisterData): Promise<void>;
   activate(data: ActivateAccountData): Promise<void>;
   googleLogin(data: AuthenticateWithGoogleData): Promise<void>;
+  githubLogin(data: AuthenticateWithGithubData): Promise<void>;
   forgotPassword(data: ForgotPasswordData): Promise<void>;
   resetPassword(data: ResetPasswordData): Promise<void>;
   updatePassword(data: UpdatePasswordData): Promise<void>;

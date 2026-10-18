@@ -4,6 +4,7 @@ import * as apiModule from '../../src/services/api';
 import {
   activate,
   authenticateWithGoogle,
+  authenticateWithGithub,
   authService,
   forgotPassword,
   login,
@@ -91,6 +92,60 @@ describe('authService', () => {
         method: 'POST',
         body: JSON.stringify(dto)
       });
+    });
+  });
+
+  describe('authenticateWithGithub', () => {
+    it('calls github auth endpoint and returns token response', async () => {
+      const apiFetchSpy = vi
+        .spyOn(apiModule, 'apiFetch')
+        .mockResolvedValueOnce({ token: 'github-jwt-response' });
+      const dto = {
+        code: 'github-code-value',
+        codeVerifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'
+      };
+
+      const result = await authenticateWithGithub(dto);
+
+      expect(result).toEqual({ token: 'github-jwt-response' });
+      expect(apiFetchSpy).toHaveBeenCalledWith('/api/v1/auth/github', {
+        method: 'POST',
+        body: JSON.stringify(dto)
+      });
+    });
+
+    it.each([
+      ['validation error', 400],
+      ['invalid authorization', 401],
+      ['account conflict', 409],
+      ['rate limit exceeded', 429],
+      ['service unavailable', 503]
+    ])('propagates ApiError on %s', async (_, status) => {
+      vi.spyOn(apiModule, 'apiFetch').mockRejectedValueOnce(
+        new ApiError('error', status)
+      );
+      const dto = {
+        code: 'github-code-value',
+        codeVerifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'
+      };
+
+      await expect(authenticateWithGithub(dto)).rejects.toMatchObject({
+        status
+      });
+    });
+
+    it('propagates network error', async () => {
+      vi.spyOn(apiModule, 'apiFetch').mockRejectedValueOnce(
+        new TypeError('Failed to fetch')
+      );
+      const dto = {
+        code: 'github-code-value',
+        codeVerifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'
+      };
+
+      await expect(authenticateWithGithub(dto)).rejects.toThrow(
+        'Failed to fetch'
+      );
     });
   });
 
@@ -278,6 +333,7 @@ describe('authService', () => {
       expect(typeof authService.activate).toBe('function');
       expect(typeof authService.login).toBe('function');
       expect(typeof authService.authenticateWithGoogle).toBe('function');
+      expect(typeof authService.authenticateWithGithub).toBe('function');
       expect(typeof authService.refreshToken).toBe('function');
       expect(typeof authService.forgotPassword).toBe('function');
       expect(typeof authService.resetPassword).toBe('function');

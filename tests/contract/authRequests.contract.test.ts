@@ -8,6 +8,7 @@ describe('OpenAPI auth contract', () => {
     '/api/v1/auth/activate',
     '/api/v1/auth/login',
     '/api/v1/auth/google',
+    '/api/v1/auth/github',
     '/api/v1/auth/refresh',
     '/api/v1/auth/update'
   ])('validates openapi path for %s', (path) => {
@@ -121,6 +122,49 @@ describe('OpenAPI auth contract', () => {
 
       const violations = validateSchema(
         'AuthenticateWithGoogleRequest',
+        payload
+      );
+
+      expect(violations.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('AuthenticateWithGithubRequest', () => {
+    it('accepts a valid github authentication payload', () => {
+      const payload = {
+        code: 'github-auth-code-12345',
+        codeVerifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'
+      };
+
+      const violations = validateSchema(
+        'AuthenticateWithGithubRequest',
+        payload
+      );
+
+      expect(violations).toEqual([]);
+    });
+
+    it.each([
+      ['code', { codeVerifier: 'verifier-string' }],
+      ['codeVerifier', { code: 'github-code' }]
+    ])('rejects payload missing %s', (_field, payload) => {
+      const violations = validateSchema(
+        'AuthenticateWithGithubRequest',
+        payload
+      );
+
+      expect(violations.length).toBeGreaterThan(0);
+    });
+
+    it('rejects additional properties in payload', () => {
+      const payload = {
+        code: 'github-auth-code',
+        codeVerifier: 'verifier-string',
+        unexpectedField: 'not-allowed'
+      };
+
+      const violations = validateSchema(
+        'AuthenticateWithGithubRequest',
         payload
       );
 

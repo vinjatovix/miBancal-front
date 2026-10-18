@@ -5,6 +5,7 @@ import * as authServiceModule from '../../../src/services/auth.service';
 import { AuthProvider } from '../../../src/shared/auth/AuthContext';
 import {
   clearStoredToken,
+  getStoredToken,
   notifySessionPurged,
   setStoredToken
 } from '../../../src/shared/auth/session';
@@ -99,6 +100,54 @@ describe('useAuth & AuthProvider', () => {
 
     expect(googleSpy).toHaveBeenCalledTimes(1);
     expect(result.current.isAuthenticated).toBe(true);
+  });
+
+  it('authenticates user on githubLogin, storing token and decoding user', async () => {
+    const githubSpy = vi
+      .spyOn(authServiceModule, 'authenticateWithGithub')
+      .mockResolvedValueOnce({ token: VALID_TEST_TOKEN });
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: AuthProvider
+    });
+
+    await act(async () => {
+      await result.current.githubLogin({
+        code: 'test-github-code',
+        codeVerifier: 'test-pkce-verifier-string-43-chars-long-minimum'
+      });
+    });
+
+    expect(githubSpy).toHaveBeenCalledWith({
+      code: 'test-github-code',
+      codeVerifier: 'test-pkce-verifier-string-43-chars-long-minimum'
+    });
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(result.current.user?.username).toBe('hortelano');
+    expect(getStoredToken()).toBe(VALID_TEST_TOKEN);
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('resets isLoading to false when githubLogin fails', async () => {
+    vi.spyOn(authServiceModule, 'authenticateWithGithub').mockRejectedValueOnce(
+      new ApiError('Invalid GitHub authorization', 401)
+    );
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: AuthProvider
+    });
+
+    await act(async () => {
+      await expect(
+        result.current.githubLogin({
+          code: 'invalid-code',
+          codeVerifier: 'verifier'
+        })
+      ).rejects.toThrow();
+    });
+
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.isAuthenticated).toBe(false);
   });
 
   it('clears session and storage on logout', () => {
@@ -219,12 +268,14 @@ describe('useAuth & AuthProvider', () => {
 
     const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider });
 
-    await expect(
-      result.current.login({
-        email: 'hortelano@example.com',
-        password: 'Password1!'
-      })
-    ).rejects.toThrow('Token de sesión no válido');
+    await act(async () => {
+      await expect(
+        result.current.login({
+          email: 'hortelano@example.com',
+          password: 'Password1!'
+        })
+      ).rejects.toThrow('Token de sesión no válido');
+    });
 
     expect(result.current.isAuthenticated).toBe(false);
     expect(sessionStorage.getItem('auth_token')).toBeNull();
