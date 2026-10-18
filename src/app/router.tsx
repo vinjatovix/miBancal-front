@@ -60,6 +60,12 @@ export const routes: RouteObject[] = [
             })
           },
           {
+            path: '/auth/github/callback',
+            lazy: async () => ({
+              Component: (await import('../pages/auth/GitHubCallback')).default
+            })
+          },
+          {
             path: '/admin',
             lazy: async () => {
               const { default: AdminDashboard } =

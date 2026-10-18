@@ -1,5 +1,8 @@
+import { useEffect, useRef } from 'react';
 import { GOOGLE_CLIENT_ID } from '../../../config/env';
 import { t } from '../../../i18n/core/t';
+import { loadGoogleSdk } from '../../../shared/auth/googleSdk';
+import { useIsDesktop } from '../../../shared/hooks/useIsDesktop';
 import './googleAuthButton.css';
 
 interface GoogleAuthButtonProps {
@@ -11,13 +14,69 @@ export default function GoogleAuthButton({
   onCredential,
   disabled = false
 }: GoogleAuthButtonProps) {
-  if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.trim() === '') {
+  const isDesktop = useIsDesktop();
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const onCredentialRef = useRef(onCredential);
+
+  useEffect(() => {
+    onCredentialRef.current = onCredential;
+  }, [onCredential]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (GOOGLE_CLIENT_ID) {
+      const clientId = GOOGLE_CLIENT_ID;
+      loadGoogleSdk()
+        .then(() => {
+          if (!isMounted) return;
+
+          window.google?.accounts.id.initialize({
+            client_id: clientId,
+            callback: (response: { readonly credential: string }) => {
+              onCredentialRef.current?.(response.credential);
+            },
+            ux_mode: isDesktop ? 'popup' : 'redirect'
+          });
+
+          if (isDesktop && buttonRef.current) {
+            window.google?.accounts.id.renderButton(buttonRef.current, {
+              type: 'standard',
+              theme: 'outline',
+              size: 'large',
+              shape: 'rectangular',
+              text: 'continue_with',
+              logo_alignment: 'center',
+              width: 320
+            });
+          }
+        })
+        .catch(() => {});
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isDesktop]);
+
+  if (!GOOGLE_CLIENT_ID) {
     return null;
   }
 
   const handleClick = () => {
-    onCredential?.('google-mock-id-token');
+    window.google?.accounts.id.prompt();
   };
+
+  if (isDesktop) {
+    return (
+      <div
+        data-testid="google-auth-desktop-container"
+        className={`google-auth-desktop-container ${disabled ? 'google-auth-button-disabled' : ''}`}
+      >
+        <div ref={buttonRef} />
+      </div>
+    );
+  }
 
   return (
     <button

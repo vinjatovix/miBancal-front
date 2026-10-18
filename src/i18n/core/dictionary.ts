@@ -73,6 +73,20 @@ export const dictionary = {
     password_strength_strong: 'Fuerte',
     required_field: 'Campo obligatorio',
     google_login: 'Continuar con Google',
+    github_login: 'Continuar con GitHub',
+    sso_processing: 'Procesando autenticación...',
+    sso_access_denied:
+      'Has cancelado la autorización con el proveedor externo.',
+    sso_google_invalid:
+      'El token de Google no es válido o la cuenta no tiene un correo verificado.',
+    sso_github_invalid:
+      'La autorización de GitHub no es válida, ha caducado o no tiene un correo verificado.',
+    sso_security_error:
+      'Error de validación de seguridad durante la autenticación. Por favor, inténtalo de nuevo.',
+    sso_unavailable:
+      'El servicio de autenticación externa no está disponible en este momento. Inténtalo más tarde o accede con correo y contraseña.',
+    sso_conflict:
+      'El correo proporcionado ya está vinculado a otro método o cuenta de acceso.',
     sso_separator: 'o',
     github: 'GitHub',
     meta: 'Meta',

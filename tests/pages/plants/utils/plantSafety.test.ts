@@ -54,4 +54,17 @@ describe('readPlantSafety', () => {
       hasData: true
     });
   });
+
+  it.each([undefined, null, {}])(
+    'returns unknown safety flags safely when plant is %s',
+    (input) => {
+      expect(
+        readPlantSafety(input as Parameters<typeof readPlantSafety>[0])
+      ).toEqual({
+        edible: 'unknown',
+        toxic: 'unknown',
+        hasData: false
+      });
+    }
+  );
 });

@@ -1,25 +1,37 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent
+} from 'react';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 
-import { GOOGLE_CLIENT_ID } from '../../config/env';
-import { FEATURE_SSO_PREVIEW } from '../../config/features';
+import { GITHUB_CLIENT_ID, GOOGLE_CLIENT_ID } from '../../config/env';
 import { t } from '../../i18n/core/t';
 import { useAuth } from '../../shared/auth/useAuth';
 import { validateRegisterForm } from '../../shared/auth/validation';
 import { ApiError } from '../../shared/errors/ApiError';
+import type { LoginNavigationState } from '../../types/auth';
 import './authPages.css';
+import './ssoButtons.css';
+import GitHubAuthButton from './components/GitHubAuthButton';
 import GoogleAuthButton from './components/GoogleAuthButton';
 import PasswordField from './components/PasswordField';
 import PasswordStrengthBar from './components/PasswordStrengthBar';
 import RegisterSuccess from './components/RegisterSuccess';
-import SsoPreviewButtons from './components/SsoPreviewButtons';
 import { resolveAuthErrorText } from './utils/authErrorText';
+import { classifySsoError } from './utils/ssoError';
 
 type FormField = 'email' | 'username' | 'password' | 'repeatPassword';
 
 export default function Register() {
   const { isAuthenticated, register, googleLogin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const navState = location.state as LoginNavigationState | null;
+  const initialSsoError = navState?.ssoError ?? navState?.error;
 
   const [formData, setFormData] = useState<Record<FormField, string>>({
     email: '',
@@ -32,10 +44,21 @@ export default function Register() {
   );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const [ssoError, setSsoError] = useState<string | null>(
+    () => initialSsoError ?? null
+  );
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isFormValid = Object.keys(validateRegisterForm(formData)).length === 0;
+
+  const purgedRef = useRef(false);
+  useEffect(() => {
+    if (!purgedRef.current && (navState?.ssoError || navState?.error)) {
+      purgedRef.current = true;
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.pathname, navState, navigate]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -44,6 +67,20 @@ export default function Register() {
 
     return () => clearTimeout(timer);
   }, [formData]);
+
+  const handleGoogleCredential = useCallback(
+    async (idToken: string) => {
+      setGeneralError(null);
+      setSsoError(null);
+      try {
+        await googleLogin({ idToken });
+        navigate('/', { replace: true });
+      } catch (error) {
+        setSsoError(classifySsoError(error, 'google'));
+      }
+    },
+    [googleLogin, navigate]
+  );
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
@@ -61,6 +98,7 @@ export default function Register() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setGeneralError(null);
+    setSsoError(null);
 
     const errors = validateRegisterForm(formData);
     setFieldErrors(errors);
@@ -97,30 +135,11 @@ export default function Register() {
     }
   };
 
-  const handleGoogleCredential = async (idToken: string) => {
-    try {
-      await googleLogin({ idToken });
-      navigate('/', { replace: true });
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 429) {
-        setGeneralError(t('auth.rate_limit_notice'));
-        return;
-      }
-      setGeneralError(
-        error instanceof Error ? error.message : t('errors.app.title')
-      );
-    }
-  };
-
   const getFieldErrorText = (field: FormField): string | null => {
     if (!touched[field]) return null;
     const errorKey = fieldErrors[field];
-    if (field === 'password' && errorKey !== 'required') {
-      return null;
-    }
-    if (errorKey === 'required' && formData[field].trim() !== '') {
-      return null;
-    }
+    if (field === 'password' && errorKey !== 'required') return null;
+    if (errorKey === 'required' && formData[field].trim() !== '') return null;
     return resolveAuthErrorText(errorKey);
   };
 
@@ -135,7 +154,7 @@ export default function Register() {
     return <RegisterSuccess />;
   }
 
-  const hasSso = Boolean(GOOGLE_CLIENT_ID.trim()) || FEATURE_SSO_PREVIEW;
+  const hasSso = Boolean(GOOGLE_CLIENT_ID || GITHUB_CLIENT_ID);
 
   return (
     <div className="auth-container">
@@ -229,12 +248,26 @@ export default function Register() {
           <div className="auth-sso-separator">
             <span>{t('auth.sso_separator')}</span>
           </div>
-          <GoogleAuthButton
-            onCredential={handleGoogleCredential}
-            disabled={isSubmitting}
-          />
-          <SsoPreviewButtons />
+          <div
+            className="auth-sso-buttons"
+            onClick={() => {
+              setGeneralError(null);
+              setSsoError(null);
+            }}
+          >
+            <GoogleAuthButton
+              onCredential={handleGoogleCredential}
+              disabled={isSubmitting}
+            />
+            <GitHubAuthButton disabled={isSubmitting} />
+          </div>
         </>
+      )}
+
+      {ssoError && (
+        <div className="auth-alert-error auth-sso-alert-error" role="alert">
+          <div>{ssoError}</div>
+        </div>
       )}
 
       <div className="auth-footer">
