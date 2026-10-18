@@ -19,3 +19,26 @@ documentos Markdown, YAML o archivos no indexados) o su respuesta es insuficient
 - `docs/context.md`: estado real del sistema.
 - `docs/design.md`: diseño.
 - `contracts/openapi.yaml`: contrato de la API (no se edita a mano).
+
+## Convenciones de commits y Commitlint
+
+Este repositorio valida commits estrictamente con Conventional Commits mediante Commitlint
+(`commitlint.config.cjs`) tanto en local (Husky `commit-msg`) como en CI (`commitlint-github-action`).
+
+- **Formato**: `<tipo>(<scope>): <asunto en imperativo, minúsculas, inglés>`
+- **Tipos permitidos**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+- **Límites de longitud**:
+  - Cabecera (`header-max-length`): máximo **100** caracteres.
+  - Líneas de cuerpo (`body-max-line-length`): máximo **100** caracteres por línea.
+  - Líneas de pie (`footer-max-line-length`): máximo **100** caracteres por línea.
+- **Regla estricta para el cuerpo de commits**:
+  - Si el commit contiene cuerpo explicativo, **MUST** envolverse (wrap) a máximo 72–80 caracteres por línea.
+  - **MUST NOT** enviarse párrafos largos continuos en una sola línea mediante `git commit -m`.
+- **Validación previa obligatoria**:
+  - Los entornos de ejecución de agentes CLI frecuentemente anulan `core.hooksPath`, por lo que el hook local de git puede no ejecutarse automáticamente.
+  - El agente **MUST** validar siempre el mensaje completo antes de proponer o ejecutar un commit:
+    ```bash
+    cat << 'EOF' | npx commitlint
+    <mensaje propuesto>
+    EOF
+    ```

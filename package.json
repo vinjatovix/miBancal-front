@@ -21,6 +21,7 @@
     "check:test-focus": "node scripts/checkTestFocus.ts",
     "icons:generate": "node scripts/generateIconPaths.ts",
     "check-circular": "skott --displayMode=raw --showCircularDependencies --tsconfig ./tsconfig.json",
+    "commitlint": "commitlint",
     "prepare": "husky",
     "test": "vitest run",
     "test:watch": "vitest --watch",
