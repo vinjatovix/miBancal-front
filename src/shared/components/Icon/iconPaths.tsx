@@ -631,6 +631,27 @@ const loginGlyph = (
   </>
 );
 
+const mailGlyph = (
+  <>
+    <path
+      fill="#CCD6DD"
+      d="M36 27a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V9a4 4 0 0 1 4-4h28a4 4 0 0 1 4 4v18z"
+    />
+    <path
+      fill="#99AAB5"
+      d="M11.95 17.636.637 28.949c-.027.028-.037.063-.06.091.34.57.814 1.043 1.384 1.384.029-.023.063-.033.09-.06L13.365 19.05a1 1 0 0 0-1.415-1.414M35.423 29.04c-.021-.028-.033-.063-.06-.09L24.051 17.636a1 1 0 1 0-1.415 1.414l11.313 11.314c.026.026.062.037.09.06a3.978 3.978 0 0 0 1.384-1.384"
+    />
+    <path
+      fill="#99AAB5"
+      d="M32 5H4a4 4 0 0 0-4 4v1.03l14.528 14.496a4.882 4.882 0 0 0 6.884 0L36 10.009V9a4 4 0 0 0-4-4z"
+    />
+    <path
+      fill="#E1E8ED"
+      d="M32 5H4A3.992 3.992 0 0 0 .405 7.275l14.766 14.767a4 4 0 0 0 5.657 0L35.595 7.275A3.991 3.991 0 0 0 32 5z"
+    />
+  </>
+);
+
 const menu_bookGlyph = (
   <>
     <path
@@ -733,6 +754,15 @@ const movieGlyph = (
     <path
       fill="#292F33"
       d="m.155 8.207 5.572 5.827L1.845 15 .155 8.207zm19.158 2.448-5.572-5.828-6.793 1.69 5.572 5.828 6.793-1.69zm13.586-3.38-5.572-5.828-6.793 1.69 5.572 5.827 6.793-1.689z"
+    />
+  </>
+);
+
+const personGlyph = (
+  <>
+    <path
+      fill="#269"
+      d="M24 26.799v-2.566c2-1.348 4.08-3.779 4.703-6.896.186.103.206.17.413.17.991 0 1.709-1.287 1.709-2.873 0-1.562-.823-2.827-1.794-2.865.187-.674.293-1.577.293-2.735C29.324 5.168 26 .527 18.541.527c-6.629 0-10.777 4.641-10.777 8.507 0 1.123.069 2.043.188 2.755-.911.137-1.629 1.352-1.629 2.845 0 1.587.804 2.873 1.796 2.873.206 0 .025-.067.209-.17C8.952 20.453 11 22.885 13 24.232v2.414c-5 .645-12 3.437-12 6.23v1.061C1 35 2.076 35 3.137 35h29.725C33.924 35 35 35 35 33.938v-1.061c0-2.615-6-5.225-11-6.078z"
     />
   </>
 );
@@ -922,6 +952,20 @@ const restaurantGlyph = (
       <circle cx="32" cy="34" r="2" />
       <path d="M32 0c1 0 2 1 2 3v16s-7 2-7-8c0-6 3-11 5-11z" />
     </g>
+  </>
+);
+
+const saveGlyph = (
+  <>
+    <path
+      fill="#31373D"
+      d="M4 36s-4 0-4-4V4s0-4 4-4h26c1 0 2 1 2 1l3 3s1 1 1 2v26s0 4-4 4H4z"
+    />
+    <path fill="#55ACEE" d="M5 19v-1s0-2 2-2h21c2 0 2 2 2 2v1H5z" />
+    <path
+      fill="#E1E8ED"
+      d="M5 32.021V19h25v13s0 2-2 2H7c-2 0-2-1.979-2-1.979zM10 3s0-1 1-1h18c1.048 0 1 1 1 1v10s0 1-1 1H11s-1 0-1-1V3zm12 10h5V3h-5v10z"
+    />
   </>
 );
 
@@ -1146,6 +1190,77 @@ const yardGlyph = (
   </>
 );
 
+const checkGlyph = (
+  <>
+    <path
+      fill="currentColor"
+      d="M31.25 7.42a2.5 2.5 0 0 0-3.53 0L13.88 21.25l-5.6-5.6a2.5 2.5 0 1 0-3.54 3.53l7.37 7.37a2.5 2.5 0 0 0 3.54 0l15.6-15.6a2.5 2.5 0 0 0 0-3.53z"
+    />
+  </>
+);
+
+const check_circleGlyph = (
+  <>
+    <path
+      fill="currentColor"
+      d="M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2zm8.75 11.75-10.5 10.5a1.5 1.5 0 0 1-2.12 0l-4.5-4.5a1.5 1.5 0 1 1 2.12-2.12l3.44 3.44 9.44-9.44a1.5 1.5 0 0 1 2.12 2.12z"
+    />
+  </>
+);
+
+const content_copyGlyph = (
+  <>
+    <rect
+      x="12"
+      y="12"
+      width="18"
+      height="18"
+      rx="2"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+    />
+    <path
+      d="M6 24V8a2 2 0 0 1 2-2h16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    />
+  </>
+);
+
+const copyGlyph = (
+  <>
+    <rect
+      x="12"
+      y="12"
+      width="18"
+      height="18"
+      rx="2"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+    />
+    <path
+      d="M6 24V8a2 2 0 0 1 2-2h16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    />
+  </>
+);
+
+const tickGlyph = (
+  <>
+    <path
+      fill="currentColor"
+      d="M31.25 7.42a2.5 2.5 0 0 0-3.53 0L13.88 21.25l-5.6-5.6a2.5 2.5 0 1 0-3.54 3.53l7.37 7.37a2.5 2.5 0 0 0 3.54 0l15.6-15.6a2.5 2.5 0 0 0 0-3.53z"
+    />
+  </>
+);
+
 const visibilityGlyph = (
   <>
     <path
@@ -1205,9 +1320,13 @@ export const ICON_GLYPHS = {
   bolt: boltGlyph,
   books: menu_bookGlyph,
   calendar_today: calendar_todayGlyph,
+  check: checkGlyph,
+  check_circle: check_circleGlyph,
   clear_all: clear_allGlyph,
   close: closeGlyph,
+  content_copy: content_copyGlyph,
   content_cut: content_cutGlyph,
+  copy: copyGlyph,
   crisis_alert: crisis_alertGlyph,
   cross_mark: closeGlyph,
   dangerous: dangerousGlyph,
@@ -1217,6 +1336,7 @@ export const ICON_GLYPHS = {
   droplet: water_dropGlyph,
   eco: ecoGlyph,
   edit_note: edit_noteGlyph,
+  envelope: mailGlyph,
   explore: exploreGlyph,
   extension: extensionGlyph,
   grain: grainGlyph,
@@ -1224,14 +1344,18 @@ export const ICON_GLYPHS = {
   hourglass_top: hourglass_topGlyph,
   label: labelGlyph,
   layers: layersGlyph,
+  letter: mailGlyph,
   link: linkGlyph,
   local_florist: local_floristGlyph,
   lock: lockGlyph,
   login: loginGlyph,
+  mail: mailGlyph,
   memo: edit_noteGlyph,
   menu_book: menu_bookGlyph,
   microscope: microscopeGlyph,
   movie: movieGlyph,
+  pending_actions: hourglass_topGlyph,
+  person: personGlyph,
   person_add: person_addGlyph,
   potted_plant: potted_plantGlyph,
   psychiatry: psychiatryGlyph,
@@ -1240,12 +1364,14 @@ export const ICON_GLYPHS = {
   recycling: recyclingGlyph,
   repeat: repeatGlyph,
   restaurant: restaurantGlyph,
+  save: saveGlyph,
   schedule: scheduleGlyph,
   science: scienceGlyph,
   search: searchGlyph,
   seedling: potted_plantGlyph,
   settings: settingsGlyph,
   sheaf_of_rice: grainGlyph,
+  shield: admin_panel_settingsGlyph,
   skull: dangerousGlyph,
   spa: spaGlyph,
   straighten: straightenGlyph,
@@ -1254,6 +1380,7 @@ export const ICON_GLYPHS = {
   sync_alt: sync_altGlyph,
   tag: labelGlyph,
   thermostat: thermostatGlyph,
+  tick: tickGlyph,
   visibility: visibilityGlyph,
   visibility_off: visibility_offGlyph,
   warning: warningGlyph,

@@ -113,7 +113,109 @@ export const dictionary = {
     reset_request_again: 'Solicitar un enlace nuevo'
   },
   admin: {
-    heading: 'Administración'
+    heading: 'Administración de usuarios',
+    subtitle:
+      'Supervisión taxonómica, credenciales y asignación de permisos globales.',
+    control_module_badge: 'Módulo de Control',
+    description:
+      'Busca cuentas de usuario para consultar sus datos y gestionar sus privilegios administrativos.',
+    search_label: 'Buscar usuario',
+    search_placeholder: 'username o email',
+    search_button: 'Buscar',
+    search_button_full: 'Buscar en el registro',
+    search_loading: 'Buscando...',
+    clear_search_aria: 'Limpiar búsqueda',
+    search_invalid_email:
+      'El formato del correo electrónico no es válido. Corrígelo antes de buscar.',
+    search_empty_error: 'Introduce un correo o nombre de usuario para buscar.',
+    user_not_found: 'No se encontró ningún usuario con los datos introducidos.',
+    account_card_title: 'Datos de la cuenta',
+    search_result_badge: 'Resultado de búsqueda',
+    specimen_ref: 'Specimen Ref. 884',
+    status_active: 'Estado: Activo',
+    system_role_label: 'Rol del sistema:',
+    email_verified: 'Verificado',
+    user_details_title: 'Datos de la cuenta',
+    user_roles_title: 'Roles del usuario',
+    field_id: 'ID Único',
+    copy_id: 'Copiar',
+    copied_id: '¡Copiado!',
+    copy_id_aria: 'Copiar ID',
+    field_username: 'Nombre de usuario',
+    field_email: 'Correo electrónico',
+    field_roles: 'Roles asignados',
+    roles_access_management: 'Gestión de Acceso',
+    roles_matrix_title: 'Matriz de Privilegios',
+    roles_matrix_desc:
+      'Modifica los roles de usuario vinculados al sistema RBAC agronómico. Todo cambio se registra en auditoría.',
+    role_user_label: 'Usuario estándar',
+    role_admin_label: 'Administrador',
+    role_user_label_with_code: 'Usuario estándar (user)',
+    role_admin_label_with_code: 'Administrador (admin)',
+    role_admin_code: 'admin',
+    role_admin_title: 'Privilegios de Administrador',
+    role_admin_desc:
+      'Acceso total a la configuración global, gestión de cuentas y parametrización de catálogos.',
+    role_collab_title: 'Colaborador Agronómico',
+    role_collab_code: 'collaborator',
+    role_collab_label: 'Colaborador',
+    role_collab_label_with_code: 'Colaborador (collaborator)',
+    role_collab_desc: 'Autorizado para editar catálogos.',
+    role_admin_checkbox_label: 'Conceder privilegios de administrador',
+    roles_pending_changes: '1 cambio de privilegios pendiente',
+    roles_no_pending_changes: 'Sin cambios pendientes',
+    roles_status_pending: 'Pendiente',
+    roles_status_stable: 'Estable',
+    save_changes_button: 'Guardar cambios',
+    save_roles_button: 'Guardar cambios de rol',
+    save_changes: 'Guardar cambios',
+    roles_reset_button: 'Limpiar',
+    self_edit_forbidden_warning:
+      'Esta es tu cuenta activa. No es posible modificar tus propios privilegios de administración para evitar bloqueos accidentales de acceso.',
+    concurrent_modification_warning:
+      'La versión del documento está obsoleta. Vuelve a cargar la página para obtener los datos más recientes.',
+    role_change_success:
+      'Los roles del usuario se han actualizado correctamente.',
+    role_change_success_message:
+      'Los roles del usuario se han actualizado correctamente.',
+    toast_success_title: 'Cambios aplicados con éxito',
+    toast_success_subtitle: 'Privilegios actualizados en el sistema.',
+    toast_error_title: 'Error en la solicitud',
+    confirm_modal_title: 'Confirmar modificación de roles',
+    confirm_role_change_title: 'Confirmar modificación de roles',
+    modal_security_review: 'Revisión de Seguridad del Sistema',
+    modal_close: 'Cerrar ventana',
+    modal_privilege_transition: 'Transición de privilegio',
+    modal_current_role: 'Roles actuales',
+    modal_requested_role: 'Nuevos roles solicitados',
+    modal_security_warning_title: 'Aviso de seguridad:',
+    modal_security_warning_grant:
+      'Este usuario tendrá acceso total a la configuración y gestión de cuentas.',
+    modal_security_warning_revoke:
+      'Este usuario perderá los privilegios de administración del sistema.',
+    modal_security_warning_grant_collab:
+      'Este usuario estará autorizado para editar los catálogos del sistema.',
+    modal_security_warning_revoke_collab:
+      'Este usuario perderá los permisos de edición de catálogos.',
+    modal_security_warning_modify:
+      'Se actualizarán los permisos de acceso del usuario en el sistema.',
+    confirm_modal_grant_desc:
+      '¿Confirmas que deseas otorgar permisos de Administrador al usuario {username}?',
+    confirm_grant_admin_message:
+      '¿Confirmas que deseas otorgar permisos de Administrador al usuario {username}?',
+    confirm_modal_revoke_desc:
+      '¿Confirmas que deseas revocar los permisos de Administrador al usuario {username}?',
+    confirm_revoke_admin_message:
+      '¿Confirmas que deseas revocar los permisos de Administrador al usuario {username}?',
+    confirm_modal_grant_collab_desc:
+      '¿Confirmas que deseas otorgar permisos de Colaborador al usuario {username}?',
+    confirm_modal_revoke_collab_desc:
+      '¿Confirmas que deseas revocar los permisos de Colaborador al usuario {username}?',
+    confirm_modal_modify_roles_desc:
+      '¿Confirmas que deseas modificar los roles asignados al usuario {username}?',
+    confirm_button: 'Confirmar cambios',
+    confirm_loading: 'Guardando...',
+    cancel_button: 'Cancelar'
   },
   settings: {
     nav_link: 'Configuración de la cuenta',
@@ -195,6 +297,14 @@ export const dictionary = {
     forbidden: {
       title: 'Acceso no permitido',
       message: 'No tienes permiso para ver este contenido.'
+    },
+    conflict: {
+      title: 'Conflicto',
+      message: 'No se puede eliminar el último administrador de la plataforma.'
+    },
+    validation: {
+      email: 'Dirección de correo electrónico no válida.',
+      required: 'Este campo es obligatorio.'
     },
     tooManyRequests: {
       title: 'Demasiadas peticiones',

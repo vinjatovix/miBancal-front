@@ -378,7 +378,7 @@ _Admin_
 - Plantas: `POST`, `PATCH /:id` y `DELETE /:id` son solo para admin.
 - Familias: `POST` y `PATCH /:idOrSlug` son solo para admin. **No existe `DELETE` de familias** (previsto en la iteración 32 del roadmap del back).
 - `PATCH` y `DELETE` exigen `If-Match` con el `ETag` del último GET. `ETag` ya es legible desde el navegador (está en `exposedHeaders`). Como el GET con `fields` o `include` **no** devuelve `ETag` (ver 6.1), el front debe hacer un GET completo antes de editar.
-- El rol `collaborator` (iteración 31) **todavía no existe**; el front no debe contar con él.
+- El rol `collaborator` ya está disponible en el backend y habilitado como `ManageableRole` en la matriz de privilegios de `/admin`.
 
 _Roadmap_
 

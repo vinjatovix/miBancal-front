@@ -44,11 +44,14 @@ function baseErrorMessage(response: Response): string {
 
 async function toApiError(response: Response): Promise<ApiError> {
   const body = await readErrorBody(response);
-  return new ApiError(
-    body.message || baseErrorMessage(response),
-    response.status,
-    body.errors
-  );
+  // Keep the original message if it exists (e.g., "Validation error")
+  const message =
+    body.message ||
+    (body.errors
+      ? Object.values(body.errors).flat().join('; ')
+      : baseErrorMessage(response));
+
+  return new ApiError(message, response.status, body.errors);
 }
 
 async function request(url: string, init: RequestInit): Promise<Response> {
@@ -135,6 +138,14 @@ export async function apiFetch<T>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
+  const result = await apiFetchWithMeta<T>(path, options);
+  return result.data;
+}
+
+export async function apiFetchWithMeta<T>(
+  path: string,
+  options?: RequestInit
+): Promise<{ data: T; etag: string | null }> {
   const token = getStoredToken();
   const hadToken = token !== null;
   const headers = mergeHeaders(options?.headers, token);
@@ -153,5 +164,8 @@ export async function apiFetch<T>(
     throw await toApiError(finalResponse);
   }
 
-  return parseResponseBody<T>(finalResponse);
+  const data = await parseResponseBody<T>(finalResponse);
+  const etag = finalResponse.headers.get('ETag');
+
+  return { data, etag };
 }

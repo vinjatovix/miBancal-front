@@ -142,7 +142,9 @@ describe('getPlantList: query completa', () => {
     );
 
     expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({ status: 404, message: 'Plant not found' });
+    const apiError = error as ApiError;
+    expect(apiError.status).toBe(404);
+    expect(apiError.message).toBe('Plant not found');
   });
 });
 
@@ -354,6 +356,8 @@ describe('getPlantById', () => {
     const error = await getPlantById('abc').catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({ status: 404, message: 'Plant not found' });
+    const apiError = error as ApiError;
+    expect(apiError.status).toBe(404);
+    expect(apiError.message).toBe('Plant not found');
   });
 });

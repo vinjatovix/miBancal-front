@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  CUSTOM_GLYPHS,
   extractSvgInner,
   TWEMOJI_MAPPING
 } from '../../scripts/iconPathExtraction';
@@ -27,8 +28,7 @@ describe('iconGlyphs catalog synchronisation', () => {
   it('contains all icon names declared in the twemoji mapping and custom glyphs', () => {
     const expectedNames = [
       ...Object.keys(TWEMOJI_MAPPING),
-      'visibility',
-      'visibility_off'
+      ...Object.keys(CUSTOM_GLYPHS)
     ].sort();
     const glyphNames = Object.keys(ICON_GLYPHS).sort();
 

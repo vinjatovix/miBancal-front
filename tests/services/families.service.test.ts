@@ -113,7 +113,9 @@ describe('getFamilyList', () => {
     const error = await getFamilyList().catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({ status: 404, message: 'Family not found' });
+    const apiError = error as ApiError;
+    expect(apiError.status).toBe(404);
+    expect(apiError.message).toBe('Family not found');
   });
 });
 
@@ -139,6 +141,8 @@ describe('getFamilyById', () => {
     );
 
     expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({ status: 404, message: 'Family not found' });
+    const apiError = error as ApiError;
+    expect(apiError.status).toBe(404);
+    expect(apiError.message).toBe('Family not found');
   });
 });
