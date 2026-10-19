@@ -357,11 +357,10 @@ describe('apiFetch', () => {
 
     const error = await captureError(apiFetch('/test'));
     expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({
-      message: 'Invalid input',
-      status: 400,
-      errors: { name: 'required' }
-    });
+    const apiError = error as ApiError;
+    expect(apiError.status).toBe(400);
+    expect(apiError.message).toBe('Invalid input');
+    expect(apiError.errors).toEqual({ name: 'required' });
   });
 
   it('handles a json error response whose body cannot be parsed', async () => {
@@ -377,10 +376,9 @@ describe('apiFetch', () => {
 
     const error = await captureError(apiFetch('/test'));
     expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({
-      message: 'API error: 500 Server Error',
-      status: 500
-    });
+    const apiError = error as ApiError;
+    expect(apiError.status).toBe(500);
+    expect(apiError.message).toBe('API error: 500 Server Error');
   });
 
   it('does not read an html error body and keeps the status', async () => {
@@ -397,7 +395,10 @@ describe('apiFetch', () => {
 
     const error = await captureError(apiFetch('/test'));
     expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({ message: 'API error: 502', status: 502 });
+    expect(error).toBeInstanceOf(ApiError);
+    const apiError = error as ApiError;
+    expect(apiError.status).toBe(502);
+    expect(apiError.message).toBe('API error: 502');
     expect(json).not.toHaveBeenCalled();
   });
 
@@ -408,7 +409,10 @@ describe('apiFetch', () => {
     );
 
     const error = await captureError(apiFetch('/test'));
-    expect(error).toMatchObject({ message: 'API error: 503', status: 503 });
+    expect(error).toBeInstanceOf(ApiError);
+    const apiError = error as ApiError;
+    expect(apiError.status).toBe(503);
+    expect(apiError.message).toBe('API error: 503');
   });
 
   it('throws ApiError with status 401', async () => {

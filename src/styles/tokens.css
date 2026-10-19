@@ -47,6 +47,19 @@
   --color-inverse-surface: #2a322f;
   --color-inverse-on-surface: #eaf3ee;
 
+  --color-role-admin-bg: #ffdad6;
+  --color-role-admin-text: #93000a;
+  --color-role-user-bg: #d0e4ff;
+  --color-role-user-text: #004785;
+  --color-role-collab-bg: #caebd1;
+  --color-role-collab-text: #1b522b;
+  --color-tick-green: #22c55e;
+  --color-toast-close-hover: color-mix(
+    in srgb,
+    var(--color-on-surface) 12%,
+    transparent
+  );
+
   --color-scrim: color-mix(in srgb, var(--color-on-surface) 40%, transparent);
   --color-surface-translucent: color-mix(
     in srgb,

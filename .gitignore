@@ -32,3 +32,7 @@ stitch_redise_o_de_prototipo_inicial 2/
 .specify
 .codegraph
 specs
+node_modules/
+dist/
+build/
+.idea/
