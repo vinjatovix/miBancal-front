@@ -8,6 +8,11 @@ import { getFamilyList } from '../../../src/services/families.service';
 import { ApiError } from '../../../src/shared/errors/ApiError';
 import { NetworkError } from '../../../src/shared/errors/NetworkError';
 import type { FamilyListItem } from '../../../src/types/Family';
+import {
+  ADMIN_TEST_TOKEN,
+  createTestJwt,
+  VALID_TEST_TOKEN
+} from '../../fixtures/auth/authFixtures';
 import { listFamilyItems } from '../../fixtures/families/listFamilyItems';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
@@ -157,5 +162,43 @@ describe('FamilyList', () => {
       await screen.findByText('No hay familias registradas.')
     ).toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  describe('editorial actions', () => {
+    it('does not render Nueva familia button for anonymous user', () => {
+      renderWithProviders(<FamilyList />);
+
+      expect(
+        screen.queryByRole('link', { name: /nueva familia/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not render Nueva familia button for regular user', () => {
+      renderWithProviders(<FamilyList />, {
+        initialToken: VALID_TEST_TOKEN
+      });
+
+      expect(
+        screen.queryByRole('link', { name: /nueva familia/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it.each([
+      ['admin', ADMIN_TEST_TOKEN],
+      ['collaborator', createTestJwt({ roles: ['collaborator'] })]
+    ])(
+      'renders Nueva familia button linking to /families/new for %s',
+      async (_role, token) => {
+        renderWithProviders(<FamilyList />, {
+          initialToken: token
+        });
+
+        const createLink = await screen.findByRole('link', {
+          name: /nueva familia/i
+        });
+        expect(createLink).toBeInTheDocument();
+        expect(createLink).toHaveAttribute('href', '/families/new');
+      }
+    );
   });
 });

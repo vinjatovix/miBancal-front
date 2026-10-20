@@ -1,10 +1,12 @@
 import {
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
   type ReactNode
 } from 'react';
+import { QueryClientContext, type QueryClient } from '@tanstack/react-query';
 
 import {
   activate as serviceActivate,
@@ -30,6 +32,7 @@ import type {
 } from '../../types/auth';
 import { ApiError } from '../errors/ApiError';
 import { AuthContext, type AuthContextValue } from './authContextDef';
+import { hasCatalogEditorRole } from './roleUtils';
 import {
   buildSessionFromToken,
   clearStoredToken,
@@ -41,62 +44,85 @@ import {
 
 const MAX_TIMEOUT_DELAY_MS = 2_147_483_647;
 
-export function AuthProvider({ children }: { readonly children: ReactNode }) {
+interface AuthProviderProps {
+  readonly children: ReactNode;
+  readonly queryClient?: QueryClient;
+}
+
+export function AuthProvider({
+  children,
+  queryClient: explicitClient
+}: AuthProviderProps) {
+  const contextClient = useContext(QueryClientContext);
+  const queryClient = explicitClient ?? contextClient;
   const [session, setSession] = useState<AuthSession | null>(getInitialSession);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const logout = useCallback(() => {
     clearStoredToken();
+    queryClient?.clear();
     setSession(null);
-  }, []);
+  }, [queryClient]);
 
-  const login = useCallback(async (credentials: LoginCredentials) => {
-    setIsLoading(true);
-    try {
-      const response = await serviceLogin(credentials);
-      const nextSession = buildSessionFromToken(response.token);
-      if (!nextSession) {
-        clearStoredToken();
-        throw new Error('Token de sesión no válido');
+  const login = useCallback(
+    async (credentials: LoginCredentials) => {
+      setIsLoading(true);
+      try {
+        const response = await serviceLogin(credentials);
+        const nextSession = buildSessionFromToken(response.token);
+        if (!nextSession) {
+          clearStoredToken();
+          throw new Error('Token de sesión no válido');
+        }
+        setStoredToken(response.token);
+        queryClient?.clear();
+        setSession(nextSession);
+      } finally {
+        setIsLoading(false);
       }
-      setStoredToken(response.token);
-      setSession(nextSession);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [queryClient]
+  );
 
-  const googleLogin = useCallback(async (data: AuthenticateWithGoogleData) => {
-    setIsLoading(true);
-    try {
-      const response = await serviceGoogleLogin(data);
-      const nextSession = buildSessionFromToken(response.token);
-      if (!nextSession) {
-        clearStoredToken();
-        throw new Error('Token de sesión no válido');
+  const googleLogin = useCallback(
+    async (data: AuthenticateWithGoogleData) => {
+      setIsLoading(true);
+      try {
+        const response = await serviceGoogleLogin(data);
+        const nextSession = buildSessionFromToken(response.token);
+        if (!nextSession) {
+          clearStoredToken();
+          throw new Error('Token de sesión no válido');
+        }
+        setStoredToken(response.token);
+        queryClient?.clear();
+        setSession(nextSession);
+      } finally {
+        setIsLoading(false);
       }
-      setStoredToken(response.token);
-      setSession(nextSession);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [queryClient]
+  );
 
-  const githubLogin = useCallback(async (data: AuthenticateWithGithubData) => {
-    setIsLoading(true);
-    try {
-      const response = await serviceGithubLogin(data);
-      const nextSession = buildSessionFromToken(response.token);
-      if (!nextSession) {
-        clearStoredToken();
-        throw new Error('Token de sesión no válido');
+  const githubLogin = useCallback(
+    async (data: AuthenticateWithGithubData) => {
+      setIsLoading(true);
+      try {
+        const response = await serviceGithubLogin(data);
+        const nextSession = buildSessionFromToken(response.token);
+        if (!nextSession) {
+          clearStoredToken();
+          throw new Error('Token de sesión no válido');
+        }
+        setStoredToken(response.token);
+        queryClient?.clear();
+        setSession(nextSession);
+      } finally {
+        setIsLoading(false);
       }
-      setStoredToken(response.token);
-      setSession(nextSession);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [queryClient]
+  );
 
   const register = useCallback(async (data: RegisterData) => {
     setIsLoading(true);
@@ -145,9 +171,10 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
 
   useEffect(() => {
     return subscribeToSessionPurge(() => {
+      queryClient?.clear();
       setSession(null);
     });
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     if (!session) return;
@@ -184,6 +211,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
       user: session?.user ?? null,
       isAuthenticated: session !== null,
       isAdmin: session?.user.roles.includes('admin') ?? false,
+      isEditor: hasCatalogEditorRole(session?.user ?? null),
       isLoading,
       login,
       register,

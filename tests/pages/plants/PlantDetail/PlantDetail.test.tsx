@@ -2,13 +2,24 @@ import '@testing-library/jest-dom';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 
 import PlantDetail from '../../../../src/pages/plants/PlantDetail/PlantDetail';
-import { getPlantById } from '../../../../src/services/plants.service';
+import {
+  deletePlant,
+  getPlantById,
+  getPlantForEdit,
+  updatePlant
+} from '../../../../src/services/plants.service';
 import { ApiError } from '../../../../src/shared/errors/ApiError';
 import { NetworkError } from '../../../../src/shared/errors/NetworkError';
+import { PreconditionFailedError } from '../../../../src/shared/errors/PreconditionFailedError';
 import { renderWithProviders } from '../../../test-utils/renderWithProviders';
+import {
+  ADMIN_TEST_TOKEN,
+  createTestJwt,
+  VALID_TEST_TOKEN
+} from '../../../fixtures/auth/authFixtures';
 import { listPlantsResponse } from '../../../fixtures/plants/listPlants';
 import {
   buildPlant,
@@ -18,10 +29,16 @@ import {
 import { buildFamilySummary } from '../../../fixtures/families/buildFamilySummary';
 
 vi.mock('../../../../src/services/plants.service', () => ({
-  getPlantById: vi.fn()
+  deletePlant: vi.fn(),
+  getPlantById: vi.fn(),
+  getPlantForEdit: vi.fn(),
+  updatePlant: vi.fn()
 }));
 
+const mockedDeletePlant = vi.mocked(deletePlant);
 const mockedGetPlantById = vi.mocked(getPlantById);
+const mockedGetPlantForEdit = vi.mocked(getPlantForEdit);
+const mockedUpdatePlant = vi.mocked(updatePlant);
 
 const mockPlant = listPlantsResponse.data[0];
 const mockPlantWithVideos = listPlantsResponse.data[1];
@@ -439,6 +456,325 @@ describe('PlantDetail', () => {
 
       expectPlantNotFound();
       expect(mockedGetPlantById).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('editorial inline edit mode', () => {
+    it('does not show edit button for anonymous user', async () => {
+      mockedGetPlantById.mockResolvedValue(mockPlant);
+
+      renderWithProviders(<PlantDetail />, {
+        route: `/plants/${mockPlant.id}`,
+        path: '/plants/:id'
+      });
+
+      await screen.findByRole('heading', {
+        name: new RegExp(mockPlant.identity.name.primary, 'i')
+      });
+      expect(
+        screen.queryByRole('button', { name: 'Editar' })
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show edit button for regular user', async () => {
+      mockedGetPlantById.mockResolvedValue(mockPlant);
+
+      renderWithProviders(<PlantDetail />, {
+        route: `/plants/${mockPlant.id}`,
+        path: '/plants/:id',
+        initialToken: VALID_TEST_TOKEN
+      });
+
+      await screen.findByRole('heading', {
+        name: new RegExp(mockPlant.identity.name.primary, 'i')
+      });
+      expect(
+        screen.queryByRole('button', { name: 'Editar' })
+      ).not.toBeInTheDocument();
+    });
+
+    it.each([
+      ['admin', ADMIN_TEST_TOKEN],
+      ['collaborator', createTestJwt({ roles: ['collaborator'] })]
+    ])('shows edit button for %s role', async (_role, token) => {
+      mockedGetPlantById.mockResolvedValue(mockPlant);
+
+      renderWithProviders(<PlantDetail />, {
+        route: `/plants/${mockPlant.id}`,
+        path: '/plants/:id',
+        initialToken: token
+      });
+
+      const editBtn = await screen.findByRole('button', { name: 'Editar' });
+      expect(editBtn).toBeInTheDocument();
+    });
+
+    it('renders edit form when clicking edit button', async () => {
+      const user = userEvent.setup();
+      mockedGetPlantById.mockResolvedValue(mockPlant);
+      mockedGetPlantForEdit.mockResolvedValue({
+        plant: mockPlant,
+        etag: '"1"'
+      });
+
+      renderWithProviders(<PlantDetail />, {
+        route: `/plants/${mockPlant.id}`,
+        path: '/plants/:id',
+        initialToken: ADMIN_TEST_TOKEN
+      });
+      const editBtn = await screen.findByRole('button', { name: 'Editar' });
+
+      await user.click(editBtn);
+
+      expect(
+        await screen.findByRole('button', { name: 'Cancelar' })
+      ).toBeInTheDocument();
+    });
+
+    it('returns to view mode when clicking cancel button in edit form', async () => {
+      const user = userEvent.setup();
+      mockedGetPlantById.mockResolvedValue(mockPlant);
+      mockedGetPlantForEdit.mockResolvedValue({
+        plant: mockPlant,
+        etag: '"1"'
+      });
+
+      renderWithProviders(<PlantDetail />, {
+        route: `/plants/${mockPlant.id}`,
+        path: '/plants/:id',
+        initialToken: ADMIN_TEST_TOKEN
+      });
+      const editBtn = await screen.findByRole('button', { name: 'Editar' });
+      await user.click(editBtn);
+      const cancelBtn = await screen.findByRole('button', {
+        name: 'Cancelar'
+      });
+
+      await user.click(cancelBtn);
+
+      expect(
+        await screen.findByRole('button', { name: 'Editar' })
+      ).toBeInTheDocument();
+    });
+
+    it('submits update and returns to view mode on successful save', async () => {
+      const user = userEvent.setup();
+      const updated = buildPlant({ id: mockPlant.id, version: 2 });
+      mockedGetPlantById.mockResolvedValue(mockPlant);
+      mockedGetPlantForEdit.mockResolvedValue({
+        plant: mockPlant,
+        etag: '"1"'
+      });
+      mockedUpdatePlant.mockResolvedValue({
+        plant: updated,
+        etag: '"2"'
+      });
+
+      renderWithProviders(<PlantDetail />, {
+        route: `/plants/${mockPlant.id}`,
+        path: '/plants/:id',
+        initialToken: ADMIN_TEST_TOKEN
+      });
+
+      const editBtn = await screen.findByRole('button', { name: 'Editar' });
+      await user.click(editBtn);
+
+      const saveBtn = await screen.findByRole('button', {
+        name: 'Guardar cambios'
+      });
+      await user.click(saveBtn);
+
+      expect(
+        await screen.findByRole('button', { name: 'Editar' })
+      ).toBeInTheDocument();
+    });
+
+    it('deletes plant after confirmation and navigates to catalog', async () => {
+      const user = userEvent.setup();
+      mockedGetPlantById.mockResolvedValue(mockPlant);
+      mockedGetPlantForEdit.mockResolvedValue({
+        plant: mockPlant,
+        etag: '"1"'
+      });
+      mockedDeletePlant.mockResolvedValue(undefined);
+
+      renderWithProviders(
+        <Routes>
+          <Route path="/plants/:id" element={<PlantDetail />} />
+          <Route path="/plants" element={<div>PLANTS CATALOG</div>} />
+        </Routes>,
+        {
+          route: `/plants/${mockPlant.id}`,
+          initialToken: ADMIN_TEST_TOKEN
+        }
+      );
+
+      const deleteBtn = await screen.findByRole('button', { name: 'Eliminar' });
+      await user.click(deleteBtn);
+
+      const dialog = await screen.findByRole('dialog');
+      const confirmBtn = within(dialog).getByRole('button', {
+        name: 'Eliminar'
+      });
+      await user.click(confirmBtn);
+
+      expect(mockedDeletePlant).toHaveBeenCalledWith(mockPlant.id, '"1"');
+      expect(await screen.findByText('PLANTS CATALOG')).toBeInTheDocument();
+    });
+
+    it('resets edit state when route ID changes', async () => {
+      const user = userEvent.setup();
+      const secondPlant = buildPlant({
+        id: 'plant-2',
+        identity: {
+          ...mockPlant.identity,
+          name: { ...mockPlant.identity.name, primary: 'Pimiento' }
+        }
+      });
+      mockedGetPlantById.mockImplementation(async (targetId) =>
+        targetId === secondPlant.id ? secondPlant : mockPlant
+      );
+      mockedGetPlantForEdit.mockImplementation(async (targetId) => ({
+        plant: targetId === secondPlant.id ? secondPlant : mockPlant,
+        etag: targetId === secondPlant.id ? '"2"' : '"1"'
+      }));
+
+      renderWithProviders(
+        <>
+          <Link to={`/plants/${secondPlant.id}`}>Go to second plant</Link>
+          <Routes>
+            <Route path="/plants/:id" element={<PlantDetail />} />
+          </Routes>
+        </>,
+        {
+          route: `/plants/${mockPlant.id}`,
+          initialToken: ADMIN_TEST_TOKEN
+        }
+      );
+      const editBtn = await screen.findByRole('button', { name: 'Editar' });
+      await user.click(editBtn);
+      await screen.findByRole('button', { name: 'Cancelar' });
+
+      await user.click(screen.getByText('Go to second plant'));
+
+      expect(
+        await screen.findByRole('button', { name: 'Editar' })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Cancelar' })
+      ).not.toBeInTheDocument();
+    });
+
+    it('resets delete modal state when route ID changes', async () => {
+      const user = userEvent.setup();
+      const secondPlant = buildPlant({
+        id: 'plant-2',
+        identity: {
+          ...mockPlant.identity,
+          name: { ...mockPlant.identity.name, primary: 'Pimiento' }
+        }
+      });
+      mockedGetPlantById.mockImplementation(async (targetId) =>
+        targetId === secondPlant.id ? secondPlant : mockPlant
+      );
+      mockedGetPlantForEdit.mockImplementation(async (targetId) => ({
+        plant: targetId === secondPlant.id ? secondPlant : mockPlant,
+        etag: targetId === secondPlant.id ? '"2"' : '"1"'
+      }));
+
+      renderWithProviders(
+        <>
+          <Link to={`/plants/${secondPlant.id}`}>Go to second plant</Link>
+          <Routes>
+            <Route path="/plants/:id" element={<PlantDetail />} />
+          </Routes>
+        </>,
+        {
+          route: `/plants/${mockPlant.id}`,
+          initialToken: ADMIN_TEST_TOKEN
+        }
+      );
+      const deleteBtn = await screen.findByRole('button', { name: 'Eliminar' });
+      await user.click(deleteBtn);
+      await screen.findByRole('dialog');
+
+      await user.click(screen.getByText('Go to second plant'));
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('surfaces conflict error and reloads plant data on 412 PreconditionFailedError during deletion', async () => {
+      const user = userEvent.setup();
+      mockedGetPlantById.mockResolvedValue(mockPlant);
+      mockedGetPlantForEdit.mockResolvedValue({
+        plant: mockPlant,
+        etag: '"1"'
+      });
+      mockedDeletePlant.mockRejectedValue(
+        new PreconditionFailedError('Precondition Failed')
+      );
+
+      renderWithProviders(
+        <Routes>
+          <Route path="/plants/:id" element={<PlantDetail />} />
+        </Routes>,
+        {
+          route: `/plants/${mockPlant.id}`,
+          initialToken: ADMIN_TEST_TOKEN
+        }
+      );
+
+      const deleteBtn = await screen.findByRole('button', { name: 'Eliminar' });
+      await user.click(deleteBtn);
+
+      const dialog = await screen.findByRole('dialog');
+      const confirmBtn = within(dialog).getByRole('button', {
+        name: 'Eliminar'
+      });
+      await user.click(confirmBtn);
+
+      const reloadBtn = await within(dialog).findByRole('button', {
+        name: 'Recargar datos actuales'
+      });
+      await user.click(reloadBtn);
+
+      expect(mockedGetPlantById).toHaveBeenCalledTimes(2);
+      expect(mockedGetPlantForEdit).toHaveBeenCalledTimes(2);
+    });
+
+    it('surfaces deletion error message in modal when deletion fails with network error', async () => {
+      const user = userEvent.setup();
+      mockedGetPlantById.mockResolvedValue(mockPlant);
+      mockedGetPlantForEdit.mockResolvedValue({
+        plant: mockPlant,
+        etag: '"1"'
+      });
+      mockedDeletePlant.mockRejectedValue(
+        new NetworkError('Fallo de conexión')
+      );
+
+      renderWithProviders(
+        <Routes>
+          <Route path="/plants/:id" element={<PlantDetail />} />
+        </Routes>,
+        {
+          route: `/plants/${mockPlant.id}`,
+          initialToken: ADMIN_TEST_TOKEN
+        }
+      );
+
+      const deleteBtn = await screen.findByRole('button', { name: 'Eliminar' });
+      await user.click(deleteBtn);
+
+      const dialog = await screen.findByRole('dialog');
+      const confirmBtn = within(dialog).getByRole('button', {
+        name: 'Eliminar'
+      });
+      await user.click(confirmBtn);
+
+      expect(
+        await within(dialog).findByText('Network request failed')
+      ).toBeInTheDocument();
     });
   });
 });

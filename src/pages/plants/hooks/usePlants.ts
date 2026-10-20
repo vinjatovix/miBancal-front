@@ -6,6 +6,7 @@ import type { SortDirection } from '../../../services/listQuery';
 import type { PlantsSortField } from '../../../services/plantListQuery';
 import { QUERY_DEFAULTS } from '../../../shared/reactQuery/queryDefaults';
 import { plantKeys } from '../../../shared/reactQuery/plantKeys';
+import { usePlantRoleScope } from '../../../shared/reactQuery/usePlantRoleScope';
 import {
   PLANT_LIST_URL_PARAMS,
   withoutPlantListFilters
@@ -24,11 +25,12 @@ import {
 import { removeMultiValueParam } from '../utils/removeMultiValueParam';
 
 export function usePlants() {
+  const scope = usePlantRoleScope();
   const [params, setParams] = useSearchParams();
   const request = parsePlantListSearchParams(params);
 
   const query = useQuery<PaginatedResponse<PlantListItem>>({
-    queryKey: plantKeys.list(request),
+    queryKey: plantKeys.list(request, scope),
     queryFn: () => getPlantList(request),
     ...QUERY_DEFAULTS
   });

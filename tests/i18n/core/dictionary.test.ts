@@ -203,3 +203,81 @@ describe('sso dictionary keys', () => {
     expect(result).toBe(expected);
   });
 });
+
+describe('catalog edit and creation dictionary keys', () => {
+  it.each([
+    ['common.edit', 'Editar'],
+    ['common.delete', 'Eliminar'],
+    ['common.deleting', 'Eliminando...'],
+    ['common.save_changes', 'Guardar cambios'],
+    ['common.cancel', 'Cancelar'],
+    ['common.saving', 'Guardando...'],
+    ['common.creating', 'Creando...'],
+    ['common.modal.close', 'Cerrar ventana'],
+    ['common.modal.cancel', 'Cancelar'],
+    ['common.modal.confirm', 'Confirmar'],
+    ['common.modal.cancel_title', 'Descartar cambios'],
+    ['common.modal.cancel_subtitle', 'Cambios sin guardar'],
+    [
+      'common.modal.cancel_prompt',
+      'Hay cambios sin guardar. ¿Deseas descartarlos y salir?'
+    ],
+    ['common.modal.discard', 'Descartar cambios'],
+    ['common.modal.keep_editing', 'Continuar editando'],
+    ['plant.catalog.new_plant', 'Nueva planta'],
+    ['family.catalog.new_family', 'Nueva familia'],
+    ['plant.detail.edit_plant', 'Editar'],
+    ['plant.detail.delete_plant', 'Eliminar'],
+    [
+      'plant.detail.delete_confirm',
+      '¿Estás seguro de que deseas eliminar esta planta del catálogo?'
+    ],
+    ['plant.detail.delete_modal_title', 'Eliminar planta'],
+    ['plant.detail.delete_modal_subtitle', 'Catálogo botánico'],
+    [
+      'plant.detail.delete_modal_warning',
+      'La planta se marcará como borrada y dejará de estar visible en el catálogo público.'
+    ],
+    ['family.detail.edit_family', 'Editar'],
+    ['plant.form.title_create', 'Nueva planta'],
+    ['plant.form.title_edit', 'Editar planta'],
+    ['plant.form.sections.identity', 'Identidad y clasificación'],
+    ['plant.form.sections.traits', 'Rasgos botánicos y biológicos'],
+    ['plant.form.sections.phenology', 'Fenología, siembra y recolección'],
+    ['plant.form.sections.knowledge', 'Requisitos edafoclimáticos y cultivo'],
+    ['plant.form.sections.notes', 'Notas agronómicas'],
+    ['plant.form.sections.resources', 'Fotografía y recursos'],
+    ['plant.form.notes.add', 'Añadir nota'],
+    ['plant.form.resources.videos_title', 'Vídeos (ej. YouTube)'],
+    ['plant.form.resources.add_video', 'Añadir enlace de vídeo'],
+    ['plant.form.resources.articles_title', 'Artículos y enlaces de interés'],
+    ['plant.form.resources.add_article', 'Añadir enlace de artículo'],
+    ['family.form.title_create', 'Nueva familia'],
+    ['family.form.title_edit', 'Editar familia'],
+    ['family.form.fields.name', 'Nombre común'],
+    ['family.form.fields.slug', 'Slug para URL'],
+    ['auth.insufficient_permissions.title', 'Permisos insuficientes'],
+    [
+      'auth.insufficient_permissions.back_to_plants',
+      'Volver al catálogo de plantas'
+    ],
+    [
+      'auth.insufficient_permissions.back_to_families',
+      'Volver al catálogo de familias'
+    ],
+    ['plant.form.conflict.title', 'Conflicto de concurrencia (412)'],
+    ['family.form.conflict.title', 'Conflicto de edición (412)'],
+    [
+      'plant.form.validation.summary',
+      'El formulario contiene errores o campos obligatorios pendientes de completar.'
+    ],
+    [
+      'family.form.validation.summary',
+      'El formulario contiene errores o campos obligatorios pendientes de completar.'
+    ]
+  ] as const)('translates %s to %s', (key, expected) => {
+    const result = t(key);
+
+    expect(result).toBe(expected);
+  });
+});

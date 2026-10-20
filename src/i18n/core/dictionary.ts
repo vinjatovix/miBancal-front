@@ -110,7 +110,14 @@ export const dictionary = {
     reset_invalid_link: 'Enlace no válido o caducado',
     reset_invalid_link_text:
       'El enlace de restablecimiento no es válido o ha caducado. Solicita uno nuevo.',
-    reset_request_again: 'Solicitar un enlace nuevo'
+    reset_request_again: 'Solicitar un enlace nuevo',
+    insufficient_permissions: {
+      title: 'Permisos insuficientes',
+      message:
+        'Se requiere rol de Colaborador o Administrador para crear o modificar fichas del catálogo botánico.',
+      back_to_plants: 'Volver al catálogo de plantas',
+      back_to_families: 'Volver al catálogo de familias'
+    }
   },
   admin: {
     heading: 'Administración de usuarios',
@@ -236,6 +243,12 @@ export const dictionary = {
   common: {
     save: 'Guardar',
     cancel: 'Cancelar',
+    edit: 'Editar',
+    delete: 'Eliminar',
+    save_changes: 'Guardar cambios',
+    saving: 'Guardando...',
+    creating: 'Creando...',
+    deleting: 'Eliminando...',
     env_dev: 'development',
 
     loading: 'Cargando...',
@@ -272,6 +285,16 @@ export const dictionary = {
     },
     drawer: {
       close: 'Cerrar panel'
+    },
+    modal: {
+      close: 'Cerrar ventana',
+      cancel: 'Cancelar',
+      confirm: 'Confirmar',
+      cancel_title: 'Descartar cambios',
+      cancel_subtitle: 'Cambios sin guardar',
+      cancel_prompt: 'Hay cambios sin guardar. ¿Deseas descartarlos y salir?',
+      discard: 'Descartar cambios',
+      keep_editing: 'Continuar editando'
     },
     pagination: {
       label: 'Paginación'
@@ -357,11 +380,63 @@ export const dictionary = {
   },
 
   family: {
+    catalog: {
+      new_family: 'Nueva familia'
+    },
     families: 'Familias',
     empty: 'No hay familias registradas.',
     select_error: 'No se han podido cargar las familias.',
     detail: {
-      loading: 'Cargando familia...'
+      loading: 'Cargando familia...',
+      edit_family: 'Editar'
+    },
+    form: {
+      title_create: 'Nueva familia',
+      title_edit: 'Editar familia',
+      subtitle_create:
+        'Registra una nueva familia taxonómica botánica en el catálogo.',
+      subtitle_edit:
+        'Modifica los datos taxonómicos y descriptivos de la familia.',
+      fields: {
+        name: 'Nombre común',
+        name_placeholder: 'Ej. Solanáceas',
+        scientific_name: 'Nombre científico',
+        scientific_name_placeholder: 'Ej. Solanaceae',
+        slug: 'Slug para URL',
+        slug_placeholder: 'ej-solanaceae',
+        slug_hint: 'Identificador en minúsculas y separado por guiones.',
+        short_description: 'Descripción corta',
+        short_description_placeholder:
+          'Resumen botánico y agronómico de la familia...',
+        highlights: 'Aspectos destacados',
+        highlights_placeholder: 'Introduce uno por línea...',
+        aliases: 'Nombres alternativos',
+        aliases_placeholder: 'Separados por comas...',
+        order: 'Orden taxonómico',
+        order_placeholder: 'Ej. Solanales',
+        distribution: 'Distribución geográfica',
+        distribution_placeholder:
+          'Ej. Cosmopolita, predominio en zonas tropicales',
+        species_count: 'Número aproximado de especies'
+      },
+      validation: {
+        required_field: 'Este campo es obligatorio.',
+        invalid_slug:
+          'El slug solo puede contener letras minúsculas, números y guiones sencillos.',
+        highlights_required: 'Debes introducir al menos un aspecto destacado.',
+        positive_integer: 'Debe ser un número entero mayor o igual a 1.',
+        summary:
+          'El formulario contiene errores o campos obligatorios pendientes de completar.'
+      },
+      conflict: {
+        title: 'Conflicto de edición (412)',
+        message:
+          'La familia fue modificada por otro usuario. Recarga la ficha para ver los datos más recientes.',
+        reload_button: 'Recargar ficha'
+      },
+      duplicate_error:
+        'Ya existe una familia registrada con este nombre o slug.',
+      cancel_confirm: 'Hay cambios sin guardar. ¿Deseas descartarlos y salir?'
     },
     hero: {
       order: 'Orden',
@@ -384,6 +459,149 @@ export const dictionary = {
     }
   },
   plant: {
+    form: {
+      title_create: 'Nueva planta',
+      title_edit: 'Editar planta',
+      subtitle_create:
+        'Introduce los datos botánicos y agronómicos para incorporar una nueva especie al catálogo.',
+      subtitle_edit:
+        'Modifica los atributos botánicos y agronómicos de la planta.',
+      sections: {
+        identity: 'Identidad y clasificación',
+        traits: 'Rasgos botánicos y biológicos',
+        phenology: 'Fenología, siembra y recolección',
+        knowledge: 'Requisitos edafoclimáticos y cultivo',
+        notes: 'Notas agronómicas',
+        resources: 'Fotografía y recursos'
+      },
+      fields: {
+        primary_name: 'Nombre común principal',
+        primary_name_placeholder: 'Ej. Tomate',
+        scientific_name: 'Nombre científico',
+        scientific_name_placeholder: 'Ej. Solanum lycopersicum',
+        family: 'Familia botánica',
+        family_placeholder: 'Selecciona una familia...',
+        family_create_link: '¿No encuentras la familia? Crear nueva familia',
+        family_refresh: 'Actualizar listado de familias',
+        aliases: 'Nombres alternativos o locales',
+        aliases_placeholder: 'Separados por comas (ej. Jitomate, Tomatera)',
+        lifecycle: 'Ciclo biológico',
+        height: 'Altura (cm)',
+        spread: 'Envergadura (cm)',
+        spacing: 'Marco de plantación (cm)',
+        min: 'Mín.',
+        max: 'Máx.',
+        edible: 'Comestible',
+        toxic: 'Tóxica',
+        toxicity_notes: 'Notas de toxicidad',
+        toxicity_notes_placeholder:
+          'Partes tóxicas, síntomas o advertencias...',
+        sowing_months: 'Meses de siembra',
+        seeds_per_hole: 'Semillas por golpe',
+        germination_days: 'Días de germinación',
+        direct_depth: 'Profundidad siembra directa (cm)',
+        starter_enabled: 'Apta para semillero',
+        starter_depth: 'Profundidad semillero (cm)',
+        flowering_months: 'Meses de floración',
+        pollination_type: 'Tipo de polinización',
+        pollination_agents: 'Agentes polinizadores',
+        pollination_agents_placeholder:
+          'Separados por comas (ej. Abejas, abejorros, mariposas)',
+        harvest_months: 'Meses de recolección',
+        harvest_description: 'Indicaciones de recolección',
+        harvest_description_placeholder:
+          'Puntos óptimos de maduración y técnicas de cosecha...',
+        soil_ph: 'pH del suelo (0-14)',
+        soil_depth: 'Profundidad de suelo disponible (cm)',
+        root_type: 'Tipo de raíz',
+        root_depth: 'Profundidad de raíces (cm)',
+        root_spread: 'Extensión radial de raíces (cm)',
+        watering_frequency: 'Frecuencia de riego',
+        watering_frequency_placeholder: 'Ej. regular, moderado, frecuente',
+        watering_conditions: 'Condiciones de riego',
+        watering_conditions_placeholder:
+          'Separadas por comas (ej. Suelo húmedo sin encharcar, Evitar mojar hojas)',
+        light_hours_min: 'Horas mínimas de sol directo',
+        light_type: 'Tipo de luz',
+        light_preference: 'Preferencia de exposición solar',
+        strategic_benefits: 'Beneficios ecológicos y estratégicos',
+        strategic_benefits_placeholder:
+          'Separados por comas (ej. Atrae polinizadores, Repelente natural)',
+        image_url: 'URL de la fotografía principal',
+        image_url_placeholder: 'https://ejemplo.com/imagen.jpg',
+        image_title: 'Pie de foto o descripción de la imagen',
+        image_source: 'Fuente o créditos de la fotografía'
+      },
+      notes: {
+        title: 'Notas agronómicas',
+        add: 'Añadir nota',
+        empty: 'No hay notas añadidas para esta planta.',
+        note_label: 'Nota {n}',
+        placeholder:
+          'Escribe una recomendación agronómica o nota de cultivo...',
+        remove: 'Eliminar nota',
+        too_long: 'La nota no puede superar los 2000 caracteres.'
+      },
+      resources: {
+        videos_title: 'Vídeos (ej. YouTube)',
+        add_video: 'Añadir enlace de vídeo',
+        video_url: 'URL del vídeo',
+        video_url_placeholder: 'https://www.youtube.com/watch?v=...',
+        video_title: 'Título o descripción del vídeo',
+        video_title_placeholder: 'Ej. Tutorial de cultivo en YouTube',
+        remove_video: 'Eliminar vídeo',
+        empty_videos: 'No hay vídeos vinculados.',
+        articles_title: 'Artículos y enlaces de interés',
+        add_article: 'Añadir enlace de artículo',
+        article_url: 'URL del artículo',
+        article_url_placeholder: 'https://ejemplo.com/articulo',
+        article_title: 'Título del artículo',
+        article_title_placeholder: 'Ej. Ficha técnica de cultivo',
+        remove_article: 'Eliminar artículo',
+        empty_articles: 'No hay artículos vinculados.',
+        invalid_url: 'La URL debe comenzar por http:// o https://'
+      },
+      light_preference_options: {
+        none: 'Sin preferencia específica',
+        morning: 'Sol de mañana',
+        afternoon: 'Sol de tarde',
+        all_day: 'Todo el día'
+      },
+      pollination_type_options: {
+        none: 'Sin polinización / No aplica',
+        insect: 'Insectos',
+        wind: 'Viento',
+        self: 'Autopolinización',
+        water: 'Agua',
+        bird: 'Aves',
+        bat: 'Murciélagos'
+      },
+      image: {
+        preview_alt: 'Vista previa de la fotografía',
+        load_error: 'No se pudo cargar la imagen desde la URL facilitada.',
+        required: 'Es obligatorio incluir al menos una imagen con URL válida.',
+        invalid_url: 'La URL debe comenzar por http:// o https://'
+      },
+      validation: {
+        required_field: 'Este campo es obligatorio.',
+        invalid_range: 'El valor máximo debe ser mayor o igual que el mínimo.',
+        positive_number: 'Debe ser un número mayor que 0.',
+        non_negative_number: 'Debe ser un número mayor o igual que 0.',
+        sowing_months_required: 'Debes seleccionar al menos un mes de siembra.',
+        family_required: 'Debes seleccionar una familia botánica.',
+        summary:
+          'El formulario contiene errores o campos obligatorios pendientes de completar.'
+      },
+      conflict: {
+        title: 'Conflicto de concurrencia (412)',
+        message:
+          'Esta planta fue modificada por otro usuario mientras la editabas. Para evitar sobrescribir información, debes recargar los datos actualizados.',
+        reload_button: 'Recargar datos actuales'
+      },
+      duplicate_error: 'Ya existe una planta con este nombre o identificador.',
+      cancel_confirm:
+        'Tienes cambios sin guardar. ¿Deseas descartarlos y salir?'
+    },
     safety: {
       title: 'Comestibilidad y toxicidad',
       edible: 'Comestible',
@@ -467,6 +685,7 @@ export const dictionary = {
       remove: 'Quitar filtro {label}'
     },
     catalog: {
+      new_plant: 'Nueva planta',
       species_count: '{n} especies',
       summary_prefix: 'Filtrado activo'
     },
@@ -485,7 +704,17 @@ export const dictionary = {
       }
     },
     detail: {
-      loading: 'Cargando planta...'
+      loading: 'Cargando planta...',
+      edit_plant: 'Editar',
+      delete_plant: 'Eliminar',
+      delete_confirm:
+        '¿Estás seguro de que deseas eliminar esta planta del catálogo?',
+      delete_modal_title: 'Eliminar planta',
+      delete_modal_subtitle: 'Catálogo botánico',
+      delete_modal_prompt:
+        '¿Estás seguro de que deseas eliminar «{name}» del catálogo?',
+      delete_modal_warning:
+        'La planta se marcará como borrada y dejará de estar visible en el catálogo público.'
     },
     hero: {
       scientific_name: 'Nombre científico',

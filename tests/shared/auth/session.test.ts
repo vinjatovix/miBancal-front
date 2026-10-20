@@ -105,6 +105,21 @@ describe('session storage manager', () => {
     expect(session?.user.username).toBe('hortelano');
   });
 
+  it('restores and stores valid session from transferred URL session token in getInitialSession', () => {
+    window.history.pushState(
+      null,
+      '',
+      `/families/new#session_token=${VALID_TEST_TOKEN}`
+    );
+
+    const session = getInitialSession();
+
+    expect(session?.user.username).toBe('hortelano');
+    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBe(
+      VALID_TEST_TOKEN
+    );
+  });
+
   it('cleans storage and returns null in getInitialSession when token is expired', () => {
     sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, EXPIRED_TEST_TOKEN);
 

@@ -13,7 +13,7 @@ function decodeBase64Url(base64Url: string): string {
 }
 
 function isUserRole(value: unknown): value is UserRole {
-  return value === 'admin' || value === 'user';
+  return value === 'admin' || value === 'user' || value === 'collaborator';
 }
 
 function isValidJwtPayload(data: unknown): data is JwtPayload {

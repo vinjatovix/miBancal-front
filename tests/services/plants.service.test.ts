@@ -1,9 +1,18 @@
 import {
+  createPlant,
+  deletePlant,
   getFamilyPlants,
   getPlantById,
-  getPlantList
+  getPlantForEdit,
+  getPlantList,
+  updatePlant
 } from '../../src/services/plants.service';
 import { ApiError } from '../../src/shared/errors/ApiError';
+import { PreconditionFailedError } from '../../src/shared/errors/PreconditionFailedError';
+import type {
+  CreatePlantRequest,
+  UpdatePlantRequest
+} from '../../src/types/Plants/Plant';
 import { buildPlant } from '../fixtures/plants/buildPlant';
 import { listPlantsResponse } from '../fixtures/plants/listPlants';
 import { validateRequest } from '../contract/openApiContract';
@@ -359,5 +368,160 @@ describe('getPlantById', () => {
     const apiError = error as ApiError;
     expect(apiError.status).toBe(404);
     expect(apiError.message).toBe('Plant not found');
+  });
+});
+
+describe('getPlantForEdit', () => {
+  it('requests plant for edit without include or fields and extracts ETag from response', async () => {
+    const plant = buildPlant({ id: 'abc' });
+    const fetchMock = stubFetchOk(plant, { ETag: '"1"' });
+
+    const result = await getPlantForEdit('abc');
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/plants/abc`);
+    expect(init).toEqual({ headers: JSON_HEADERS });
+    expect(validateRequest('get', url)).toEqual([]);
+    expect(result).toEqual({ plant, etag: '"1"' });
+  });
+
+  it('returns empty etag when ETag header is missing', async () => {
+    const plant = buildPlant({ id: 'abc' });
+    stubFetchOk(plant);
+
+    const result = await getPlantForEdit('abc');
+
+    expect(result).toEqual({ plant, etag: '' });
+  });
+
+  it('rejects with ApiError when plant does not exist', async () => {
+    stubFetchError(404, NOT_FOUND_BODY);
+
+    const error = await getPlantForEdit('abc').catch(
+      (caught: unknown) => caught
+    );
+
+    expect(error).toBeInstanceOf(ApiError);
+  });
+});
+
+describe('updatePlant', () => {
+  it('sends PATCH with If-Match and returns updated plant with its new ETag', async () => {
+    const updated = buildPlant({ id: 'abc', version: 2 });
+    const patch: UpdatePlantRequest = {
+      identity: { name: { primary: 'Tomate cherry' } }
+    };
+    const fetchMock = stubFetchOk(updated, { ETag: '"2"' });
+
+    const result = await updatePlant('abc', patch, '"1"');
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/plants/abc`);
+    expect(init?.method).toBe('PATCH');
+    expect(init?.headers).toMatchObject({
+      'Content-Type': 'application/json',
+      'If-Match': '"1"'
+    });
+    expect(JSON.parse(init?.body as string)).toEqual(patch);
+    expect(result).toEqual({ plant: updated, etag: '"2"' });
+  });
+
+  it('rejects with PreconditionFailedError when server returns 412', async () => {
+    stubFetchError(412, { message: 'Precondition failed' });
+
+    const error = await updatePlant('abc', {}, '"1"').catch(
+      (caught: unknown) => caught
+    );
+
+    expect(error).toBeInstanceOf(PreconditionFailedError);
+    expect((error as PreconditionFailedError).status).toBe(412);
+  });
+});
+
+describe('deletePlant', () => {
+  it('sends DELETE to /api/v1/plants/:id with If-Match header', async () => {
+    const fetchMock = stubFetchOk(undefined);
+
+    await deletePlant('p-del-1', '"etag-1"');
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/plants/p-del-1`);
+    expect(init?.method).toBe('DELETE');
+    expect(init?.headers).toMatchObject({
+      'If-Match': '"etag-1"'
+    });
+  });
+
+  it('rejects with PreconditionFailedError when server returns 412', async () => {
+    stubFetchError(412, { message: 'Precondition failed' });
+
+    const error = await deletePlant('p-del-1', '"stale-etag"').catch(
+      (caught: unknown) => caught
+    );
+
+    expect(error).toBeInstanceOf(PreconditionFailedError);
+  });
+});
+
+describe('createPlant', () => {
+  it('sends POST to /api/v1/plants and returns created plant with its ETag', async () => {
+    const created = buildPlant({ id: 'new-id', version: 1 });
+    const input: CreatePlantRequest = {
+      id: 'new-id',
+      identity: {
+        name: { primary: 'Tomate' },
+        scientificName: 'Solanum lycopersicum',
+        family: '3f2504e0-4f89-41d3-9a0c-0305e82c3301'
+      },
+      traits: {
+        lifecycle: 'annual',
+        size: {
+          height: { min: 100, max: 200 },
+          spread: { min: 40, max: 60 }
+        },
+        spacingCm: { min: 40, max: 50 }
+      },
+      phenology: {
+        sowing: {
+          months: [2, 3],
+          seedsPerHole: { min: 2, max: 3 },
+          germinationDays: { min: 6, max: 10 },
+          methods: {
+            direct: { depthCm: { min: 1, max: 2 } }
+          }
+        }
+      },
+      knowledge: {
+        soil: {
+          ph: { min: 6, max: 7 },
+          availableDepthCm: { min: 30, max: 50 }
+        },
+        rootSystem: {
+          type: 'taproot',
+          depthCm: { min: 40, max: 80 },
+          spreadCm: { min: 30, max: 50 }
+        },
+        watering: { frequency: 'regular' },
+        light: { hoursMin: 6, type: 'full_sun' },
+        propagation: { methods: {} },
+        resources: [
+          {
+            type: 'image',
+            url: 'https://example.com/tomate.jpg'
+          }
+        ]
+      }
+    };
+    const fetchMock = stubFetchOk(created, { ETag: '"1"' });
+
+    const result = await createPlant(input);
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/plants`);
+    expect(init?.method).toBe('POST');
+    expect(init?.headers).toMatchObject({
+      'Content-Type': 'application/json'
+    });
+    expect(result).toEqual({ plant: created, etag: '"1"' });
   });
 });
