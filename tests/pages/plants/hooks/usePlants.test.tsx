@@ -5,9 +5,16 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { usePlants } from '../../../../src/pages/plants/hooks/usePlants';
 import { parsePlantListSearchParams } from '../../../../src/pages/plants/utils/parsePlantListSearchParams';
 import { getPlantList } from '../../../../src/services/plants.service';
+import { AuthProvider } from '../../../../src/shared/auth/AuthContext';
+import {
+  clearStoredToken,
+  setStoredToken
+} from '../../../../src/shared/auth/session';
+import { plantKeys } from '../../../../src/shared/reactQuery/plantKeys';
 import type { PaginatedResponse } from '../../../../src/types/api';
 import type { PlantListItem } from '../../../../src/types/Plants/Plant';
 
+import { ADMIN_TEST_TOKEN } from '../../../fixtures/auth/authFixtures';
 import { listPlantsResponse } from '../../../fixtures/plants/listPlants';
 import { createTestQueryClient } from '../../../test-utils/createTestQueryClient';
 
@@ -42,6 +49,8 @@ function searchParams(search: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  sessionStorage.clear();
+  clearStoredToken();
   mockedGetPlantList.mockResolvedValue(listPlantsResponse);
 });
 
@@ -71,6 +80,63 @@ describe('usePlants: query', () => {
 
     await waitFor(() => {
       expect(result.current.plants.query.error).toBeInstanceOf(Error);
+    });
+  });
+
+  it('registra la consulta con scope public cuando no hay sesión de admin', async () => {
+    const queryClient = createTestQueryClient();
+
+    renderHook(() => usePlantsWithLocation(), {
+      wrapper: ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <MemoryRouter initialEntries={['/plants']}>
+              <Routes>
+                <Route path="*" element={children} />
+              </Routes>
+            </MemoryRouter>
+          </AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    await waitFor(() => {
+      const entry = queryClient.getQueryCache().find({
+        queryKey: plantKeys.list(
+          parsePlantListSearchParams(new URLSearchParams()),
+          'public'
+        )
+      });
+      expect(entry).toBeDefined();
+    });
+  });
+
+  it('registra la consulta con scope admin cuando la sesión es de admin', async () => {
+    setStoredToken(ADMIN_TEST_TOKEN);
+    const queryClient = createTestQueryClient();
+
+    renderHook(() => usePlantsWithLocation(), {
+      wrapper: ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <MemoryRouter initialEntries={['/plants']}>
+              <Routes>
+                <Route path="*" element={children} />
+              </Routes>
+            </MemoryRouter>
+          </AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    await waitFor(() => {
+      const entry = queryClient.getQueryCache().find({
+        queryKey: plantKeys.list(
+          parsePlantListSearchParams(new URLSearchParams()),
+          'admin'
+        )
+      });
+      expect(entry).toBeDefined();
     });
   });
 });

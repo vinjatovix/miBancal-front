@@ -14,7 +14,10 @@ import {
   clearStoredToken,
   setStoredToken
 } from '../../src/shared/auth/session';
-import { VALID_TEST_TOKEN } from '../fixtures/auth/authFixtures';
+import {
+  ADMIN_TEST_TOKEN,
+  VALID_TEST_TOKEN
+} from '../fixtures/auth/authFixtures';
 import { createTestQueryClient } from '../test-utils/createTestQueryClient';
 import { stubFetchOk } from '../test-utils/stubFetch';
 import {
@@ -50,7 +53,7 @@ describe('router', () => {
     expect(router.state.historyAction).toBe('POP');
   });
 
-  it('shows the app error screen when a layout throws', () => {
+  it('shows the app error screen when a layout throws', async () => {
     const errorSpy = silenceConsoleError();
     const [mainRoute] = routes;
     const failingRoutes: RouteObject[] = [
@@ -60,7 +63,7 @@ describe('router', () => {
     renderRoute('/plants', failingRoutes);
 
     expect(
-      screen.getByRole('heading', { name: t('errors.app.title') })
+      await screen.findByRole('heading', { name: t('errors.app.title') })
     ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: t('errors.actions.reload') })
@@ -146,4 +149,52 @@ describe('router', () => {
       })
     ).toBeInTheDocument();
   });
+
+  it.each(['/plants/new', '/families/new'])(
+    'redirects anonymous user from %s to /login',
+    async (path) => {
+      clearStoredToken();
+
+      renderRoute(path);
+
+      expect(
+        await screen.findByRole('heading', { name: t('auth.login') })
+      ).toBeInTheDocument();
+    }
+  );
+
+  it.each(['/plants/new', '/families/new'])(
+    'renders InsufficientPermissionsPage on %s for standard user role',
+    async (path) => {
+      setStoredToken(VALID_TEST_TOKEN);
+
+      renderRoute(path);
+
+      expect(
+        await screen.findByRole('heading', {
+          name: t('auth.insufficient_permissions.title')
+        })
+      ).toBeInTheDocument();
+    }
+  );
+
+  it.each([
+    ['/plants/new', 'Nueva planta'],
+    ['/families/new', 'Nueva familia']
+  ])(
+    'renders creation page on %s for editor role',
+    async (path, expectedHeading) => {
+      setStoredToken(ADMIN_TEST_TOKEN);
+      stubFetchOk({
+        data: [],
+        pagination: { page: 1, limit: 25, totalPages: 0, totalItems: 0 }
+      });
+
+      renderRoute(path);
+
+      expect(
+        await screen.findByRole('heading', { name: expectedHeading })
+      ).toBeInTheDocument();
+    }
+  );
 });

@@ -18,6 +18,7 @@ export interface AuthContextValue {
   readonly user: AuthUser | null;
   readonly isAuthenticated: boolean;
   readonly isAdmin: boolean;
+  readonly isEditor: boolean;
   readonly isLoading: boolean;
   login(credentials: LoginCredentials): Promise<void>;
   register(data: RegisterData): Promise<void>;

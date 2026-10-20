@@ -1,4 +1,5 @@
 import { act, render, renderHook, screen } from '@testing-library/react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as authServiceModule from '../../../src/services/auth.service';
@@ -17,6 +18,7 @@ import {
   createTestJwt,
   VALID_TEST_TOKEN
 } from '../../fixtures/auth/authFixtures';
+import { createTestQueryClient } from '../../test-utils/createTestQueryClient';
 
 describe('useAuth & AuthProvider', () => {
   beforeEach(() => {
@@ -396,5 +398,147 @@ describe('useAuth & AuthProvider', () => {
     });
 
     expect(result.current.isLoading).toBe(false);
+  });
+});
+
+describe('AuthProvider: queryClient cache clearing', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    clearStoredToken();
+    vi.restoreAllMocks();
+  });
+
+  it('clears query cache on logout', () => {
+    const queryClient = createTestQueryClient();
+    const clearSpy = vi.spyOn(queryClient, 'clear');
+    setStoredToken(VALID_TEST_TOKEN);
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    act(() => {
+      result.current.logout();
+    });
+
+    expect(clearSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears query cache on login', async () => {
+    const queryClient = createTestQueryClient();
+    const clearSpy = vi.spyOn(queryClient, 'clear');
+    vi.spyOn(authServiceModule, 'login').mockResolvedValueOnce({
+      token: VALID_TEST_TOKEN
+    });
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    await act(async () => {
+      await result.current.login({
+        email: 'hortelano@example.com',
+        password: 'Password1!'
+      });
+    });
+
+    expect(clearSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears query cache on googleLogin', async () => {
+    const queryClient = createTestQueryClient();
+    const clearSpy = vi.spyOn(queryClient, 'clear');
+    vi.spyOn(authServiceModule, 'authenticateWithGoogle').mockResolvedValueOnce(
+      {
+        token: VALID_TEST_TOKEN
+      }
+    );
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    await act(async () => {
+      await result.current.googleLogin({ idToken: 'test-google-id-token' });
+    });
+
+    expect(clearSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears query cache on githubLogin', async () => {
+    const queryClient = createTestQueryClient();
+    const clearSpy = vi.spyOn(queryClient, 'clear');
+    vi.spyOn(authServiceModule, 'authenticateWithGithub').mockResolvedValueOnce(
+      {
+        token: VALID_TEST_TOKEN
+      }
+    );
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    await act(async () => {
+      await result.current.githubLogin({
+        code: 'test-github-code',
+        codeVerifier: 'test-pkce-verifier-string-43-chars-long-minimum'
+      });
+    });
+
+    expect(clearSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears query cache on session purge', () => {
+    const queryClient = createTestQueryClient();
+    const clearSpy = vi.spyOn(queryClient, 'clear');
+    setStoredToken(VALID_TEST_TOKEN);
+
+    renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    act(() => {
+      notifySessionPurged();
+    });
+
+    expect(clearSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears query cache on logout when queryClient is provided directly via props', () => {
+    const queryClient = createTestQueryClient();
+    const clearSpy = vi.spyOn(queryClient, 'clear');
+    setStoredToken(VALID_TEST_TOKEN);
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <AuthProvider queryClient={queryClient}>{children}</AuthProvider>
+      )
+    });
+
+    act(() => {
+      result.current.logout();
+    });
+
+    expect(clearSpy).toHaveBeenCalledTimes(1);
   });
 });

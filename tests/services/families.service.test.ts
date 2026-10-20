@@ -1,8 +1,16 @@
 import {
+  createFamily,
   getFamilyById,
-  getFamilyList
+  getFamilyForEdit,
+  getFamilyList,
+  updateFamily
 } from '../../src/services/families.service';
 import { ApiError } from '../../src/shared/errors/ApiError';
+import { PreconditionFailedError } from '../../src/shared/errors/PreconditionFailedError';
+import type {
+  CreateFamilyRequest,
+  UpdateFamilyRequest
+} from '../../src/types/Family';
 import { buildFamily } from '../fixtures/families/buildFamily';
 import { buildFamilyListItem } from '../fixtures/families/buildFamilyListItem';
 import {
@@ -144,5 +152,94 @@ describe('getFamilyById', () => {
     const apiError = error as ApiError;
     expect(apiError.status).toBe(404);
     expect(apiError.message).toBe('Family not found');
+  });
+});
+
+describe('getFamilyForEdit', () => {
+  it('requests family for edit without fields and extracts ETag', async () => {
+    const family = buildFamily({ slug: 'solanaceae' });
+    const fetchMock = stubFetchOk(family, { ETag: '"1"' });
+
+    const result = await getFamilyForEdit('solanaceae');
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/families/solanaceae`);
+    expect(init).toEqual({ headers: JSON_HEADERS });
+    expect(result).toEqual({ family, etag: '"1"' });
+  });
+
+  it('returns empty etag when ETag header is missing', async () => {
+    const family = buildFamily({ slug: 'solanaceae' });
+    stubFetchOk(family);
+
+    const result = await getFamilyForEdit('solanaceae');
+
+    expect(result).toEqual({ family, etag: '' });
+  });
+
+  it('rejects with ApiError when family does not exist', async () => {
+    stubFetchError(404, NOT_FOUND_BODY);
+
+    const error = await getFamilyForEdit('solanaceae').catch(
+      (caught: unknown) => caught
+    );
+
+    expect(error).toBeInstanceOf(ApiError);
+  });
+});
+
+describe('updateFamily', () => {
+  it('sends PATCH with If-Match and returns updated family and new ETag', async () => {
+    const updated = buildFamily({ slug: 'solanaceae', version: 2 });
+    const patch: UpdateFamilyRequest = { name: 'Solanáceas actualizadas' };
+    const fetchMock = stubFetchOk(updated, { ETag: '"2"' });
+
+    const result = await updateFamily('solanaceae', patch, '"1"');
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/families/solanaceae`);
+    expect(init?.method).toBe('PATCH');
+    expect(init?.headers).toMatchObject({
+      'Content-Type': 'application/json',
+      'If-Match': '"1"'
+    });
+    expect(JSON.parse(init?.body as string)).toEqual(patch);
+    expect(result).toEqual({ family: updated, etag: '"2"' });
+  });
+
+  it('rejects with PreconditionFailedError on 412 version conflict', async () => {
+    stubFetchError(412, { message: 'Precondition Failed' });
+
+    const error = await updateFamily('solanaceae', {}, '"1"').catch(
+      (caught: unknown) => caught
+    );
+
+    expect(error).toBeInstanceOf(PreconditionFailedError);
+    expect((error as PreconditionFailedError).status).toBe(412);
+  });
+});
+
+describe('createFamily', () => {
+  it('sends POST to /api/v1/families and returns created family with its ETag', async () => {
+    const created = buildFamily({ slug: 'solanaceae', version: 1 });
+    const input: CreateFamilyRequest = {
+      id: 'f-1',
+      slug: 'solanaceae',
+      name: 'Solanáceas',
+      scientificName: 'Solanaceae',
+      shortDescription: 'Familia botánica',
+      highlights: ['Aspecto clave']
+    };
+    const fetchMock = stubFetchOk(created, { ETag: '"1"' });
+
+    const result = await createFamily(input);
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/families`);
+    expect(init?.method).toBe('POST');
+    expect(init?.headers).toMatchObject({
+      'Content-Type': 'application/json'
+    });
+    expect(result).toEqual({ family: created, etag: '"1"' });
   });
 });

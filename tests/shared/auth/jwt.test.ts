@@ -30,6 +30,14 @@ describe('parseJwtPayload', () => {
     expect(payload?.username).toBe('Hortelano Ñandú');
   });
 
+  it('parses token with collaborator role correctly', () => {
+    const token = createTestJwt({ roles: ['collaborator'] });
+
+    const payload = parseJwtPayload(token);
+
+    expect(payload?.roles).toEqual(['collaborator']);
+  });
+
   it.each([
     ['not-a-jwt'],
     ['header.payload'],

@@ -128,10 +128,6 @@ a {
   font: var(--type-body-lg);
 }
 
-.plant-detail {
-  max-width: 700px;
-}
-
 .plant-detail h1 {
   margin-bottom: var(--space-xs);
 }

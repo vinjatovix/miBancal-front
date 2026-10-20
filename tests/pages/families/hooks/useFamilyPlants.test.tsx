@@ -4,10 +4,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { useFamilyPlants } from '../../../../src/pages/families/hooks/useFamilyPlants';
 import { getFamilyPlants } from '../../../../src/services/plants.service';
+import { AuthProvider } from '../../../../src/shared/auth/AuthContext';
+import {
+  clearStoredToken,
+  setStoredToken
+} from '../../../../src/shared/auth/session';
+import { plantKeys } from '../../../../src/shared/reactQuery/plantKeys';
 
 import type { PaginatedResponse } from '../../../../src/types/api';
 import type { FamilyPlantItem } from '../../../../src/types/Plants/Plant';
 
+import { ADMIN_TEST_TOKEN } from '../../../fixtures/auth/authFixtures';
 import { listPlantsResponse } from '../../../fixtures/plants/listPlants';
 import { createTestQueryClient } from '../../../test-utils/createTestQueryClient';
 
@@ -30,6 +37,8 @@ function createWrapper() {
 describe('useFamilyPlants', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    sessionStorage.clear();
+    clearStoredToken();
   });
 
   it('loads family plants successfully', async () => {
@@ -149,6 +158,49 @@ describe('useFamilyPlants', () => {
 
     await waitFor(() => {
       expect(result.current.data?.pagination.totalItems).toBe(42);
+    });
+  });
+
+  it('registers the query under the public scope when unauthenticated', async () => {
+    mockedGetFamilyPlants.mockResolvedValue(listPlantsResponse);
+    const queryClient = createTestQueryClient();
+    const familyId = '5a2380c4-1546-4511-a77b-ec9d3ebcb7cf';
+
+    renderHook(() => useFamilyPlants(familyId), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    await waitFor(() => {
+      const entry = queryClient.getQueryCache().find({
+        queryKey: plantKeys.family(familyId, 'public')
+      });
+      expect(entry).toBeDefined();
+    });
+  });
+
+  it('registers the query under the admin scope when authenticated as admin', async () => {
+    setStoredToken(ADMIN_TEST_TOKEN);
+    mockedGetFamilyPlants.mockResolvedValue(listPlantsResponse);
+    const queryClient = createTestQueryClient();
+    const familyId = '5a2380c4-1546-4511-a77b-ec9d3ebcb7cf';
+
+    renderHook(() => useFamilyPlants(familyId), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    await waitFor(() => {
+      const entry = queryClient.getQueryCache().find({
+        queryKey: plantKeys.family(familyId, 'admin')
+      });
+      expect(entry).toBeDefined();
     });
   });
 });

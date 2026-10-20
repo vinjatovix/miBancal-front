@@ -2,12 +2,7 @@ import type { Metadata } from '../Metadata';
 import type { Range } from '../Range';
 import type { Seasons } from '../Season';
 import type { PlantFamilyRef } from '../FamilySummary';
-
-export type PlantEcologicalTraits = {
-  edible?: boolean;
-  toxic?: boolean;
-  toxicityNotes?: string;
-};
+import type { PlantEcologicalTraits } from './PlantMutation';
 
 export type PlantStatus = 'ACTIVE' | 'DELETED';
 
@@ -19,6 +14,7 @@ export type PlantImage = {
 
 export interface Plant {
   id: string;
+  version?: number;
 
   identity: {
     name: {
@@ -65,7 +61,8 @@ export interface Plant {
     flowering: {
       months: number[];
       pollination?: {
-        type: 'insect' | 'wind' | 'self';
+        type?: 'insect' | 'wind' | 'self' | 'water' | 'bird' | 'bat';
+        types?: Array<'insect' | 'wind' | 'self' | 'water' | 'bird' | 'bat'>;
         agents?: string[];
       };
     };
@@ -144,8 +141,15 @@ export type PlantListItem = FamilyPlantItem & Pick<Plant, 'traits' | 'image'>;
 
 export type PlantLifecycle = Plant['traits']['lifecycle'];
 
-export type RootSystem = Plant['knowledge']['rootSystem']['type'];
-
 export type LightType = Plant['knowledge']['light']['type'];
 
 export type SowingMethod = keyof Plant['phenology']['sowing']['methods'];
+
+export type {
+  CreatePlantRequest,
+  PartialRange,
+  PlantEcologicalTraits,
+  PlantResourceInput,
+  RootSystem,
+  UpdatePlantRequest
+} from './PlantMutation';

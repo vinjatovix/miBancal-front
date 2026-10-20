@@ -4,17 +4,28 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import FamilyDetail from '../../../../src/pages/families/FamilyDetail/FamilyDetail';
-import { getFamilyById } from '../../../../src/services/families.service';
+import {
+  getFamilyById,
+  getFamilyForEdit,
+  updateFamily
+} from '../../../../src/services/families.service';
 import { getFamilyPlants } from '../../../../src/services/plants.service';
 import { ApiError } from '../../../../src/shared/errors/ApiError';
 import { NetworkError } from '../../../../src/shared/errors/NetworkError';
 
 import { renderWithProviders } from '../../../test-utils/renderWithProviders';
+import {
+  ADMIN_TEST_TOKEN,
+  createTestJwt,
+  VALID_TEST_TOKEN
+} from '../../../fixtures/auth/authFixtures';
 import { listFamiliesResponse } from '../../../fixtures/families/listFamilies';
 import { listPlantsResponse } from '../../../fixtures/plants/listPlants';
 
 vi.mock('../../../../src/services/families.service', () => ({
-  getFamilyById: vi.fn()
+  getFamilyById: vi.fn(),
+  getFamilyForEdit: vi.fn(),
+  updateFamily: vi.fn()
 }));
 
 vi.mock('../../../../src/services/plants.service', () => ({
@@ -22,6 +33,8 @@ vi.mock('../../../../src/services/plants.service', () => ({
 }));
 
 const mockedGetFamilyById = vi.mocked(getFamilyById);
+const mockedGetFamilyForEdit = vi.mocked(getFamilyForEdit);
+const mockedUpdateFamily = vi.mocked(updateFamily);
 const mockedGetFamilyPlants = vi.mocked(getFamilyPlants);
 
 const mockFamily = listFamiliesResponse.data[0];
@@ -319,7 +332,6 @@ describe('FamilyDetail', () => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     }
   );
-
   it('shows the family not found screen when the id param is missing', () => {
     renderWithProviders(<FamilyDetail />, {
       route: '/families',
@@ -328,5 +340,185 @@ describe('FamilyDetail', () => {
 
     expectFamilyNotFound();
     expect(mockedGetFamilyById).not.toHaveBeenCalled();
+  });
+});
+
+describe('editorial inline edit mode', () => {
+  it('does not render edit button for anonymous user', async () => {
+    mockedGetFamilyById.mockResolvedValue(mockFamily);
+    mockedGetFamilyPlants.mockResolvedValue(mockPlants);
+
+    renderWithProviders(<FamilyDetail />, {
+      route: `/families/${mockFamily.id}`,
+      path: '/families/:id'
+    });
+
+    await screen.findByRole('heading', {
+      name: new RegExp(mockFamily.name, 'i')
+    });
+    expect(
+      screen.queryByRole('button', { name: 'Editar' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('does not render edit button for regular user', async () => {
+    mockedGetFamilyById.mockResolvedValue(mockFamily);
+    mockedGetFamilyPlants.mockResolvedValue(mockPlants);
+
+    renderWithProviders(<FamilyDetail />, {
+      route: `/families/${mockFamily.id}`,
+      path: '/families/:id',
+      initialToken: VALID_TEST_TOKEN
+    });
+
+    await screen.findByRole('heading', {
+      name: new RegExp(mockFamily.name, 'i')
+    });
+    expect(
+      screen.queryByRole('button', { name: 'Editar' })
+    ).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['admin', ADMIN_TEST_TOKEN],
+    ['collaborator', createTestJwt({ roles: ['collaborator'] })]
+  ])('renders edit button for %s', async (_role, token) => {
+    mockedGetFamilyById.mockResolvedValue(mockFamily);
+    mockedGetFamilyPlants.mockResolvedValue(mockPlants);
+
+    renderWithProviders(<FamilyDetail />, {
+      route: `/families/${mockFamily.id}`,
+      path: '/families/:id',
+      initialToken: token
+    });
+
+    const editBtn = await screen.findByRole('button', { name: 'Editar' });
+    expect(editBtn).toBeInTheDocument();
+  });
+
+  it('renders edit form when clicking edit button', async () => {
+    const user = userEvent.setup();
+    mockedGetFamilyById.mockResolvedValue(mockFamily);
+    mockedGetFamilyPlants.mockResolvedValue(mockPlants);
+    mockedGetFamilyForEdit.mockResolvedValue({
+      family: mockFamily,
+      etag: '"1"'
+    });
+
+    renderWithProviders(<FamilyDetail />, {
+      route: `/families/${mockFamily.id}`,
+      path: '/families/:id',
+      initialToken: ADMIN_TEST_TOKEN
+    });
+    const editBtn = await screen.findByRole('button', { name: 'Editar' });
+
+    await user.click(editBtn);
+
+    expect(
+      await screen.findByRole('button', { name: 'Cancelar' })
+    ).toBeInTheDocument();
+  });
+
+  it('returns to view mode when clicking cancel button in edit form', async () => {
+    const user = userEvent.setup();
+    mockedGetFamilyById.mockResolvedValue(mockFamily);
+    mockedGetFamilyPlants.mockResolvedValue(mockPlants);
+    mockedGetFamilyForEdit.mockResolvedValue({
+      family: mockFamily,
+      etag: '"1"'
+    });
+
+    renderWithProviders(<FamilyDetail />, {
+      route: `/families/${mockFamily.id}`,
+      path: '/families/:id',
+      initialToken: ADMIN_TEST_TOKEN
+    });
+    const editBtn = await screen.findByRole('button', { name: 'Editar' });
+    await user.click(editBtn);
+    const cancelBtn = await screen.findByRole('button', { name: 'Cancelar' });
+
+    await user.click(cancelBtn);
+
+    expect(
+      await screen.findByRole('button', { name: 'Editar' })
+    ).toBeInTheDocument();
+  });
+
+  it('submits update and returns to view mode upon successful save', async () => {
+    const user = userEvent.setup();
+    const updated = { ...mockFamily, name: 'Solanáceas Nuevas', version: 2 };
+    mockedGetFamilyById.mockResolvedValue(mockFamily);
+    mockedGetFamilyPlants.mockResolvedValue(mockPlants);
+    mockedGetFamilyForEdit.mockResolvedValue({
+      family: mockFamily,
+      etag: '"1"'
+    });
+    mockedUpdateFamily.mockResolvedValue({
+      family: updated,
+      etag: '"2"'
+    });
+
+    renderWithProviders(<FamilyDetail />, {
+      route: `/families/${mockFamily.slug}`,
+      path: '/families/:id',
+      initialToken: ADMIN_TEST_TOKEN
+    });
+
+    const editBtn = await screen.findByRole('button', { name: 'Editar' });
+    await user.click(editBtn);
+
+    const saveBtn = await screen.findByRole('button', {
+      name: 'Guardar cambios'
+    });
+    await user.click(saveBtn);
+
+    expect(
+      await screen.findByRole('button', { name: 'Editar' })
+    ).toBeInTheDocument();
+  });
+
+  it('navigates to new route when family slug changes upon save', async () => {
+    const user = userEvent.setup();
+    const updated = {
+      ...mockFamily,
+      name: 'Solanáceas Renombradas',
+      slug: 'solanaceae-renamed',
+      version: 2
+    };
+    mockedGetFamilyById.mockImplementation(async (idOrSlug) =>
+      idOrSlug === updated.slug ? updated : mockFamily
+    );
+    mockedGetFamilyPlants.mockResolvedValue(mockPlants);
+    mockedGetFamilyForEdit.mockResolvedValue({
+      family: mockFamily,
+      etag: '"1"'
+    });
+    mockedUpdateFamily.mockResolvedValue({
+      family: updated,
+      etag: '"2"'
+    });
+
+    renderWithProviders(<FamilyDetail />, {
+      route: `/families/${mockFamily.slug}`,
+      path: '/families/:id',
+      initialToken: ADMIN_TEST_TOKEN
+    });
+
+    const editBtn = await screen.findByRole('button', { name: 'Editar' });
+    await user.click(editBtn);
+
+    const saveBtn = await screen.findByRole('button', {
+      name: 'Guardar cambios'
+    });
+    await user.click(saveBtn);
+
+    expect(
+      await screen.findByRole('heading', {
+        name: new RegExp(updated.name, 'i')
+      })
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: 'Editar' })
+    ).toBeInTheDocument();
   });
 });

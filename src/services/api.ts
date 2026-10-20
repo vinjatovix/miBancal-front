@@ -6,6 +6,7 @@ import {
 } from '../shared/auth/session';
 import { ApiError } from '../shared/errors/ApiError';
 import { NetworkError } from '../shared/errors/NetworkError';
+import { PreconditionFailedError } from '../shared/errors/PreconditionFailedError';
 
 type ErrorBody = {
   message?: string;
@@ -44,12 +45,15 @@ function baseErrorMessage(response: Response): string {
 
 async function toApiError(response: Response): Promise<ApiError> {
   const body = await readErrorBody(response);
-  // Keep the original message if it exists (e.g., "Validation error")
   const message =
     body.message ||
     (body.errors
       ? Object.values(body.errors).flat().join('; ')
       : baseErrorMessage(response));
+
+  if (response.status === 412) {
+    return new PreconditionFailedError(message, body.errors);
+  }
 
   return new ApiError(message, response.status, body.errors);
 }

@@ -12,6 +12,7 @@ export const TWEMOJI_PRIMARY_MAPPING: Record<string, string> = {
   content_cut: '2702',
   crisis_alert: '1f6a8',
   dangerous: '2620',
+  delete: '1f5d1',
   description: '1f4c4',
   eco: '1f33f',
   edit_note: '1f4dd',

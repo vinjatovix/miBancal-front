@@ -1,7 +1,12 @@
 import { QueryBuilder } from '../shared/api/QueryBuilder';
 import type { PaginatedResponse } from '../types/api';
-import type { Family, FamilyListItem } from '../types/Family';
-import { apiFetch } from './api';
+import type {
+  CreateFamilyRequest,
+  Family,
+  FamilyListItem,
+  UpdateFamilyRequest
+} from '../types/Family';
+import { apiFetch, apiFetchWithMeta } from './api';
 import {
   FAMILY_FIELDS_QUERY_KEY,
   FAMILY_LIST_FIELDS,
@@ -43,4 +48,50 @@ export async function getFamilyList(): Promise<FamilyListItem[]> {
 
 export async function getFamilyById(idOrSlug: string) {
   return apiFetch<Family>(`/api/v1/families/${idOrSlug}`);
+}
+
+export interface FamilyWithMeta {
+  readonly family: Family;
+  readonly etag: string;
+}
+
+export async function createFamily(
+  family: CreateFamilyRequest
+): Promise<FamilyWithMeta> {
+  const payload: CreateFamilyRequest = {
+    ...family,
+    id: family.id || crypto.randomUUID()
+  };
+  const { data, etag } = await apiFetchWithMeta<Family>('/api/v1/families', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return { family: data, etag: etag ?? '' };
+}
+
+export async function getFamilyForEdit(
+  idOrSlug: string
+): Promise<FamilyWithMeta> {
+  const { data, etag } = await apiFetchWithMeta<Family>(
+    `/api/v1/families/${idOrSlug}`
+  );
+  return { family: data, etag: etag ?? '' };
+}
+
+export async function updateFamily(
+  idOrSlug: string,
+  patch: UpdateFamilyRequest,
+  etag: string
+): Promise<FamilyWithMeta> {
+  const { data, etag: nextEtag } = await apiFetchWithMeta<Family>(
+    `/api/v1/families/${idOrSlug}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'If-Match': etag
+      },
+      body: JSON.stringify(patch)
+    }
+  );
+  return { family: data, etag: nextEtag ?? '' };
 }

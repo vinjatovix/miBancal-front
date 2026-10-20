@@ -2,11 +2,13 @@ import { QueryBuilder } from '../shared/api/QueryBuilder';
 import type { PaginatedResponse } from '../types/api';
 import type { PaginationParams } from '../types/Pagination';
 import type {
+  CreatePlantRequest,
   FamilyPlantItem,
   Plant,
-  PlantListItem
+  PlantListItem,
+  UpdatePlantRequest
 } from '../types/Plants/Plant';
-import { apiFetch } from './api';
+import { apiFetch, apiFetchWithMeta } from './api';
 import { PAGINATION_QUERY_KEYS } from './listQuery';
 import {
   DEFAULT_PLANT_SORT,
@@ -105,4 +107,55 @@ export async function getPlantById(id: string): Promise<Plant> {
     .build();
 
   return apiFetch(`/api/v1/plants/${id}?${query}`);
+}
+
+export interface PlantWithMeta {
+  readonly plant: Plant;
+  readonly etag: string;
+}
+
+export async function createPlant(
+  plant: CreatePlantRequest
+): Promise<PlantWithMeta> {
+  const payload: CreatePlantRequest = {
+    ...plant,
+    id: plant.id || crypto.randomUUID()
+  };
+  const { data, etag } = await apiFetchWithMeta<Plant>('/api/v1/plants', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return { plant: data, etag: etag ?? '' };
+}
+
+export async function getPlantForEdit(id: string): Promise<PlantWithMeta> {
+  const { data, etag } = await apiFetchWithMeta<Plant>(`/api/v1/plants/${id}`);
+  return { plant: data, etag: etag ?? '' };
+}
+
+export async function updatePlant(
+  id: string,
+  patch: UpdatePlantRequest,
+  etag: string
+): Promise<PlantWithMeta> {
+  const { data, etag: nextEtag } = await apiFetchWithMeta<Plant>(
+    `/api/v1/plants/${id}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'If-Match': etag
+      },
+      body: JSON.stringify(patch)
+    }
+  );
+  return { plant: data, etag: nextEtag ?? '' };
+}
+
+export async function deletePlant(id: string, etag: string): Promise<void> {
+  await apiFetchWithMeta<void>(`/api/v1/plants/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'If-Match': etag
+    }
+  });
 }

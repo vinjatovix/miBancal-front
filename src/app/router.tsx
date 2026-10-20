@@ -2,12 +2,8 @@ import { createBrowserRouter, type RouteObject } from 'react-router-dom';
 
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import MainLayout from '../components/layout/MainLayout';
-import FamilyDetail from '../pages/families/FamilyDetail/FamilyDetail';
-import FamilyList from '../pages/families/FamilyList';
 import Home from '../pages/Home';
 import NotFoundPage from '../pages/NotFoundPage';
-import PlantDetail from '../pages/plants/PlantDetail/PlantDetail';
-import PlantsPage from '../pages/plants/PlantsPage';
 import RouteErrorFallback from '../pages/RouteErrorFallback';
 import { LayoutErrorFallback } from './LayoutErrorFallback';
 
@@ -21,10 +17,68 @@ export const routes: RouteObject[] = [
         errorElement: <RouteErrorFallback />,
         children: [
           { path: '/', element: <Home /> },
-          { path: '/plants', element: <PlantsPage /> },
-          { path: '/plants/:id', element: <PlantDetail /> },
-          { path: '/families', element: <FamilyList /> },
-          { path: '/families/:id', element: <FamilyDetail /> },
+          {
+            path: '/plants',
+            lazy: async () => ({
+              Component: (await import('../pages/plants/PlantsPage')).default
+            })
+          },
+          {
+            path: '/plants/new',
+            lazy: async () => {
+              const [{ default: PlantCreatePage }, { EditorialRoute }] =
+                await Promise.all([
+                  import('../pages/plants/PlantCreatePage'),
+                  import('../shared/auth/EditorialRoute')
+                ]);
+              return {
+                Component: () => (
+                  <EditorialRoute>
+                    <PlantCreatePage />
+                  </EditorialRoute>
+                )
+              };
+            }
+          },
+          {
+            path: '/plants/:id',
+            lazy: async () => ({
+              Component: (
+                await import('../pages/plants/PlantDetail/PlantDetail')
+              ).default
+            })
+          },
+          {
+            path: '/families',
+            lazy: async () => ({
+              Component: (await import('../pages/families/FamilyList')).default
+            })
+          },
+          {
+            path: '/families/new',
+            lazy: async () => {
+              const [{ default: FamilyCreatePage }, { EditorialRoute }] =
+                await Promise.all([
+                  import('../pages/families/FamilyCreatePage'),
+                  import('../shared/auth/EditorialRoute')
+                ]);
+              return {
+                Component: () => (
+                  <EditorialRoute>
+                    <FamilyCreatePage />
+                  </EditorialRoute>
+                )
+              };
+            }
+          },
+          {
+            path: '/families/:id',
+            lazy: async () => ({
+              Component: (
+                await import('../pages/families/FamilyDetail/FamilyDetail')
+              ).default
+            })
+          },
           {
             path: '/login',
             lazy: async () => ({

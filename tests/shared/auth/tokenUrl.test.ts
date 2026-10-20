@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { extractAndSanitizeToken } from '../../../src/shared/auth/tokenUrl';
+import {
+  extractAndSanitizeSessionToken,
+  extractAndSanitizeToken
+} from '../../../src/shared/auth/tokenUrl';
 
 describe('extractAndSanitizeToken', () => {
   beforeEach(() => {
@@ -36,6 +39,36 @@ describe('extractAndSanitizeToken', () => {
     const replaceStateSpy = vi.spyOn(window.history, 'replaceState');
 
     const token = extractAndSanitizeToken();
+
+    expect(token).toBeNull();
+    expect(replaceStateSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('extractAndSanitizeSessionToken', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('extracts session token from hash fragment and sanitizes history', () => {
+    window.history.pushState(
+      null,
+      '',
+      '/families/new#session_token=valid-jwt-token'
+    );
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState');
+
+    const token = extractAndSanitizeSessionToken();
+
+    expect(token).toBe('valid-jwt-token');
+    expect(replaceStateSpy).toHaveBeenCalledWith(null, '', '/families/new');
+  });
+
+  it('returns null and leaves history unchanged when no session token exists in hash', () => {
+    window.history.pushState(null, '', '/families/new#other_hash=value');
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState');
+
+    const token = extractAndSanitizeSessionToken();
 
     expect(token).toBeNull();
     expect(replaceStateSpy).not.toHaveBeenCalled();
