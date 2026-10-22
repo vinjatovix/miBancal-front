@@ -408,83 +408,63 @@ describe('AuthProvider: queryClient cache clearing', () => {
     vi.restoreAllMocks();
   });
 
-  it('clears query cache on logout', () => {
-    const queryClient = createTestQueryClient();
-    const clearSpy = vi.spyOn(queryClient, 'clear');
-    setStoredToken(VALID_TEST_TOKEN);
-
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>{children}</AuthProvider>
-        </QueryClientProvider>
-      )
-    });
-
-    act(() => {
-      result.current.logout();
-    });
-
-    expect(clearSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('clears query cache on login', async () => {
-    const queryClient = createTestQueryClient();
-    const clearSpy = vi.spyOn(queryClient, 'clear');
-    vi.spyOn(authServiceModule, 'login').mockResolvedValueOnce({
-      token: VALID_TEST_TOKEN
-    });
-
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>{children}</AuthProvider>
-        </QueryClientProvider>
-      )
-    });
-
-    await act(async () => {
-      await result.current.login({
-        email: 'hortelano@example.com',
-        password: 'Password1!'
-      });
-    });
-
-    expect(clearSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('clears query cache on googleLogin', async () => {
-    const queryClient = createTestQueryClient();
-    const clearSpy = vi.spyOn(queryClient, 'clear');
-    vi.spyOn(authServiceModule, 'authenticateWithGoogle').mockResolvedValueOnce(
-      {
-        token: VALID_TEST_TOKEN
+  it.each([
+    [
+      'logout',
+      (result: { current: ReturnType<typeof useAuth> }) => {
+        setStoredToken(VALID_TEST_TOKEN);
+        return act(() => result.current.logout());
       }
-    );
-
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>{children}</AuthProvider>
-        </QueryClientProvider>
-      )
-    });
-
-    await act(async () => {
-      await result.current.googleLogin({ idToken: 'test-google-id-token' });
-    });
-
-    expect(clearSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('clears query cache on githubLogin', async () => {
-    const queryClient = createTestQueryClient();
-    const clearSpy = vi.spyOn(queryClient, 'clear');
-    vi.spyOn(authServiceModule, 'authenticateWithGithub').mockResolvedValueOnce(
-      {
-        token: VALID_TEST_TOKEN
+    ],
+    [
+      'login',
+      async (result: { current: ReturnType<typeof useAuth> }) => {
+        vi.spyOn(authServiceModule, 'login').mockResolvedValueOnce({
+          token: VALID_TEST_TOKEN
+        });
+        await act(async () => {
+          await result.current.login({ email: 'a@b.com', password: 'P1!' });
+        });
       }
-    );
+    ],
+    [
+      'googleLogin',
+      async (result: { current: ReturnType<typeof useAuth> }) => {
+        vi.spyOn(
+          authServiceModule,
+          'authenticateWithGoogle'
+        ).mockResolvedValueOnce({
+          token: VALID_TEST_TOKEN
+        });
+        await act(async () => {
+          await result.current.googleLogin({ idToken: 'token' });
+        });
+      }
+    ],
+    [
+      'githubLogin',
+      async (result: { current: ReturnType<typeof useAuth> }) => {
+        vi.spyOn(
+          authServiceModule,
+          'authenticateWithGithub'
+        ).mockResolvedValueOnce({
+          token: VALID_TEST_TOKEN
+        });
+        await act(async () => {
+          await result.current.githubLogin({ code: 'c', codeVerifier: 'v' });
+        });
+      }
+    ],
+    [
+      'session purge',
+      () => {
+        setStoredToken(VALID_TEST_TOKEN);
+        act(() => notifySessionPurged());
+      }
+    ]
+  ])('clears query cache on %s', async (_, triggerAction) => {
+    const queryClient = createTestQueryClient();
+    const clearSpy = vi.spyOn(queryClient, 'clear');
 
     const { result } = renderHook(() => useAuth(), {
       wrapper: ({ children }) => (
@@ -494,32 +474,7 @@ describe('AuthProvider: queryClient cache clearing', () => {
       )
     });
 
-    await act(async () => {
-      await result.current.githubLogin({
-        code: 'test-github-code',
-        codeVerifier: 'test-pkce-verifier-string-43-chars-long-minimum'
-      });
-    });
-
-    expect(clearSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('clears query cache on session purge', () => {
-    const queryClient = createTestQueryClient();
-    const clearSpy = vi.spyOn(queryClient, 'clear');
-    setStoredToken(VALID_TEST_TOKEN);
-
-    renderHook(() => useAuth(), {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>{children}</AuthProvider>
-        </QueryClientProvider>
-      )
-    });
-
-    act(() => {
-      notifySessionPurged();
-    });
+    await triggerAction(result);
 
     expect(clearSpy).toHaveBeenCalledTimes(1);
   });

@@ -114,28 +114,26 @@ describe('useFamilyPlants', () => {
     expect(result.current.isLoading).toBe(true);
   });
 
-  it('does not call getFamilyPlants when familyId is undefined', () => {
-    renderHook(() => useFamilyPlants(undefined), {
-      wrapper: createWrapper()
-    });
-
-    expect(mockedGetFamilyPlants).not.toHaveBeenCalled();
-  });
-
-  it('returns no data when familyId is undefined', () => {
+  it.each([
+    [
+      'does not call getFamilyPlants',
+      () => expect(mockedGetFamilyPlants).not.toHaveBeenCalled()
+    ],
+    [
+      'returns no data',
+      (result: { current: { data: unknown } }) =>
+        expect(result.current.data).toBeUndefined()
+    ],
+    [
+      'is not fetching',
+      (result: { current: { isFetching: boolean } }) =>
+        expect(result.current.isFetching).toBe(false)
+    ]
+  ])('%s when familyId is undefined', (_, assertResult) => {
     const { result } = renderHook(() => useFamilyPlants(undefined), {
       wrapper: createWrapper()
     });
-
-    expect(result.current.data).toBeUndefined();
-  });
-
-  it('is not fetching when familyId is undefined', () => {
-    const { result } = renderHook(() => useFamilyPlants(undefined), {
-      wrapper: createWrapper()
-    });
-
-    expect(result.current.isFetching).toBe(false);
+    assertResult(result);
   });
 
   it('exposes the total items count from pagination', async () => {

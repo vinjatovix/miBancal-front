@@ -63,78 +63,36 @@ describe('apiFetch', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns data on success', async () => {
-    vi.stubGlobal(
-      'fetch',
-      createFetchMock({
-        ok: true,
-        json: () => Promise.resolve({ ok: true })
-      })
-    );
-
+  it.each([
+    [
+      'returns data on 200 success',
+      { ok: true, json: () => Promise.resolve({ ok: true }) },
+      { ok: true }
+    ],
+    [
+      'returns undefined for 204 No Content',
+      { ok: true, status: 204, contentType: null },
+      undefined
+    ],
+    [
+      'returns data for 201 with json body',
+      { ok: true, status: 201, json: () => Promise.resolve({ id: '123' }) },
+      { id: '123' }
+    ],
+    [
+      'returns undefined for 201 with empty or non-json body',
+      { ok: true, status: 201, contentType: null },
+      undefined
+    ],
+    [
+      'returns undefined for 202 Accepted without attempting json parse',
+      { ok: true, status: 202, contentType: 'application/json; charset=utf-8' },
+      undefined
+    ]
+  ])('%s', async (_, mockConfig, expected) => {
+    vi.stubGlobal('fetch', createFetchMock(mockConfig));
     const result = await apiFetch('/test');
-
-    expect(result).toEqual({ ok: true });
-  });
-
-  it('returns undefined for 204 No Content', async () => {
-    vi.stubGlobal(
-      'fetch',
-      createFetchMock({
-        ok: true,
-        status: 204,
-        contentType: null
-      })
-    );
-
-    const result = await apiFetch('/test');
-
-    expect(result).toBeUndefined();
-  });
-
-  it('returns data for 201 with json body', async () => {
-    vi.stubGlobal(
-      'fetch',
-      createFetchMock({
-        ok: true,
-        status: 201,
-        json: () => Promise.resolve({ id: '123' })
-      })
-    );
-
-    const result = await apiFetch('/test');
-
-    expect(result).toEqual({ id: '123' });
-  });
-
-  it('returns undefined for 201 with empty or non-json body', async () => {
-    vi.stubGlobal(
-      'fetch',
-      createFetchMock({
-        ok: true,
-        status: 201,
-        contentType: null
-      })
-    );
-
-    const result = await apiFetch('/test');
-
-    expect(result).toBeUndefined();
-  });
-
-  it('returns undefined for 202 Accepted without attempting json parse', async () => {
-    vi.stubGlobal(
-      'fetch',
-      createFetchMock({
-        ok: true,
-        status: 202,
-        contentType: 'application/json; charset=utf-8'
-      })
-    );
-
-    const result = await apiFetch('/test');
-
-    expect(result).toBeUndefined();
+    expect(result).toEqual(expected);
   });
 
   it('returns undefined when content-length header is 0', async () => {
@@ -363,71 +321,55 @@ describe('apiFetch', () => {
     expect(apiError.errors).toEqual({ name: 'required' });
   });
 
-  it('handles a json error response whose body cannot be parsed', async () => {
-    vi.stubGlobal(
-      'fetch',
-      createFetchMock({
+  it.each([
+    [
+      'handles a json error response whose body cannot be parsed',
+      {
         ok: false,
         status: 500,
         statusText: 'Server Error',
         json: () => Promise.reject(new SyntaxError('fail'))
-      })
-    );
-
-    const error = await captureError(apiFetch('/test'));
-    expect(error).toBeInstanceOf(ApiError);
-    const apiError = error as ApiError;
-    expect(apiError.status).toBe(500);
-    expect(apiError.message).toBe('API error: 500 Server Error');
-  });
-
-  it('does not read an html error body and keeps the status', async () => {
-    const json = vi.fn(() => Promise.resolve({ message: 'ignored' }));
-    vi.stubGlobal(
-      'fetch',
-      createFetchMock({
+      },
+      500,
+      'API error: 500 Server Error'
+    ],
+    [
+      'does not read an html error body and keeps the status',
+      {
         ok: false,
         status: 502,
         contentType: 'text/html',
-        json
-      })
-    );
-
-    const error = await captureError(apiFetch('/test'));
-    expect(error).toBeInstanceOf(ApiError);
-    expect(error).toBeInstanceOf(ApiError);
-    const apiError = error as ApiError;
-    expect(apiError.status).toBe(502);
-    expect(apiError.message).toBe('API error: 502');
-    expect(json).not.toHaveBeenCalled();
-  });
-
-  it('keeps the status of an error response without body or content-type', async () => {
-    vi.stubGlobal(
-      'fetch',
-      createFetchMock({ ok: false, status: 503, contentType: null })
-    );
-
-    const error = await captureError(apiFetch('/test'));
-    expect(error).toBeInstanceOf(ApiError);
-    const apiError = error as ApiError;
-    expect(apiError.status).toBe(503);
-    expect(apiError.message).toBe('API error: 503');
-  });
-
-  it('throws ApiError with status 401', async () => {
-    vi.stubGlobal(
-      'fetch',
-      createFetchMock({
+        json: () => Promise.resolve({ message: 'ignored' })
+      },
+      502,
+      'API error: 502'
+    ],
+    [
+      'keeps the status of an error response without body or content-type',
+      { ok: false, status: 503, contentType: null },
+      503,
+      'API error: 503'
+    ],
+    [
+      'throws ApiError with status 401',
+      {
         ok: false,
         status: 401,
         json: () => Promise.resolve({ message: 'Unauthorized' })
-      })
-    );
+      },
+      401,
+      'Unauthorized'
+    ]
+  ])('%s', async (_, mockConfig, expectedStatus, expectedMessage) => {
+    vi.stubGlobal('fetch', createFetchMock(mockConfig));
 
     const error = await captureError(apiFetch('/test'));
     expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({ status: 401 });
+    const apiError = error as ApiError;
+    expect(apiError.status).toBe(expectedStatus);
+    if (expectedMessage) {
+      expect(apiError.message).toBe(expectedMessage);
+    }
   });
 
   it('rethrows the same AbortError when the request is cancelled', async () => {

@@ -84,22 +84,27 @@ describe('NavDrawer', () => {
     ).toBeInTheDocument();
   });
 
-  it('calls onClose when clicking close button', async () => {
-    const user = userEvent.setup();
-    const handleClose = vi.fn();
-    renderWithProviders(<NavDrawer isOpen={true} onClose={handleClose} />);
-
-    const closeButton = screen.getByRole('button', { name: /Cerrar/i });
-    await user.click(closeButton);
-
-    expect(handleClose).toHaveBeenCalledTimes(1);
-  });
-
   it('calls onClose when pressing Escape key', () => {
     const handleClose = vi.fn();
     renderWithProviders(<NavDrawer isOpen={true} onClose={handleClose} />);
 
     fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['close button', 'button' as const, /^Cerrar$/i],
+    ['account settings link', 'link' as const, /Configuración de la cuenta/i],
+    ['navigation link', 'link' as const, /Plantas/i]
+  ])('calls onClose when clicking %s', async (_, role, namePattern) => {
+    const user = userEvent.setup();
+    setStoredToken(VALID_TEST_TOKEN);
+    const handleClose = vi.fn();
+    renderWithProviders(<NavDrawer isOpen={true} onClose={handleClose} />);
+
+    const targetElement = screen.getByRole(role, { name: namePattern });
+    await user.click(targetElement);
 
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
@@ -115,30 +120,5 @@ describe('NavDrawer', () => {
 
     expect(handleClose).toHaveBeenCalledTimes(1);
     expect(sessionStorage.getItem('auth_token')).toBeNull();
-  });
-
-  it('calls onClose when clicking account settings link', async () => {
-    const user = userEvent.setup();
-    setStoredToken(VALID_TEST_TOKEN);
-    const handleClose = vi.fn();
-    renderWithProviders(<NavDrawer isOpen={true} onClose={handleClose} />);
-
-    const settingsLink = screen.getByRole('link', {
-      name: /Configuración de la cuenta/i
-    });
-    await user.click(settingsLink);
-
-    expect(handleClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('calls onClose when clicking any navigation link', async () => {
-    const user = userEvent.setup();
-    const handleClose = vi.fn();
-    renderWithProviders(<NavDrawer isOpen={true} onClose={handleClose} />);
-
-    const plantsLink = screen.getByRole('link', { name: /Plantas/i });
-    await user.click(plantsLink);
-
-    expect(handleClose).toHaveBeenCalledTimes(1);
   });
 });
