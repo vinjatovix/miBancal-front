@@ -259,4 +259,26 @@ describe('Modal', () => {
       expect(screen.getByRole('dialog')).toHaveClass(expectedClass);
     }
   );
+
+  it('restores focus to invoking element after closing dialog', () => {
+    const triggerButton = document.createElement('button');
+    triggerButton.textContent = 'Open Dialog';
+    document.body.appendChild(triggerButton);
+    triggerButton.focus();
+
+    const { rerender } = render(
+      <Modal isOpen={true} onClose={vi.fn()}>
+        <button type="button">Inside Button</button>
+      </Modal>
+    );
+
+    rerender(
+      <Modal isOpen={false} onClose={vi.fn()}>
+        <button type="button">Inside Button</button>
+      </Modal>
+    );
+
+    expect(document.activeElement).toBe(triggerButton);
+    document.body.removeChild(triggerButton);
+  });
 });

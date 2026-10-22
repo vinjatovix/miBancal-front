@@ -1,6 +1,6 @@
 import type { AuthSession } from '../../types/auth';
 import { isTokenExpired, parseJwtPayload } from './jwt';
-import { extractAndSanitizeSessionToken } from './tokenUrl';
+import { consumeSessionTransferToken } from './sessionTransfer';
 
 export const AUTH_TOKEN_STORAGE_KEY = 'auth_token';
 export const TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000;
@@ -60,7 +60,16 @@ export function buildSessionFromToken(token: string): AuthSession | null {
 }
 
 export function getInitialSession(): AuthSession | null {
-  const transferredToken = extractAndSanitizeSessionToken();
+  const storedToken = getStoredToken();
+  if (storedToken) {
+    const session = buildSessionFromToken(storedToken);
+    if (session) {
+      consumeSessionTransferToken();
+      return session;
+    }
+  }
+
+  const transferredToken = consumeSessionTransferToken();
   if (transferredToken) {
     const session = buildSessionFromToken(transferredToken);
     if (session) {
@@ -69,9 +78,7 @@ export function getInitialSession(): AuthSession | null {
     }
   }
 
-  const token = getStoredToken();
-  if (!token) return null;
-  return buildSessionFromToken(token);
+  return null;
 }
 
 export function subscribeToSessionPurge(listener: PurgeListener): () => void {

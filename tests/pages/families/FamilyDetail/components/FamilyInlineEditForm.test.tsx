@@ -250,4 +250,54 @@ describe('FamilyInlineEditForm', () => {
       await screen.findByText('Subfamilias no permitidas')
     ).toBeInTheDocument();
   });
+
+  it('displays duplicate error message when 409 conflict returns an empty errors object', async () => {
+    const user = userEvent.setup();
+    const family = buildFamily({ slug: 'solanaceae' });
+    stubFetchError(409, {
+      message: 'Conflict',
+      errors: {}
+    });
+
+    renderWithProviders(
+      <FamilyInlineEditForm
+        family={family}
+        etag='"1"'
+        onCancel={vi.fn()}
+        onSuccess={vi.fn()}
+        onReload={vi.fn()}
+      />
+    );
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+    expect(
+      await screen.findByText(
+        'Ya existe una familia registrada con este nombre o slug.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('displays API error message when server error returns an empty errors object', async () => {
+    const user = userEvent.setup();
+    const family = buildFamily({ slug: 'solanaceae' });
+    stubFetchError(400, {
+      message: 'Error al actualizar familia',
+      errors: {}
+    });
+
+    renderWithProviders(
+      <FamilyInlineEditForm
+        family={family}
+        etag='"1"'
+        onCancel={vi.fn()}
+        onSuccess={vi.fn()}
+        onReload={vi.fn()}
+      />
+    );
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+    expect(
+      await screen.findByText('Error al actualizar familia')
+    ).toBeInTheDocument();
+  });
 });

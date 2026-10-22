@@ -23,7 +23,7 @@ describe('PlantFamilySelect', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
-  it('attaches session token in hash to preserve authentication when user is authenticated', () => {
+  it('attaches session transfer ticket in hash to preserve authentication when user is authenticated', () => {
     stubFetchOk(listFamilyItemsResponse);
 
     renderWithProviders(<PlantFamilySelect value="" onChange={vi.fn()} />, {
@@ -31,12 +31,16 @@ describe('PlantFamilySelect', () => {
     });
 
     const link = screen.getByRole('link');
-    expect(link).toHaveAttribute(
-      'href',
-      `/families/new#session_token=${encodeURIComponent(ADMIN_TEST_TOKEN)}`
-    );
+    const href = link.getAttribute('href') ?? '';
+    expect(href).toMatch(/^\/families\/new#session_transfer=[a-f0-9-]+$/);
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+
+    const ticket = href.split('session_transfer=')[1];
+    const ticketData = JSON.parse(
+      localStorage.getItem(`session_transfer_${ticket}`) ?? '{}'
+    );
+    expect(ticketData.token).toBe(ADMIN_TEST_TOKEN);
   });
 
   it('populates family options from API and calls onChange upon selection', async () => {

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { t } from '../../../../i18n/core/t';
 import { AuthContext } from '../../../../shared/auth/authContextDef';
+import { createSessionTransferUrl } from '../../../../shared/auth/sessionTransfer';
 import Icon from '../../../../shared/components/Icon/Icon';
 import { useFamilies } from '../../../../shared/hooks/useFamilies';
 
@@ -21,7 +22,7 @@ export function PlantFamilySelect({
   const { data: families = [], refetch, isFetching } = useFamilies();
 
   const createFamilyHref = auth?.session?.token
-    ? `/families/new#session_token=${encodeURIComponent(auth.session.token)}`
+    ? createSessionTransferUrl('/families/new', auth.session.token)
     : '/families/new';
 
   useEffect(() => {

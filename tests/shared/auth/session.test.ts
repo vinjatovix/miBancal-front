@@ -105,11 +105,22 @@ describe('session storage manager', () => {
     expect(session?.user.username).toBe('hortelano');
   });
 
-  it('restores and stores valid session from transferred URL session token in getInitialSession', () => {
+  it('preserves existing authenticated session and does not replace it when URL contains a transfer ticket', () => {
+    const attackerToken = createTestJwt({
+      id: '00000000-0000-4000-8000-000000000099',
+      username: 'attacker',
+      exp: 2500000000
+    });
+    const ticket = 'attacker-ticket-id';
+    localStorage.setItem(
+      `session_transfer_${ticket}`,
+      JSON.stringify({ token: attackerToken, expiresAt: Date.now() + 60000 })
+    );
+    setStoredToken(VALID_TEST_TOKEN);
     window.history.pushState(
       null,
       '',
-      `/families/new#session_token=${VALID_TEST_TOKEN}`
+      `/families/new#session_transfer=${ticket}`
     );
 
     const session = getInitialSession();
@@ -118,6 +129,52 @@ describe('session storage manager', () => {
     expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBe(
       VALID_TEST_TOKEN
     );
+  });
+
+  it('restores and stores valid session from origin-validated transferred ticket in getInitialSession', () => {
+    const ticket = 'valid-handoff-ticket';
+    localStorage.setItem(
+      `session_transfer_${ticket}`,
+      JSON.stringify({ token: VALID_TEST_TOKEN, expiresAt: Date.now() + 60000 })
+    );
+    window.history.pushState(
+      null,
+      '',
+      `/families/new#session_transfer=${ticket}`
+    );
+
+    const session = getInitialSession();
+
+    expect(session?.user.username).toBe('hortelano');
+    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBe(
+      VALID_TEST_TOKEN
+    );
+  });
+
+  it('rejects untrusted transfer ticket not present in origin localStorage', () => {
+    window.history.pushState(
+      null,
+      '',
+      '/families/new#session_transfer=foreign-untrusted-ticket'
+    );
+
+    const session = getInitialSession();
+
+    expect(session).toBeNull();
+    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
+  });
+
+  it('does not accept raw bearer token in URL hash fragment', () => {
+    window.history.pushState(
+      null,
+      '',
+      `/families/new#session_token=${VALID_TEST_TOKEN}`
+    );
+
+    const session = getInitialSession();
+
+    expect(session).toBeNull();
+    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
   });
 
   it('cleans storage and returns null in getInitialSession when token is expired', () => {

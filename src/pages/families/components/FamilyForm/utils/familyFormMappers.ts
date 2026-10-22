@@ -24,7 +24,7 @@ export function canonicalFamilyToFormState(family: Family): FamilyFormState {
   return {
     name: family.name,
     scientificName: family.scientificName,
-    slug: slugify(family.slug || family.scientificName),
+    slug: family.slug || slugify(family.scientificName),
     shortDescription: family.shortDescription,
     highlights: family.highlights ?? [],
     aliases: family.aliases ?? [],

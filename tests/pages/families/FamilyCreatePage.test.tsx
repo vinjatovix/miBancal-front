@@ -248,4 +248,58 @@ describe('FamilyCreatePage', () => {
       await screen.findByText('Subfamilias no permitidas')
     ).toBeInTheDocument();
   });
+
+  it('displays duplicate error message when 409 conflict returns an empty errors object', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<FamilyCreatePage />);
+
+    await user.type(screen.getByLabelText(/nombre común/i), 'Solanáceas');
+    await user.type(screen.getByLabelText(/nombre científico/i), 'Solanaceae');
+    await user.type(
+      screen.getByLabelText(/descripción corta/i),
+      'Familia botánica'
+    );
+    await user.type(screen.getByLabelText(/aspectos destacados/i), 'Aspecto');
+
+    stubFetchError(409, {
+      message: 'Conflict',
+      errors: {}
+    });
+
+    const submitBtn = screen.getByRole('button', { name: /guardar|crear/i });
+    await user.click(submitBtn);
+
+    expect(
+      await screen.findByText(
+        'Ya existe una familia registrada con este nombre o slug.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('displays API error message when server error returns an empty errors object', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<FamilyCreatePage />);
+
+    await user.type(screen.getByLabelText(/nombre común/i), 'Solanáceas');
+    await user.type(screen.getByLabelText(/nombre científico/i), 'Solanaceae');
+    await user.type(
+      screen.getByLabelText(/descripción corta/i),
+      'Familia botánica'
+    );
+    await user.type(screen.getByLabelText(/aspectos destacados/i), 'Aspecto');
+
+    stubFetchError(400, {
+      message: 'Operación no válida en el catálogo',
+      errors: {}
+    });
+
+    const submitBtn = screen.getByRole('button', { name: /guardar|crear/i });
+    await user.click(submitBtn);
+
+    expect(
+      await screen.findByText('Operación no válida en el catálogo')
+    ).toBeInTheDocument();
+  });
 });

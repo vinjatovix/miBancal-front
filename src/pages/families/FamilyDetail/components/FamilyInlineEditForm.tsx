@@ -96,6 +96,12 @@ export function FamilyInlineEditForm({
           setErrors(fieldErrors);
           if (unmappedErrors.length > 0) {
             setGeneralError(unmappedErrors.join('; '));
+          } else if (Object.keys(fieldErrors).length === 0) {
+            setGeneralError(
+              err.status === 409
+                ? t('family.form.duplicate_error')
+                : err.message
+            );
           }
         } else if (err.status === 409) {
           setGeneralError(t('family.form.duplicate_error'));
