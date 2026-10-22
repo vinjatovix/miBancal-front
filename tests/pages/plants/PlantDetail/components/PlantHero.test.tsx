@@ -53,7 +53,28 @@ describe('PlantHero: linked family', () => {
 });
 
 describe('PlantHero: unavailable and missing family', () => {
-  it('renders unavailable badge text when family is a string identifier', () => {
+  it.each([
+    [
+      'renders unavailable badge text',
+      () =>
+        expect(screen.getByText('Familia no disponible')).toBeInTheDocument()
+    ],
+    [
+      'does not render a link',
+      () => expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    ],
+    [
+      'does not render a button',
+      () => expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    ],
+    [
+      'does not expose the raw family id',
+      () =>
+        expect(
+          screen.queryByText(/5a2380c4-1546-4511-a77b-ec9d3ebcb7cf/i)
+        ).not.toBeInTheDocument()
+    ]
+  ])('%s when family is unavailable', (_, assertFn) => {
     const plant = buildPlantWithFamily('5a2380c4-1546-4511-a77b-ec9d3ebcb7cf');
 
     render(
@@ -62,46 +83,7 @@ describe('PlantHero: unavailable and missing family', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Familia no disponible')).toBeInTheDocument();
-  });
-
-  it('does not render a link when family is unavailable', () => {
-    const plant = buildPlantWithFamily('5a2380c4-1546-4511-a77b-ec9d3ebcb7cf');
-
-    render(
-      <MemoryRouter>
-        <PlantHero plant={plant} />
-      </MemoryRouter>
-    );
-
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
-  });
-
-  it('does not render a button when family is unavailable', () => {
-    const plant = buildPlantWithFamily('5a2380c4-1546-4511-a77b-ec9d3ebcb7cf');
-
-    render(
-      <MemoryRouter>
-        <PlantHero plant={plant} />
-      </MemoryRouter>
-    );
-
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-  });
-
-  it('does not expose the raw family id in the DOM when family is unavailable', () => {
-    const familyId = '5a2380c4-1546-4511-a77b-ec9d3ebcb7cf';
-    const plant = buildPlantWithFamily(familyId);
-
-    render(
-      <MemoryRouter>
-        <PlantHero plant={plant} />
-      </MemoryRouter>
-    );
-
-    expect(
-      screen.queryByText(new RegExp(familyId, 'i'))
-    ).not.toBeInTheDocument();
+    assertFn();
   });
 
   it('renders no family badge when family is missing', () => {

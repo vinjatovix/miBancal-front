@@ -12,48 +12,21 @@ describe('Modal', () => {
         Modal content
       </Modal>
     );
-
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('renders dialog when isOpen is true', () => {
+  it.each([
+    ['default role', undefined, 'dialog'],
+    ['custom role', 'alertdialog' as const, 'alertdialog']
+  ])('renders %s and sets aria-modal', (_, role, expectedRole) => {
     render(
-      <Modal isOpen={true} onClose={vi.fn()}>
+      <Modal isOpen={true} onClose={vi.fn()} role={role}>
         Modal content
       </Modal>
     );
-
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-  });
-
-  it('sets aria-modal to true', () => {
-    render(
-      <Modal isOpen={true} onClose={vi.fn()}>
-        Modal content
-      </Modal>
-    );
-
-    expect(screen.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
-  });
-
-  it('renders default role dialog', () => {
-    render(
-      <Modal isOpen={true} onClose={vi.fn()}>
-        Modal content
-      </Modal>
-    );
-
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-  });
-
-  it('renders custom role alertdialog', () => {
-    render(
-      <Modal isOpen={true} onClose={vi.fn()} role="alertdialog">
-        Modal content
-      </Modal>
-    );
-
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    const dialog = screen.getByRole(expectedRole);
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
   });
 
   it('renders title and associates it with aria-labelledby', () => {
@@ -62,11 +35,11 @@ describe('Modal', () => {
         Modal content
       </Modal>
     );
-
     const heading = screen.getByRole('heading', { name: 'Test Title' });
-    const dialog = screen.getByRole('dialog');
-
-    expect(dialog).toHaveAttribute('aria-labelledby', heading.id);
+    expect(screen.getByRole('dialog')).toHaveAttribute(
+      'aria-labelledby',
+      heading.id
+    );
   });
 
   it('uses explicit ariaLabelledBy when provided', () => {
@@ -80,7 +53,6 @@ describe('Modal', () => {
         Modal content
       </Modal>
     );
-
     expect(screen.getByRole('dialog')).toHaveAttribute(
       'aria-labelledby',
       'custom-modal-title'
@@ -97,7 +69,6 @@ describe('Modal', () => {
         <p id="custom-modal-description">Detailed description</p>
       </Modal>
     );
-
     expect(screen.getByRole('dialog')).toHaveAttribute(
       'aria-describedby',
       'custom-modal-description'
@@ -110,7 +81,6 @@ describe('Modal', () => {
         Modal content
       </Modal>
     );
-
     expect(screen.getByText('Security Warning')).toBeInTheDocument();
   });
 
@@ -120,39 +90,8 @@ describe('Modal', () => {
         Modal content
       </Modal>
     );
-
     expect(
       screen.getByRole('dialog').querySelector('.modal-icon-badge')
-    ).toBeInTheDocument();
-  });
-
-  it('calls onClose when clicking close button', () => {
-    const onClose = vi.fn();
-    render(
-      <Modal isOpen={true} onClose={onClose} title="Closeable Modal">
-        Modal content
-      </Modal>
-    );
-
-    fireEvent.click(screen.getByRole('button', { name: 'Cerrar ventana' }));
-
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it('renders custom closeLabel on close button', () => {
-    render(
-      <Modal
-        isOpen={true}
-        onClose={vi.fn()}
-        title="Custom Close Label"
-        closeLabel="Descartar y volver"
-      >
-        Modal content
-      </Modal>
-    );
-
-    expect(
-      screen.getByRole('button', { name: 'Descartar y volver' })
     ).toBeInTheDocument();
   });
 
@@ -167,37 +106,79 @@ describe('Modal', () => {
         Modal content
       </Modal>
     );
-
     expect(
       screen.queryByRole('button', { name: 'Cerrar ventana' })
     ).not.toBeInTheDocument();
   });
 
-  it('calls onClose when pressing Escape key', () => {
-    const onClose = vi.fn();
+  it('renders custom closeLabel on close button', () => {
     render(
-      <Modal isOpen={true} onClose={onClose}>
+      <Modal
+        isOpen={true}
+        onClose={vi.fn()}
+        title="Custom Close Label"
+        closeLabel="Descartar y volver"
+      >
         Modal content
       </Modal>
     );
-
-    fireEvent.keyDown(window, { key: 'Escape' });
-
-    expect(onClose).toHaveBeenCalled();
+    expect(
+      screen.getByRole('button', { name: 'Descartar y volver' })
+    ).toBeInTheDocument();
   });
 
-  it('does not call onClose on Escape key when preventClose is true', () => {
-    const onClose = vi.fn();
-    render(
-      <Modal isOpen={true} onClose={onClose} preventClose={true}>
-        Modal content
-      </Modal>
-    );
+  it.each([
+    [
+      'close button',
+      () => screen.getByRole('button', { name: 'Cerrar ventana' })
+    ],
+    [
+      'overlay backdrop',
+      () => screen.getByRole('dialog').parentElement as HTMLElement
+    ],
+    [
+      'Escape key',
+      () => window,
+      (el: HTMLElement | Window) => fireEvent.keyDown(el, { key: 'Escape' })
+    ]
+  ])(
+    'calls onClose when interacting with %s',
+    (_, getElement, fire = fireEvent.click) => {
+      const onClose = vi.fn();
+      render(
+        <Modal isOpen={true} onClose={onClose}>
+          Modal content
+        </Modal>
+      );
+      fire(getElement());
+      expect(onClose).toHaveBeenCalledOnce();
+    }
+  );
 
-    fireEvent.keyDown(window, { key: 'Escape' });
-
-    expect(onClose).not.toHaveBeenCalled();
-  });
+  it.each([
+    [
+      'Escape key',
+      () => window,
+      (el: Element | Window) => fireEvent.keyDown(el, { key: 'Escape' })
+    ],
+    [
+      'overlay click',
+      () => screen.getByRole('dialog').parentElement as HTMLElement,
+      fireEvent.click
+    ]
+  ])(
+    'does not call onClose on %s when preventClose is true',
+    (_, getElement, fire) => {
+      const onClose = vi.fn();
+      render(
+        <Modal isOpen={true} onClose={onClose} preventClose={true}>
+          Modal content
+        </Modal>
+      );
+      fire(getElement());
+      expect(onClose).not.toHaveBeenCalled();
+    }
+  );
 
   it('disables close button when preventClose is true', () => {
     render(
@@ -210,24 +191,9 @@ describe('Modal', () => {
         Modal content
       </Modal>
     );
-
     expect(
       screen.getByRole('button', { name: 'Cerrar ventana' })
     ).toBeDisabled();
-  });
-
-  it('calls onClose when clicking overlay backdrop', () => {
-    const onClose = vi.fn();
-    render(
-      <Modal isOpen={true} onClose={onClose}>
-        Modal content
-      </Modal>
-    );
-
-    const overlay = screen.getByRole('dialog').parentElement as HTMLElement;
-    fireEvent.click(overlay);
-
-    expect(onClose).toHaveBeenCalled();
   });
 
   it('does not call onClose when clicking inside dialog card', () => {
@@ -237,39 +203,19 @@ describe('Modal', () => {
         <div data-testid="modal-inner">Modal content</div>
       </Modal>
     );
-
     fireEvent.click(screen.getByTestId('modal-inner'));
-
-    expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it('does not call onClose on overlay click when preventClose is true', () => {
-    const onClose = vi.fn();
-    render(
-      <Modal isOpen={true} onClose={onClose} preventClose={true}>
-        Modal content
-      </Modal>
-    );
-
-    const overlay = screen.getByRole('dialog').parentElement as HTMLElement;
-    fireEvent.click(overlay);
-
     expect(onClose).not.toHaveBeenCalled();
   });
 
   it('locks body scroll to hidden when open and restores on unmount', () => {
     document.body.style.overflow = 'visible';
-
     const { unmount } = render(
       <Modal isOpen={true} onClose={vi.fn()}>
         Modal content
       </Modal>
     );
-
     expect(document.body.style.overflow).toBe('hidden');
-
     unmount();
-
     expect(document.body.style.overflow).toBe('visible');
   });
 
@@ -283,7 +229,6 @@ describe('Modal', () => {
         Modal content
       </Modal>
     );
-
     expect(
       screen.getByRole('button', { name: 'Footer Action' })
     ).toBeInTheDocument();
@@ -295,7 +240,6 @@ describe('Modal', () => {
         Modal content
       </Modal>
     );
-
     expect(screen.getByRole('dialog')).toHaveStyle({ maxWidth: '640px' });
   });
 
@@ -312,7 +256,6 @@ describe('Modal', () => {
           Variant content
         </Modal>
       );
-
       expect(screen.getByRole('dialog')).toHaveClass(expectedClass);
     }
   );

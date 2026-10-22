@@ -424,63 +424,57 @@ describe('PlantList', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('cambiar de página reinicia el scroll al inicio', async () => {
-    stubFetchOk(MULTI_PAGE_RESPONSE);
-    renderPlantList();
+  it.each([
+    [
+      'cambiar de página',
+      MULTI_PAGE_RESPONSE,
+      '/',
+      async () => {
+        await userEvent.click(screen.getAllByTestId('pagination-button-2')[0]);
+      }
+    ],
+    [
+      'cambiar el orden',
+      listPlantsResponse,
+      '/',
+      async () => {
+        await userEvent.selectOptions(
+          screen.getByRole('combobox', { name: SORT_LABEL }),
+          t('plant.orders.combined.name_desc')
+        );
+      }
+    ],
+    [
+      'cambiar el tamaño de página',
+      listPlantsResponse,
+      '/',
+      async () => {
+        await userEvent.click(
+          within(
+            screen.getByRole('group', { name: t('plant.filters.page_size') })
+          ).getByRole('button', { name: '50' })
+        );
+      }
+    ],
+    [
+      'eliminar un filtro aplicado',
+      listPlantsResponse,
+      '/plants?lifeCycle=annual',
+      async () => {
+        await userEvent.click(
+          screen.getByRole('button', {
+            name: t('plant.applied.remove', { label: 'Anual' })
+          })
+        );
+      }
+    ]
+  ])('%s reinicia el scroll al inicio', async (_, response, route, act) => {
+    stubFetchOk(response);
+    renderPlantList(route);
     await waitForPlants();
     vi.mocked(window.scrollTo).mockClear();
 
-    await userEvent.click(screen.getAllByTestId('pagination-button-2')[0]);
-
-    await waitFor(() => {
-      expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
-    });
-  });
-
-  it('cambiar el orden reinicia el scroll al inicio', async () => {
-    stubFetchOk(listPlantsResponse);
-    renderPlantList();
-    await waitForPlants();
-    vi.mocked(window.scrollTo).mockClear();
-
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: SORT_LABEL }),
-      t('plant.orders.combined.name_desc')
-    );
-
-    await waitFor(() => {
-      expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
-    });
-  });
-
-  it('cambiar el tamaño de página reinicia el scroll al inicio', async () => {
-    stubFetchOk(listPlantsResponse);
-    renderPlantList();
-    await waitForPlants();
-    vi.mocked(window.scrollTo).mockClear();
-
-    await userEvent.click(
-      within(
-        screen.getByRole('group', { name: t('plant.filters.page_size') })
-      ).getByRole('button', { name: '50' })
-    );
-
-    await waitFor(() => {
-      expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
-    });
-  });
-
-  it('eliminar un filtro aplicado reinicia el scroll al inicio', async () => {
-    stubFetchOk(listPlantsResponse);
-    renderPlantList('/plants?lifeCycle=annual');
-    await waitForPlants();
-    vi.mocked(window.scrollTo).mockClear();
-
-    await userEvent.click(
-      screen.getByRole('button', {
-        name: t('plant.applied.remove', { label: 'Anual' })
-      })
-    );
+    await act();
 
     await waitFor(() => {
       expect(window.scrollTo).toHaveBeenCalledWith(0, 0);

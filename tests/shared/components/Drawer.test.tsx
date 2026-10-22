@@ -90,51 +90,23 @@ describe('Drawer', () => {
     expect(aside.style.getPropertyValue('--drawer-width')).toBe('500px');
   });
 
-  it('should apply left position class by default', () => {
+  it.each([
+    ['left position by default', { isOpen: true }, 'drawer-left'],
+    [
+      'right position when specified',
+      { isOpen: true, position: 'right' as const },
+      'drawer-right'
+    ],
+    ['open class when isOpen is true', { isOpen: true }, 'drawer-open'],
+    ['closed class when isOpen is false', { isOpen: false }, 'drawer-closed']
+  ])('should apply %s class', (_, props, expectedClass) => {
     render(
-      <Drawer isOpen={true} onClose={() => {}}>
+      <Drawer onClose={() => {}} {...props}>
         <div>Content</div>
       </Drawer>
     );
 
     const aside = document.querySelector('.drawer-panel');
-
-    expect(aside?.className).toContain('drawer-left');
-  });
-
-  it('should apply right position class when specified', () => {
-    render(
-      <Drawer isOpen={true} onClose={() => {}} position="right">
-        <div>Content</div>
-      </Drawer>
-    );
-
-    const aside = document.querySelector('.drawer-panel');
-
-    expect(aside?.className).toContain('drawer-right');
-  });
-
-  it('should apply open class when isOpen is true', () => {
-    render(
-      <Drawer isOpen={true} onClose={() => {}}>
-        <div>Content</div>
-      </Drawer>
-    );
-
-    const aside = document.querySelector('.drawer-panel');
-
-    expect(aside?.className).toContain('drawer-open');
-  });
-
-  it('should apply closed class when isOpen is false', () => {
-    render(
-      <Drawer isOpen={false} onClose={() => {}}>
-        <div>Content</div>
-      </Drawer>
-    );
-
-    const aside = document.querySelector('.drawer-panel');
-
-    expect(aside?.className).toContain('drawer-closed');
+    expect(aside?.className).toContain(expectedClass);
   });
 });

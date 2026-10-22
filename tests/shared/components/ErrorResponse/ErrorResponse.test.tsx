@@ -62,35 +62,17 @@ describe('ErrorResponse', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
-  it('links home without retry when forbidden', () => {
+  it.each([
+    ['forbidden', 403, 'errors.forbidden.message'],
+    ['not found', 404, 'errors.notFound.message'],
+    ['bad request without onClearFilters', 400, 'errors.badRequest.message']
+  ])('links home without retry when %s', (_, status, translationKey) => {
     renderWithProviders(
-      <ErrorResponse error={new ApiError('Forbidden', 403)} onRetry={vi.fn()} />
+      <ErrorResponse error={new ApiError('Error', status)} onRetry={vi.fn()} />
     );
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      t('errors.forbidden.message')
-    );
-    expectGoHomeLinkWithoutRetry();
-  });
-
-  it('links home without retry when not found', () => {
-    renderWithProviders(
-      <ErrorResponse error={new ApiError('Not found', 404)} onRetry={vi.fn()} />
-    );
-
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      t('errors.notFound.message')
-    );
-    expectGoHomeLinkWithoutRetry();
-  });
-
-  it('links home without retry on a bad request without onClearFilters', () => {
-    renderWithProviders(
-      <ErrorResponse error={new ApiError('Bad', 400)} onRetry={vi.fn()} />
-    );
-
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      t('errors.badRequest.message')
+      t(translationKey as Parameters<typeof t>[0])
     );
     expectGoHomeLinkWithoutRetry();
   });

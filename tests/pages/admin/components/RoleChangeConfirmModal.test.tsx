@@ -212,101 +212,66 @@ describe('RoleChangeConfirmModal', () => {
     }
   );
 
-  it('renders all current and target role pills when revoking admin from a user with admin and collaborator', () => {
-    const { container } = render(
-      <RoleChangeConfirmModal
-        isOpen={true}
-        onConfirm={vi.fn()}
-        onCancel={vi.fn()}
-        username="testuser"
-        currentRoles={['user', 'admin', 'collaborator']}
-        targetRoles={['user', 'collaborator']}
-      />
-    );
+  it.each([
+    [
+      'revoking admin from a user with admin and collaborator',
+      ['user', 'admin', 'collaborator'] as const,
+      ['user', 'collaborator'] as const,
+      [
+        'Administrador (admin)',
+        'Colaborador (collaborator)',
+        'Usuario estándar (user)'
+      ],
+      ['Colaborador (collaborator)', 'Usuario estándar (user)'],
+      /revocar los permisos de administrador al usuario testuser/i
+    ],
+    [
+      'revoking collaborator from a user with admin and collaborator',
+      ['user', 'admin', 'collaborator'] as const,
+      ['user', 'admin'] as const,
+      [
+        'Administrador (admin)',
+        'Colaborador (collaborator)',
+        'Usuario estándar (user)'
+      ],
+      ['Administrador (admin)', 'Usuario estándar (user)'],
+      /revocar los permisos de colaborador al usuario testuser/i
+    ]
+  ])(
+    'renders all current and target role pills and displays correct prompt when %s',
+    (
+      _,
+      currentRoles,
+      targetRoles,
+      expectedCurrent,
+      expectedTarget,
+      expectedPrompt
+    ) => {
+      const { container } = render(
+        <RoleChangeConfirmModal
+          isOpen={true}
+          onConfirm={vi.fn()}
+          onCancel={vi.fn()}
+          username="testuser"
+          currentRoles={currentRoles}
+          targetRoles={targetRoles}
+        />
+      );
 
-    const currentPills = container.querySelectorAll(
-      '.admin-modal-roles-list--current .admin-modal-role-pill'
-    );
-    const targetPills = container.querySelectorAll(
-      '.admin-modal-roles-list--target .admin-modal-role-pill'
-    );
+      const currentPills = container.querySelectorAll(
+        '.admin-modal-roles-list--current .admin-modal-role-pill'
+      );
+      const targetPills = container.querySelectorAll(
+        '.admin-modal-roles-list--target .admin-modal-role-pill'
+      );
 
-    expect(Array.from(currentPills).map((p) => p.textContent)).toEqual([
-      'Administrador (admin)',
-      'Colaborador (collaborator)',
-      'Usuario estándar (user)'
-    ]);
-    expect(Array.from(targetPills).map((p) => p.textContent)).toEqual([
-      'Colaborador (collaborator)',
-      'Usuario estándar (user)'
-    ]);
-  });
-
-  it('renders all current and target role pills when revoking collaborator from a user with admin and collaborator', () => {
-    const { container } = render(
-      <RoleChangeConfirmModal
-        isOpen={true}
-        onConfirm={vi.fn()}
-        onCancel={vi.fn()}
-        username="testuser"
-        currentRoles={['user', 'admin', 'collaborator']}
-        targetRoles={['user', 'admin']}
-      />
-    );
-
-    const currentPills = container.querySelectorAll(
-      '.admin-modal-roles-list--current .admin-modal-role-pill'
-    );
-    const targetPills = container.querySelectorAll(
-      '.admin-modal-roles-list--target .admin-modal-role-pill'
-    );
-
-    expect(Array.from(currentPills).map((p) => p.textContent)).toEqual([
-      'Administrador (admin)',
-      'Colaborador (collaborator)',
-      'Usuario estándar (user)'
-    ]);
-    expect(Array.from(targetPills).map((p) => p.textContent)).toEqual([
-      'Administrador (admin)',
-      'Usuario estándar (user)'
-    ]);
-  });
-
-  it('displays revoke admin prompt when revoking admin from a user with admin and collaborator', () => {
-    render(
-      <RoleChangeConfirmModal
-        isOpen={true}
-        onConfirm={vi.fn()}
-        onCancel={vi.fn()}
-        username="testuser"
-        currentRoles={['user', 'admin', 'collaborator']}
-        targetRoles={['user', 'collaborator']}
-      />
-    );
-
-    expect(
-      screen.getByText(
-        /revocar los permisos de administrador al usuario testuser/i
-      )
-    ).toBeInTheDocument();
-  });
-
-  it('displays revoke collaborator prompt when revoking collaborator from a user with admin and collaborator', () => {
-    render(
-      <RoleChangeConfirmModal
-        isOpen={true}
-        onConfirm={vi.fn()}
-        onCancel={vi.fn()}
-        username="testuser"
-        currentRoles={['user', 'admin', 'collaborator']}
-        targetRoles={['user', 'admin']}
-      />
-    );
-
-    expect(
-      screen.getByText(
-        /revocar los permisos de colaborador al usuario testuser/i
-      )
-    ).toBeInTheDocument();
-  });
+      expect(Array.from(currentPills).map((p) => p.textContent)).toEqual(
+        expectedCurrent
+      );
+      expect(Array.from(targetPills).map((p) => p.textContent)).toEqual(
+        expectedTarget
+      );
+      expect(screen.getByText(expectedPrompt)).toBeInTheDocument();
+    }
+  );
 });
