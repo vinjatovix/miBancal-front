@@ -18,9 +18,15 @@ function validateBasicFields(
   }
 }
 
-function validateSlug(slug: string): string | null {
+function validateSlug(slug: string, initialSlug?: string): string | null {
   const trimmed = slug.trim();
-  if (!trimmed || !SLUG_REGEX.test(trimmed)) {
+  if (!trimmed) {
+    return t('family.form.validation.invalid_slug');
+  }
+  if (initialSlug && trimmed === initialSlug.trim()) {
+    return null;
+  }
+  if (!SLUG_REGEX.test(trimmed)) {
     return t('family.form.validation.invalid_slug');
   }
   return null;
@@ -37,12 +43,13 @@ function validateSpeciesCount(speciesCount: string): string | null {
 }
 
 export function validateFamilyForm(
-  state: FamilyFormState
+  state: FamilyFormState,
+  initialSlug?: string
 ): Record<string, string> {
   const errors: Record<string, string> = {};
   validateBasicFields(state, errors);
 
-  const slugErr = validateSlug(state.slug);
+  const slugErr = validateSlug(state.slug, initialSlug);
   if (slugErr) errors.slug = slugErr;
 
   if (state.highlights.length === 0) {

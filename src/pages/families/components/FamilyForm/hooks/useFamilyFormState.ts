@@ -47,10 +47,10 @@ export function useFamilyFormState(initialState: FamilyFormState) {
   );
 
   const validate = useCallback((): boolean => {
-    const nextErrors = validateFamilyForm(values);
+    const nextErrors = validateFamilyForm(values, initialState.slug);
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
-  }, [values]);
+  }, [values, initialState.slug]);
 
   return {
     values,

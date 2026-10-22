@@ -91,4 +91,20 @@ describe('validateFamilyForm', () => {
       expect(errors.speciesCount).toBeDefined();
     }
   );
+
+  it('allows unchanged existing slug through validation when initialSlug matches', () => {
+    const state = { ...buildValidFamilyFormState(), slug: 'Amaryllidaceae' };
+
+    const errors = validateFamilyForm(state, 'Amaryllidaceae');
+
+    expect(errors.slug).toBeUndefined();
+  });
+
+  it('rejects modified slug when user changes slug to invalid format despite initialSlug', () => {
+    const state = { ...buildValidFamilyFormState(), slug: 'Invalid Slug' };
+
+    const errors = validateFamilyForm(state, 'Amaryllidaceae');
+
+    expect(errors.slug).toBeDefined();
+  });
 });

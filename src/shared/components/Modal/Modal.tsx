@@ -52,6 +52,18 @@ export default function Modal({
   const defaultTitleId = useId();
   const titleId = ariaLabelledBy ?? (title ? defaultTitleId : undefined);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousActive = document.activeElement;
+
+    return () => {
+      if (previousActive instanceof HTMLElement && previousActive.isConnected) {
+        previousActive.focus();
+      }
+    };
+  }, [isOpen]);
+
   useFocusTrap(isOpen, dialogRef);
 
   useEffect(() => {

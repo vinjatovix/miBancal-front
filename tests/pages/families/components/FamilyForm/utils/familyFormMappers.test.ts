@@ -35,6 +35,28 @@ describe('familyFormMappers', () => {
     expect(formState.speciesCount).toBe('2700');
   });
 
+  it('preserves existing canonical slug verbatim without lowercasing or altering it', () => {
+    const family = buildFamily({
+      scientificName: 'Amaryllidaceae',
+      slug: 'Amaryllidaceae'
+    });
+
+    const formState = canonicalFamilyToFormState(family);
+
+    expect(formState.slug).toBe('Amaryllidaceae');
+  });
+
+  it('generates slugified slug from scientificName when slug is missing', () => {
+    const family = buildFamily({
+      scientificName: 'Amaryllidaceae',
+      slug: ''
+    });
+
+    const formState = canonicalFamilyToFormState(family);
+
+    expect(formState.slug).toBe('amaryllidaceae');
+  });
+
   it('generates blank initial family form state', () => {
     const state = initialFamilyFormState();
 
