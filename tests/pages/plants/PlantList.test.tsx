@@ -6,10 +6,17 @@ import { t } from '../../../src/i18n/core/t';
 import PlantList from '../../../src/pages/plants/PlantList';
 
 import { validateRequest } from '../../contract/openApiContract';
+import {
+  ADMIN_TEST_TOKEN,
+  VALID_TEST_TOKEN
+} from '../../fixtures/auth/authFixtures';
 import { listPlantsResponse } from '../../fixtures/plants/listPlants';
 
 vi.mock('../../../src/services/families.service', () => ({
   getFamilyList: vi.fn(() => Promise.resolve([]))
+}));
+vi.mock('../../../src/services/bookmarks.service', () => ({
+  getBookmarkedPlantIds: vi.fn(() => Promise.resolve(new Set()))
 }));
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import {
@@ -521,5 +528,128 @@ describe('PlantList', () => {
     await waitFor(() => {
       expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
     });
+  });
+});
+
+describe('PlantList: pestaña Mis Favoritas', () => {
+  function renderAuthenticated(route = '/plants', token = VALID_TEST_TOKEN) {
+    return renderWithProviders(<PlantList />, { route, initialToken: token });
+  }
+
+  it('seleccionar "Mis Favoritas" envía filter[bookmarked][eq]=true', async () => {
+    const fetchMock = stubFetchSequence(
+      okResponse(listPlantsResponse),
+      okResponse(listPlantsResponse)
+    );
+    renderAuthenticated();
+    await waitForPlants();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: t('plant.tabs.favorites') })
+    );
+
+    await waitFor(() => {
+      expect(lastUrl(fetchMock)).toContain('filter[bookmarked][eq]=true');
+    });
+  });
+
+  it('sin favoritas muestra el estado vacío propio y un botón para volver a "Todas"', async () => {
+    stubFetchOk({
+      data: [],
+      pagination: { page: 1, limit: 25, totalPages: 0, totalItems: 0 }
+    });
+    renderAuthenticated('/plants?tab=favorites');
+
+    expect(
+      await screen.findByText(t('plant.emptyState.favorites'))
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: t('plant.emptyState.favorites_action')
+      })
+    ).toBeInTheDocument();
+  });
+
+  it('favoritas con filtros que no casan muestra "sin coincidencias" y permite quitar filtros', async () => {
+    stubFetchOk({
+      data: [],
+      pagination: { page: 1, limit: 25, totalPages: 0, totalItems: 0 }
+    });
+    renderAuthenticated('/plants?tab=favorites&identity=zzzzzz');
+
+    expect(
+      await screen.findByText(t('plant.emptyState.noMatches'))
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(t('plant.emptyState.favorites'))
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: t('errors.actions.clearFilters') })
+    ).toBeInTheDocument();
+  });
+
+  it('anónimo con ?tab=favorites ve "Todas" y no envía filter[bookmarked]', async () => {
+    const fetchMock = stubFetchOk(listPlantsResponse);
+    renderPlantList('/plants?tab=favorites');
+    await waitForPlants();
+
+    expect(lastUrl(fetchMock)).not.toContain('bookmarked');
+    expect(
+      screen.queryByRole('button', { name: t('plant.tabs.all') })
+    ).not.toBeInTheDocument();
+  });
+
+  it('admin: una favorita DELETED se incluye con su badge de estado', async () => {
+    const deletedPlant = {
+      ...listPlantsResponse.data[0],
+      status: 'DELETED' as const
+    };
+    stubFetchOk({
+      ...listPlantsResponse,
+      data: [deletedPlant]
+    });
+    renderAuthenticated('/plants?tab=favorites', ADMIN_TEST_TOKEN);
+
+    await waitForPlants();
+    expect(
+      screen.getByText(t('plant.statusValues.DELETED'))
+    ).toBeInTheDocument();
+  });
+
+  it('un 400 en favoritas sin filtros reales no ofrece "quitar filtros"', async () => {
+    stubFetchError(400, { message: 'Invalid request', errors: {} });
+
+    renderAuthenticated('/plants?tab=favorites');
+
+    await screen.findByRole('alert');
+    expect(
+      screen.queryByRole('button', { name: t('errors.actions.clearFilters') })
+    ).not.toBeInTheDocument();
+  });
+
+  it('una página fuera de rango en favoritas ofrece volver a la primera página, no el vacío propio', async () => {
+    const fetchMock = stubFetchSequence(
+      okResponse({
+        data: [],
+        pagination: { page: 999, limit: 25, totalPages: 1, totalItems: 2 }
+      }),
+      okResponse(listPlantsResponse)
+    );
+
+    renderAuthenticated('/plants?tab=favorites&page=999');
+
+    expect(
+      await screen.findByText(t('plant.emptyState.outOfRange'))
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(t('plant.emptyState.favorites'))
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: t('plant.emptyState.goToFirstPage') })
+    );
+
+    await waitForPlants();
+    expect(lastUrl(fetchMock)).toContain('pagination[page]=1');
   });
 });

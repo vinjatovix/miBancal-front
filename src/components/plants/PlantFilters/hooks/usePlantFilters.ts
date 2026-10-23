@@ -1,9 +1,11 @@
 import { useSearchParams } from 'react-router-dom';
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSliderFilter } from './useSliderFilter';
 import { useDebouncedCallback } from './useDebouncedCallback';
 import { PLANT_LIST_URL_PARAMS } from '../../../../shared/constants/plantListUrlParams';
 import { parseBooleanFilter } from '../../../../services/plantListQuery';
+
+const FILTER_COALESCE_DELAY_MS = 300;
 
 type TextFilterKey = 'identity';
 
@@ -22,39 +24,17 @@ function useTextFilters(
     setTextState((prev) => ({ ...prev, identity: urlIdentity }));
   }
 
-  const setTextValue = useCallback((key: TextFilterKey, value: string) => {
-    setTextState((prev) => ({
-      ...prev,
-      [key]: value
-    }));
-  }, []);
-
-  const debouncedIdentity = useDebouncedCallback((value: string) => {
-    setParam(PLANT_LIST_URL_PARAMS.identity, value);
-  }, 300);
-
-  const debounceMap = useMemo(
-    () => ({
-      identity: debouncedIdentity
-    }),
-    [debouncedIdentity]
-  );
-
   const handleTextChange = useCallback(
     (key: TextFilterKey, value: string) => {
-      setTextValue(key, value);
-      debounceMap[key].call(value);
+      setTextState((prev) => ({ ...prev, [key]: value }));
+      setParam(key, value);
     },
-    [setTextValue, debounceMap]
+    [setParam]
   );
 
   const clearText = useCallback(() => {
-    setTextState({
-      identity: ''
-    });
-
-    Object.values(debounceMap).forEach((debounce) => debounce.cancel());
-  }, [debounceMap]);
+    setTextState({ identity: '' });
+  }, []);
 
   return { textState, handleTextChange, clearText };
 }
@@ -94,23 +74,56 @@ function useSelectFilters(getParam: (key: string) => string) {
 
 export function usePlantFilters() {
   const [params, setParams] = useSearchParams();
+  const pendingRef = useRef<Record<string, string | undefined>>({});
+  const setParamsRef = useRef(setParams);
+
+  useEffect(() => {
+    setParamsRef.current = setParams;
+  }, [setParams]);
+
+  const flushPending = useCallback(() => {
+    const pending = pendingRef.current;
+    const keys = Object.keys(pending);
+    if (keys.length === 0) return;
+    pendingRef.current = {};
+
+    setParamsRef.current((prev) => {
+      const next = new URLSearchParams(prev);
+
+      keys.forEach((key) => {
+        const value = pending[key];
+        if (value && value.length > 0) next.set(key, value);
+        else next.delete(key);
+      });
+
+      if (!keys.includes(PLANT_LIST_URL_PARAMS.page)) {
+        next.delete(PLANT_LIST_URL_PARAMS.page);
+      }
+
+      return next;
+    });
+  }, []);
+
+  const debouncedFlush = useDebouncedCallback<void>(
+    flushPending,
+    FILTER_COALESCE_DELAY_MS
+  );
 
   const setParam = useCallback(
     (key: string, value?: string) => {
-      setParams((prev) => {
-        const next = new URLSearchParams(prev);
-
-        if (value && value.length > 0) next.set(key, value);
-        else next.delete(key);
-
-        if (key !== PLANT_LIST_URL_PARAMS.page) {
-          next.delete(PLANT_LIST_URL_PARAMS.page);
-        }
-
-        return next;
-      });
+      pendingRef.current = { ...pendingRef.current, [key]: value };
+      debouncedFlush.call();
     },
-    [setParams]
+    [debouncedFlush]
+  );
+
+  const setParamNow = useCallback(
+    (key: string, value?: string) => {
+      pendingRef.current = { ...pendingRef.current, [key]: value };
+      debouncedFlush.cancel();
+      flushPending();
+    },
+    [debouncedFlush, flushPending]
   );
 
   const getParam = useCallback(
@@ -126,9 +139,9 @@ export function usePlantFilters() {
 
   const setFamily = useCallback(
     (value: string) => {
-      setParam(PLANT_LIST_URL_PARAMS.family, value);
+      setParamNow(PLANT_LIST_URL_PARAMS.family, value);
     },
-    [setParam]
+    [setParamNow]
   );
 
   const { textState, handleTextChange, clearText } = useTextFilters(
@@ -146,23 +159,34 @@ export function usePlantFilters() {
   } = useSelectFilters(getParam);
 
   const clearFilters = useCallback(() => {
+    pendingRef.current = {};
+    debouncedFlush.cancel();
     setParams({});
     clearText();
     soilPh.clear();
     lightHours.clear();
     spacing.clear();
     soilDepth.clear();
-  }, [setParams, clearText, soilPh, lightHours, spacing, soilDepth]);
+  }, [
+    setParams,
+    clearText,
+    soilPh,
+    lightHours,
+    spacing,
+    soilDepth,
+    debouncedFlush
+  ]);
 
   const setHemisphere = useCallback(
     (value: 'north' | 'south') => {
-      setParam(PLANT_LIST_URL_PARAMS.hemisphere, value);
+      setParamNow(PLANT_LIST_URL_PARAMS.hemisphere, value);
     },
-    [setParam]
+    [setParamNow]
   );
 
   return {
     setParam,
+    setParamNow,
     getParam,
 
     family,

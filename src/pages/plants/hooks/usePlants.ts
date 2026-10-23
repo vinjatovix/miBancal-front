@@ -1,14 +1,23 @@
+import { useContext } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { getPlantList } from '../../../services/plants.service';
 import type { SortDirection } from '../../../services/listQuery';
-import type { PlantsSortField } from '../../../services/plantListQuery';
+import type {
+  PlantListRequest,
+  PlantsSortField
+} from '../../../services/plantListQuery';
+import { AuthContext } from '../../../shared/auth/authContextDef';
 import { QUERY_DEFAULTS } from '../../../shared/reactQuery/queryDefaults';
-import { plantKeys } from '../../../shared/reactQuery/plantKeys';
+import {
+  plantKeys,
+  type PlantRoleScope
+} from '../../../shared/reactQuery/plantKeys';
 import { usePlantRoleScope } from '../../../shared/reactQuery/usePlantRoleScope';
 import {
   PLANT_LIST_URL_PARAMS,
+  isFavoritesTab,
   withoutPlantListFilters
 } from '../../../shared/constants/plantListUrlParams';
 import type { PlantListItem } from '../../../types/Plants/Plant';
@@ -24,13 +33,38 @@ import {
 } from '../utils/plantListParamWrites';
 import { removeMultiValueParam } from '../utils/removeMultiValueParam';
 
+function withBookmarkedFilter(
+  request: PlantListRequest,
+  favoritesTabActive: boolean
+): PlantListRequest {
+  if (!favoritesTabActive) return request;
+  return {
+    ...request,
+    filters: { ...request.filters, bookmarked: 'true' }
+  };
+}
+
+function listQueryKey(
+  request: PlantListRequest,
+  scope: PlantRoleScope,
+  userId?: string
+) {
+  return request.filters.bookmarked
+    ? ([...plantKeys.list(request, scope), userId] as const)
+    : plantKeys.list(request, scope);
+}
+
 export function usePlants() {
   const scope = usePlantRoleScope();
+  const auth = useContext(AuthContext);
   const [params, setParams] = useSearchParams();
-  const request = parsePlantListSearchParams(params);
+  const favoritesTabActive =
+    (auth?.isAuthenticated ?? false) && isFavoritesTab(params);
+  const baseRequest = parsePlantListSearchParams(params);
+  const request = withBookmarkedFilter(baseRequest, favoritesTabActive);
 
   const query = useQuery<PaginatedResponse<PlantListItem>>({
-    queryKey: plantKeys.list(request, scope),
+    queryKey: listQueryKey(request, scope, auth?.user?.id),
     queryFn: () => getPlantList(request),
     ...QUERY_DEFAULTS
   });
@@ -72,7 +106,7 @@ export function usePlants() {
   return {
     query,
     request,
-    hasActiveFilters: Object.keys(request.filters).length > 0,
+    hasActiveFilters: Object.keys(baseRequest.filters).length > 0,
     setPage,
     goToFirstPage,
     clearFilters,

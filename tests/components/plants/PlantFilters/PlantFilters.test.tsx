@@ -11,6 +11,7 @@ import { listFamilyItems } from '../../../fixtures/families/listFamilyItems';
 import { createTestQueryClient } from '../../../test-utils/createTestQueryClient';
 
 const mockSetParam = vi.fn();
+const mockSetParamNow = vi.fn();
 const mockGetParam = vi.fn();
 const mockClearFilters = vi.fn();
 const mockSetHemisphere = vi.fn();
@@ -29,6 +30,7 @@ vi.mock(
   () => ({
     usePlantFilters: () => ({
       setParam: mockSetParam,
+      setParamNow: mockSetParamNow,
       getParam: mockGetParam,
 
       lifeCycle: 'annual',
@@ -165,12 +167,12 @@ describe('PlantFilters', () => {
     expect(mockSetHemisphere).toHaveBeenCalledWith('south');
   });
 
-  it('calls setParam from MonthSelector', () => {
+  it('calls setParamNow from MonthSelector', () => {
     renderComponent();
 
     fireEvent.click(screen.getByTestId('month-button-5'));
 
-    expect(mockSetParam).toHaveBeenCalledWith('sowingMonth', '5');
+    expect(mockSetParamNow).toHaveBeenCalledWith('sowingMonth', '5');
   });
 
   it('calls slider onCommit handlers', () => {
@@ -263,7 +265,7 @@ describe('PlantFilters', () => {
     const group = screen.getByRole('group', { name: /Comestible/ });
     fireEvent.click(within(group).getByRole('button', { name: option }));
 
-    expect(mockSetParam).toHaveBeenCalledWith('edible', value);
+    expect(mockSetParamNow).toHaveBeenCalledWith('edible', value);
   });
 
   it('the boolean options work with the keyboard', async () => {
@@ -279,11 +281,11 @@ describe('PlantFilters', () => {
     await user.tab();
     expect(yes).toHaveFocus();
     await user.keyboard('{Enter}');
-    expect(mockSetParam).toHaveBeenLastCalledWith('toxic', 'true');
+    expect(mockSetParamNow).toHaveBeenLastCalledWith('toxic', 'true');
 
     await user.tab();
     expect(no).toHaveFocus();
     await user.keyboard(' ');
-    expect(mockSetParam).toHaveBeenLastCalledWith('toxic', 'false');
+    expect(mockSetParamNow).toHaveBeenLastCalledWith('toxic', 'false');
   });
 });

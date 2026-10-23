@@ -624,7 +624,14 @@ export const dictionary = {
       noMatches: 'Ningún resultado coincide con los filtros.',
       emptyCatalog: 'Todavía no hay plantas registradas.',
       outOfRange: 'Esta página no tiene resultados.',
-      goToFirstPage: 'Ir a la primera página'
+      goToFirstPage: 'Ir a la primera página',
+      favorites: 'Todavía no has marcado ninguna planta como favorita.',
+      favorites_action: 'Explorar el catálogo'
+    },
+    tabs: {
+      group_label: 'Pestañas del catálogo',
+      all: 'Todas',
+      favorites: 'Mis Favoritas'
     },
     filters: {
       clear: 'Borrar filtros',
@@ -812,5 +819,10 @@ export const dictionary = {
       north: 'Norte',
       south: 'Sur'
     }
+  },
+  favoriteButton: {
+    add: 'Marcar como favorita',
+    remove: 'Quitar de favoritas',
+    error: 'No se pudo actualizar la favorita. Inténtalo de nuevo.'
   }
 } as const;

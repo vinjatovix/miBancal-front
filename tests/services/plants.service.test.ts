@@ -170,7 +170,8 @@ const VALID_FILTER_VALUES: Required<PlantFilterParams> = {
   lightHoursMin: '6',
   rootSystem: 'taproot',
   edible: 'true',
-  toxic: 'false'
+  toxic: 'false',
+  bookmarked: 'true'
 };
 
 function formatFilterValue(value: string | number[]): string {
@@ -189,6 +190,28 @@ describe('getPlantList: filtros de comestible y tóxica', () => {
     const { url } = lastRequest(fetchMock);
     expect(url).toBe(listUrl(`${query}&${DEFAULT_TAIL}`));
     expect(validateRequest('get', url)).toEqual([]);
+  });
+
+  it('bookmarked se combina con el resto de filtros y parámetros activos', async () => {
+    const fetchMock = stubFetchOk(listPlantsResponse);
+
+    await getPlantList({
+      ...withFilters({ bookmarked: 'true', lifeCycle: 'annual' }),
+      pagination: { page: 2, limit: 50 },
+      sort: { field: 'scientificName', direction: 'desc' }
+    });
+
+    expect(lastRequest(fetchMock).url).toBe(
+      listUrl(
+        [
+          'filter[lifeCycle][eq]=annual',
+          'filter[bookmarked][eq]=true',
+          'pagination[page]=2',
+          'pagination[limit]=50',
+          'sort[scientificName]=desc'
+        ].join('&')
+      )
+    );
   });
 
   it('se envían tras lifeCycle en el orden de PLANT_FILTER_QUERY_KEYS', async () => {

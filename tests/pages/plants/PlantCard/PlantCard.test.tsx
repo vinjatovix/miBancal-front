@@ -1,9 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, it, expect } from 'vitest';
-import { MemoryRouter } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import { listPlantsResponse } from '../../../fixtures/plants/listPlants';
 import PlantCard from '../../../../src/pages/plants/PlantCard/PlantCard';
+import { getBookmarkedPlantIds } from '../../../../src/services/bookmarks.service';
 import { capitalizeFirstLetter } from '../../../../src/shared/utils/capitalizeFirstLetter';
 import type {
   Plant,
@@ -13,21 +15,34 @@ import {
   buildPlantListItem,
   buildPlantListItemWithEcological
 } from '../../../fixtures/plants/buildPlantListItem';
+import { VALID_TEST_TOKEN } from '../../../fixtures/auth/authFixtures';
+import { renderWithProviders } from '../../../test-utils/renderWithProviders';
+
+vi.mock('../../../../src/services/bookmarks.service', () => ({
+  getBookmarkedPlantIds: vi.fn()
+}));
+
+const mockedGetBookmarkedPlantIds = vi.mocked(getBookmarkedPlantIds);
 
 function toListItem({ id, identity, traits, image }: Plant) {
   return buildPlantListItem({ id, identity, traits, image });
 }
+
+function LocationProbe() {
+  return <span data-testid="pathname">{useLocation().pathname}</span>;
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockedGetBookmarkedPlantIds.mockResolvedValue(new Set());
+});
 
 describe('PlantCard', () => {
   const defaultPlant = toListItem(listPlantsResponse.data[0]);
   const otherPlant = toListItem(listPlantsResponse.data[1]);
 
   const renderComponent = (plant = defaultPlant) =>
-    render(
-      <MemoryRouter>
-        <PlantCard plant={plant} />
-      </MemoryRouter>
-    );
+    renderWithProviders(<PlantCard plant={plant} />);
 
   it('renders plant name capitalized', () => {
     renderComponent();
@@ -98,11 +113,7 @@ describe('PlantCard', () => {
       }
     };
 
-    render(
-      <MemoryRouter>
-        <PlantCard plant={plantWithoutScientific} />
-      </MemoryRouter>
-    );
+    renderWithProviders(<PlantCard plant={plantWithoutScientific} />);
 
     expect(
       screen.queryByText(
@@ -123,11 +134,7 @@ describe('PlantCard', () => {
       }
     };
 
-    render(
-      <MemoryRouter>
-        <PlantCard plant={plantWithoutAliases} />
-      </MemoryRouter>
-    );
+    renderWithProviders(<PlantCard plant={plantWithoutAliases} />);
 
     expect(document.querySelector('.plant-aliases')).not.toBeInTheDocument();
   });
@@ -176,4 +183,52 @@ describe('PlantCard', () => {
       expect(screen.queryByText('Borrada')).not.toBeInTheDocument();
     }
   );
+
+  describe('botón de favorito', () => {
+    it('sin sesión no se renderiza', () => {
+      renderComponent();
+
+      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('con sesión se renderiza relleno si la planta es favorita', async () => {
+      mockedGetBookmarkedPlantIds.mockResolvedValue(new Set([defaultPlant.id]));
+
+      renderWithProviders(<PlantCard plant={defaultPlant} />, {
+        initialToken: VALID_TEST_TOKEN
+      });
+
+      const button = await screen.findByRole('button');
+      await waitFor(() => {
+        expect(button).toHaveAttribute('aria-pressed', 'true');
+      });
+    });
+
+    it('no anida el botón de favorito dentro del enlace de navegación', async () => {
+      renderWithProviders(<PlantCard plant={defaultPlant} />, {
+        initialToken: VALID_TEST_TOKEN
+      });
+
+      const button = await screen.findByRole('button');
+      expect(screen.getByRole('link')).not.toContainElement(button);
+    });
+
+    it('pulsar el corazón alterna el estado sin navegar al detalle', async () => {
+      mockedGetBookmarkedPlantIds.mockResolvedValue(new Set());
+      const user = userEvent.setup();
+
+      renderWithProviders(
+        <>
+          <LocationProbe />
+          <PlantCard plant={defaultPlant} />
+        </>,
+        { initialToken: VALID_TEST_TOKEN, route: '/plants' }
+      );
+      const button = await screen.findByRole('button');
+
+      await user.click(button);
+
+      expect(screen.getByTestId('pathname')).toHaveTextContent('/plants');
+    });
+  });
 });

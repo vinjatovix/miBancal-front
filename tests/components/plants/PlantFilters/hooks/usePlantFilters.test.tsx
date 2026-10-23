@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 import { usePlantFilters } from '../../../../../src/components/plants/PlantFilters/hooks/usePlantFilters';
@@ -19,9 +19,22 @@ function wrapperWithParams({ children }: { children: React.ReactNode }) {
   );
 }
 
+const FILTER_COALESCE_DELAY_MS = 300;
+
+function flushFilters() {
+  act(() => {
+    vi.advanceTimersByTime(FILTER_COALESCE_DELAY_MS);
+  });
+}
+
 describe('usePlantFilters', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('exposes default params (empty URL)', () => {
@@ -63,8 +76,21 @@ describe('usePlantFilters', () => {
     act(() => {
       result.current.setParam('family', 'abc');
     });
+    flushFilters();
 
     expect(result.current.getParam('family')).toBe('abc');
+  });
+
+  it('setParamNow updates the URL synchronously without waiting the debounce', () => {
+    const { result } = renderHook(() => usePlantFilters(), {
+      wrapper: wrapperEmpty
+    });
+
+    act(() => {
+      result.current.setParamNow('lifeCycle', 'annual');
+    });
+
+    expect(result.current.getParam('lifeCycle')).toBe('annual');
   });
 
   it('setFamily updates param correctly', () => {
@@ -75,6 +101,7 @@ describe('usePlantFilters', () => {
     act(() => {
       result.current.setFamily('family-1');
     });
+    flushFilters();
 
     expect(result.current.getParam('family')).toBe('family-1');
   });
@@ -87,6 +114,7 @@ describe('usePlantFilters', () => {
     act(() => {
       result.current.setHemisphere('south');
     });
+    flushFilters();
 
     expect(result.current.getParam('hemisphere')).toBe('south');
   });
@@ -121,6 +149,7 @@ describe('usePlantFilters', () => {
     act(() => {
       result.current.setParam('page', '1');
     });
+    flushFilters();
 
     expect(result.current.getParam('page')).toBe('1');
   });
@@ -133,6 +162,7 @@ describe('usePlantFilters', () => {
     act(() => {
       result.current.setParam('family', 'abc');
     });
+    flushFilters();
 
     expect(result.current.getParam('family')).toBe('abc');
 
@@ -155,6 +185,7 @@ describe('usePlantFilters', () => {
     act(() => {
       result.current.setParam(key, value);
     });
+    flushFilters();
 
     expect(result.current.getParam(key)).toBe(value);
     expect(result.current.getParam('page')).toBe('');
@@ -186,6 +217,7 @@ describe('usePlantFilters', () => {
     act(() => {
       result.current.setParam('edible', 'true');
     });
+    flushFilters();
 
     expect(result.current.edible).toBe('true');
     expect(result.current.getParam('page')).toBe('');
@@ -193,6 +225,7 @@ describe('usePlantFilters', () => {
     act(() => {
       result.current.setParam('edible', undefined);
     });
+    flushFilters();
 
     expect(result.current.edible).toBeUndefined();
   });
@@ -217,6 +250,7 @@ describe('usePlantFilters', () => {
       result.current.setParam('soilPh', undefined);
       result.current.soilPh.setValue(null);
     });
+    flushFilters();
 
     expect(result.current.getParam('soilPh')).toBe('');
     expect(result.current.soilPh.value).toBe(null);
@@ -247,8 +281,24 @@ describe('usePlantFilters', () => {
       expect(result.current.filters.textState.identity).toBe('');
     });
 
+    it('flushes pending text onto the latest URL after an external navigation', () => {
+      const { result } = renderWithSearch('/plants');
+
+      act(() => {
+        result.current.filters.handleTextChange('identity', 'lech');
+      });
+      act(() => {
+        result.current.navigate('/plants?tab=favorites');
+      });
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(result.current.filters.getParam('identity')).toBe('lech');
+      expect(result.current.filters.getParam('tab')).toBe('favorites');
+    });
+
     it('keeps what is typed inside the debounce window', () => {
-      vi.useFakeTimers();
       const { result } = renderWithSearch('/plants');
 
       act(() => {
@@ -266,7 +316,6 @@ describe('usePlantFilters', () => {
 
       expect(result.current.filters.getParam('identity')).toBe('lech');
       expect(result.current.filters.textState.identity).toBe('lech');
-      vi.useRealTimers();
     });
   });
 });

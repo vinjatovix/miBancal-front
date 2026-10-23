@@ -25,6 +25,7 @@ interface Props {
 export default function PlantFilters({ activeCount = 0 }: Props) {
   const {
     setParam,
+    setParamNow,
 
     family,
     setFamily,
@@ -117,7 +118,7 @@ export default function PlantFilters({ activeCount = 0 }: Props) {
       <MonthSelector
         hemisphere={hemisphere}
         value={sowingMonth}
-        onChange={(value) => setParam('sowingMonth', value)}
+        onChange={(value) => setParamNow('sowingMonth', value)}
       />
 
       {TOGGLE_FILTERS.map((filter) => (
@@ -128,7 +129,7 @@ export default function PlantFilters({ activeCount = 0 }: Props) {
           options={[...filter.options]}
           value={toggleValues[filter.key]}
           onChange={(value) =>
-            setParam(
+            setParamNow(
               filter.key,
               toggleValues[filter.key] === value ? '' : value
             )
@@ -137,7 +138,7 @@ export default function PlantFilters({ activeCount = 0 }: Props) {
         />
       ))}
 
-      <BooleanFilterGroups values={{ edible, toxic }} onChange={setParam} />
+      <BooleanFilterGroups values={{ edible, toxic }} onChange={setParamNow} />
 
       {SLIDER_FILTERS.map((filter) => (
         <SliderFilter
