@@ -17,6 +17,7 @@ import { ErrorResponse } from '../../shared/components/ErrorResponse/ErrorRespon
 
 import AppliedFiltersBar from './components/AppliedFiltersBar/AppliedFiltersBar';
 import CatalogHeader from './components/CatalogHeader/CatalogHeader';
+import CatalogTabs from './components/CatalogTabs/CatalogTabs';
 import ViewModeToggle from './components/ViewModeToggle/ViewModeToggle';
 import {
   persistMode,
@@ -32,6 +33,7 @@ import {
   getPlantListEmptyState,
   type PlantListEmptyState
 } from './utils/getPlantListEmptyState';
+import { withoutListParam } from './utils/plantListParamWrites';
 
 import './plantList.css';
 
@@ -88,6 +90,27 @@ function PlantListEmpty(props: PlantListEmptyProps) {
   );
 }
 
+function PlantListFavoritesEmpty({
+  onGoToAll
+}: {
+  readonly onGoToAll: () => void;
+}) {
+  return (
+    <div className="plant-list__empty">
+      <p role="status" className="plant-list__empty-message">
+        {t('plant.emptyState.favorites')}
+      </p>
+      <button
+        type="button"
+        className="plant-list__empty-action"
+        onClick={onGoToAll}
+      >
+        {t('plant.emptyState.favorites_action')}
+      </button>
+    </div>
+  );
+}
+
 function readPlantListPage(
   response: PaginatedResponse<PlantListItem> | undefined,
   page: number
@@ -114,7 +137,8 @@ export default function PlantList() {
   } = usePlants();
 
   const [viewMode, setViewMode] = useState(readStoredMode);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const favoritesTabActive = request.filters.bookmarked === 'true';
   const families = useFamilies();
   const hemisphere = readHemisphere(searchParams);
   const familyName = families.data?.find(
@@ -146,6 +170,8 @@ export default function PlantList() {
   return (
     <div>
       <h1>{t('plant.plants')}</h1>
+
+      <CatalogTabs />
 
       <CatalogHeader
         totalItems={totalItems}
@@ -189,11 +215,27 @@ export default function PlantList() {
       <Pagination pages={pages} currentPage={page} onPageChange={setPage} />
 
       {plants.length === 0 ? (
-        <PlantListEmpty
-          state={getPlantListEmptyState({ page, totalItems, hasActiveFilters })}
-          onClearFilters={clearFilters}
-          onGoToFirstPage={goToFirstPage}
-        />
+        favoritesTabActive &&
+        !hasActiveFilters &&
+        !(page > 1 && totalItems > 0) ? (
+          <PlantListFavoritesEmpty
+            onGoToAll={() =>
+              setSearchParams((prev) =>
+                withoutListParam(prev, PLANT_LIST_URL_PARAMS.tab)
+              )
+            }
+          />
+        ) : (
+          <PlantListEmpty
+            state={getPlantListEmptyState({
+              page,
+              totalItems,
+              hasActiveFilters
+            })}
+            onClearFilters={clearFilters}
+            onGoToFirstPage={goToFirstPage}
+          />
+        )
       ) : (
         <div
           data-testid="plant-grid"

@@ -31,6 +31,8 @@ export type PlantFilterParams = {
 
   edible?: BooleanFilterValue;
   toxic?: BooleanFilterValue;
+
+  bookmarked?: BooleanFilterValue;
 };
 
 export const PLANT_SORT_FIELDS = ['name', 'scientificName'] as const;
@@ -67,7 +69,8 @@ export const PLANT_FILTER_QUERY_KEYS: Record<keyof PlantFilterParams, string> =
     spacingCm: 'filter[spacingCm][eq]',
     lightType: 'filter[lightType][eq]',
     lightHoursMin: 'filter[lightHoursMin][eq]',
-    rootSystem: 'filter[rootSystem][eq]'
+    rootSystem: 'filter[rootSystem][eq]',
+    bookmarked: 'filter[bookmarked][eq]'
   };
 
 export const PLANT_FIELDS_QUERY_KEY = 'fields[plants]';

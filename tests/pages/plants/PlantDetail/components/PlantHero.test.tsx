@@ -1,6 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import PlantHero from '../../../../../src/pages/plants/PlantDetail/components/PlantHero';
 import { capitalizeFirstLetter } from '../../../../../src/shared/utils/capitalizeFirstLetter';
@@ -9,6 +8,11 @@ import {
   buildPlant,
   buildPlantWithFamily
 } from '../../../../fixtures/plants/buildPlant';
+import { renderWithProviders } from '../../../../test-utils/renderWithProviders';
+
+vi.mock('../../../../../src/services/bookmarks.service', () => ({
+  getBookmarkedPlantIds: vi.fn(() => Promise.resolve(new Set()))
+}));
 
 describe('PlantHero: linked family', () => {
   it('renders family name as a link pointing to the family slug', () => {
@@ -19,11 +23,7 @@ describe('PlantHero: linked family', () => {
     });
     const plant = buildPlantWithFamily(family);
 
-    render(
-      <MemoryRouter>
-        <PlantHero plant={plant} />
-      </MemoryRouter>
-    );
+    renderWithProviders(<PlantHero plant={plant} />);
 
     const familyLink = screen.getByRole('link', { name: 'Solanáceas' });
     expect(familyLink).toHaveAttribute('href', '/families/solanaceae');
@@ -38,11 +38,7 @@ describe('PlantHero: linked family', () => {
     });
     const plant = buildPlantWithFamily(family);
 
-    render(
-      <MemoryRouter>
-        <PlantHero plant={plant} />
-      </MemoryRouter>
-    );
+    renderWithProviders(<PlantHero plant={plant} />);
 
     const link = screen.getByRole('link', { name: 'Solanáceas' });
     expect(link).not.toHaveAttribute('href', expect.stringContaining(familyId));
@@ -77,11 +73,7 @@ describe('PlantHero: unavailable and missing family', () => {
   ])('%s when family is unavailable', (_, assertFn) => {
     const plant = buildPlantWithFamily('5a2380c4-1546-4511-a77b-ec9d3ebcb7cf');
 
-    render(
-      <MemoryRouter>
-        <PlantHero plant={plant} />
-      </MemoryRouter>
-    );
+    renderWithProviders(<PlantHero plant={plant} />);
 
     assertFn();
   });
@@ -98,11 +90,7 @@ describe('PlantHero: unavailable and missing family', () => {
       }
     };
 
-    render(
-      <MemoryRouter>
-        <PlantHero plant={plant} />
-      </MemoryRouter>
-    );
+    renderWithProviders(<PlantHero plant={plant} />);
 
     expect(screen.queryByText('Familia no disponible')).not.toBeInTheDocument();
   });
@@ -112,11 +100,7 @@ describe('PlantHero: scientific name', () => {
   it('styles only the scientific name value, not its label', () => {
     const plant = buildPlant();
 
-    render(
-      <MemoryRouter>
-        <PlantHero plant={plant} />
-      </MemoryRouter>
-    );
+    renderWithProviders(<PlantHero plant={plant} />);
 
     expect(
       screen.getByText(capitalizeFirstLetter(plant.identity.scientificName!))
@@ -133,11 +117,7 @@ describe('PlantHero: image', () => {
       image: { url: 'https://example.org/plants/primary.jpg' }
     });
 
-    render(
-      <MemoryRouter>
-        <PlantHero plant={plant} />
-      </MemoryRouter>
-    );
+    renderWithProviders(<PlantHero plant={plant} />);
 
     expect(
       screen.getByRole('img', { name: plant.identity.name.primary })

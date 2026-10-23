@@ -16,15 +16,23 @@ export const PLANT_LIST_URL_PARAMS = {
   lightHoursMin: 'lightHoursMin',
   spacingCm: 'spacingCm',
   soilAvailableDepthCm: 'soilAvailableDepthCm',
-  hemisphere: 'hemisphere'
+  hemisphere: 'hemisphere',
+  tab: 'tab'
 } as const;
+
+export const FAVORITES_TAB_VALUE = 'favorites';
+
+export function isFavoritesTab(params: URLSearchParams): boolean {
+  return params.get(PLANT_LIST_URL_PARAMS.tab) === FAVORITES_TAB_VALUE;
+}
 
 const NON_FILTER_URL_PARAMS: ReadonlySet<string> = new Set([
   PLANT_LIST_URL_PARAMS.page,
   PLANT_LIST_URL_PARAMS.limit,
   PLANT_LIST_URL_PARAMS.sortField,
   PLANT_LIST_URL_PARAMS.sortDirection,
-  PLANT_LIST_URL_PARAMS.hemisphere
+  PLANT_LIST_URL_PARAMS.hemisphere,
+  PLANT_LIST_URL_PARAMS.tab
 ]);
 
 export const PLANT_LIST_FILTER_URL_PARAMS: readonly string[] = Object.values(

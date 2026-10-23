@@ -2,7 +2,9 @@ import { Link } from 'react-router-dom';
 
 import PlantStatusBadge from '../../../components/plants/PlantStatusBadge/PlantStatusBadge';
 import Badge from '../../../shared/components/Badge/Badge';
+import FavoriteButton from '../../../shared/components/FavoriteButton/FavoriteButton';
 import ScientificName from '../../../shared/components/ScientificName/ScientificName';
+import { useBookmarks } from '../../../shared/hooks/useBookmarks';
 import { capitalizeFirstLetter } from '../../../shared/utils/capitalizeFirstLetter';
 import type { PlantListItem } from '../../../types/Plants/Plant';
 import PlantSafetyIndicators from '../components/PlantSafetyIndicators/PlantSafetyIndicators';
@@ -15,9 +17,16 @@ export interface PlantCardProps {
 }
 
 export default function PlantCard({ plant }: PlantCardProps) {
+  const bookmarks = useBookmarks();
+
   return (
-    <Link to={`/plants/${plant.id}`}>
-      <article className="plant-card">
+    <article className="plant-card">
+      <FavoriteButton
+        plantId={plant.id}
+        isFavorite={bookmarks.data?.has(plant.id) ?? false}
+        isReady={bookmarks.data !== undefined}
+      />
+      <Link to={`/plants/${plant.id}`} className="plant-card__link">
         <div className="plant-card__heading">
           <h3>{capitalizeFirstLetter(plant.identity.name.primary)}</h3>
           <PlantSafetyIndicators safety={readPlantSafety(plant)} />
@@ -44,7 +53,7 @@ export default function PlantCard({ plant }: PlantCardProps) {
             ))}
           </div>
         )}
-      </article>
-    </Link>
+      </Link>
+    </article>
   );
 }

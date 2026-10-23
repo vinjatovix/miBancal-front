@@ -4,6 +4,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Link, Route, Routes } from 'react-router-dom';
 
+import { t } from '../../../../src/i18n/core/t';
 import PlantDetail from '../../../../src/pages/plants/PlantDetail/PlantDetail';
 import {
   deletePlant,
@@ -14,6 +15,7 @@ import {
 import { ApiError } from '../../../../src/shared/errors/ApiError';
 import { NetworkError } from '../../../../src/shared/errors/NetworkError';
 import { PreconditionFailedError } from '../../../../src/shared/errors/PreconditionFailedError';
+import { clearStoredToken } from '../../../../src/shared/auth/session';
 import { renderWithProviders } from '../../../test-utils/renderWithProviders';
 import {
   ADMIN_TEST_TOKEN,
@@ -33,6 +35,11 @@ vi.mock('../../../../src/services/plants.service', () => ({
   getPlantById: vi.fn(),
   getPlantForEdit: vi.fn(),
   updatePlant: vi.fn()
+}));
+vi.mock('../../../../src/services/bookmarks.service', () => ({
+  getBookmarkedPlantIds: vi.fn(() => Promise.resolve(new Set())),
+  addPlantBookmark: vi.fn(),
+  removePlantBookmark: vi.fn()
 }));
 
 const mockedDeletePlant = vi.mocked(deletePlant);
@@ -776,5 +783,41 @@ describe('PlantDetail', () => {
         await within(dialog).findByText('Network request failed')
       ).toBeInTheDocument();
     });
+  });
+});
+
+describe('PlantDetail: botón de favorito en el hero', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    clearStoredToken();
+    mockedGetPlantById.mockResolvedValue(mockPlant);
+  });
+
+  it('no se renderiza sin sesión', async () => {
+    renderPlantDetail();
+
+    await screen.findByRole('heading', {
+      name: new RegExp(mockPlant.identity.name.primary, 'i')
+    });
+    expect(
+      screen.queryByRole('button', { name: /favorita/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it('con sesión muestra el estado correcto y permite alternarlo', async () => {
+    const { getBookmarkedPlantIds } =
+      await import('../../../../src/services/bookmarks.service');
+    vi.mocked(getBookmarkedPlantIds).mockResolvedValue(new Set([mockPlant.id]));
+
+    renderWithProviders(<PlantDetail />, {
+      route: `/plants/${mockPlant.id}`,
+      path: '/plants/:id',
+      initialToken: VALID_TEST_TOKEN
+    });
+
+    const button = await screen.findByRole('button', {
+      name: t('favoriteButton.remove')
+    });
+    expect(button).toHaveAttribute('aria-pressed', 'true');
   });
 });

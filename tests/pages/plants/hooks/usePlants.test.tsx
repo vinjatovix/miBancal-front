@@ -14,7 +14,10 @@ import { plantKeys } from '../../../../src/shared/reactQuery/plantKeys';
 import type { PaginatedResponse } from '../../../../src/types/api';
 import type { PlantListItem } from '../../../../src/types/Plants/Plant';
 
-import { ADMIN_TEST_TOKEN } from '../../../fixtures/auth/authFixtures';
+import {
+  ADMIN_TEST_TOKEN,
+  VALID_TEST_TOKEN
+} from '../../../fixtures/auth/authFixtures';
 import { listPlantsResponse } from '../../../fixtures/plants/listPlants';
 import { createTestQueryClient } from '../../../test-utils/createTestQueryClient';
 
@@ -45,6 +48,27 @@ function renderUsePlants(route = '/plants') {
 
 function searchParams(search: string) {
   return new URLSearchParams(search);
+}
+
+function renderUsePlantsAuthenticated(route = '/plants') {
+  const queryClient = createTestQueryClient();
+  setStoredToken(VALID_TEST_TOKEN);
+  return {
+    queryClient,
+    ...renderHook(() => usePlantsWithLocation(), {
+      wrapper: ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <MemoryRouter initialEntries={[route]}>
+              <Routes>
+                <Route path="*" element={children} />
+              </Routes>
+            </MemoryRouter>
+          </AuthProvider>
+        </QueryClientProvider>
+      )
+    })
+  };
 }
 
 beforeEach(() => {
@@ -327,5 +351,50 @@ describe('usePlants: vacíos y filtros', () => {
     const params = searchParams(result.current.search);
     expect(params.get('identity')).toBe('tomate');
     expect(params.get('limit')).toBe('50');
+  });
+});
+
+describe('usePlants: pestaña de favoritas', () => {
+  it('con sesión y tab=favorites inyecta bookmarked:true en la petición', () => {
+    const { result } = renderUsePlantsAuthenticated('/plants?tab=favorites');
+
+    expect(result.current.plants.request.filters.bookmarked).toBe('true');
+  });
+
+  it('con sesión y tab=favorites incluye el userId en la queryKey', async () => {
+    const { queryClient, result } = renderUsePlantsAuthenticated(
+      '/plants?tab=favorites'
+    );
+
+    await waitFor(() => {
+      const entry = queryClient.getQueryCache().find({
+        queryKey: [
+          ...plantKeys.list(result.current.plants.request, 'public'),
+          '00000000-0000-4000-8000-000000000001'
+        ]
+      });
+      expect(entry).toBeDefined();
+    });
+  });
+
+  it('sin sesión ignora tab=favorites y nunca añade bookmarked', () => {
+    const { result } = renderUsePlants('/plants?tab=favorites');
+
+    expect(result.current.plants.request.filters.bookmarked).toBeUndefined();
+  });
+
+  it('con tab=favorites y sin otros filtros, hasActiveFilters es false', () => {
+    const { result } = renderUsePlantsAuthenticated('/plants?tab=favorites');
+
+    expect(result.current.plants.request.filters.bookmarked).toBe('true');
+    expect(result.current.plants.hasActiveFilters).toBe(false);
+  });
+
+  it('con tab=favorites y un filtro real, hasActiveFilters es true', () => {
+    const { result } = renderUsePlantsAuthenticated(
+      '/plants?tab=favorites&edible=true'
+    );
+
+    expect(result.current.plants.hasActiveFilters).toBe(true);
   });
 });

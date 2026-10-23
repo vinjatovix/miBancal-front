@@ -10,11 +10,12 @@ const NON_FILTER_PARAMS = [
   'limit',
   'sortField',
   'sortDirection',
-  'hemisphere'
+  'hemisphere',
+  'tab'
 ];
 
 describe('PLANT_LIST_FILTER_URL_PARAMS', () => {
-  it('lists every url param except page, limit, sort and hemisphere', () => {
+  it('lists every url param except page, limit, sort, hemisphere and tab', () => {
     const expected = Object.values(PLANT_LIST_URL_PARAMS).filter(
       (param) => !NON_FILTER_PARAMS.includes(param)
     );
@@ -42,6 +43,14 @@ describe('withoutPlantListFilters', () => {
     );
 
     expect(result.toString()).toBe('limit=25');
+  });
+
+  it('conserva el parámetro tab (no es un filtro)', () => {
+    const result = withoutPlantListFilters(
+      new URLSearchParams('identity=x&tab=favorites&limit=25')
+    );
+
+    expect(result.toString()).toBe('tab=favorites&limit=25');
   });
 
   it('does not mutate its input', () => {
