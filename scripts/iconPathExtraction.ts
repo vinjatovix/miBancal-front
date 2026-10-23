@@ -74,6 +74,10 @@ export const TWEMOJI_ALIASES: Record<string, string> = {
 };
 
 export const CUSTOM_GLYPHS: Record<string, string> = {
+  chevron_left:
+    '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="m22 10-8 8 8 8"/>',
+  chevron_right:
+    '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="m14 10 8 8-8 8"/>',
   favorite:
     '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" d="M18 32.03l-2.18-1.98C8.1 23.04 3 18.42 3 12.75 3 8.13 6.63 4.5 11.25 4.5c2.61 0 5.12 1.22 6.75 3.14C19.64 5.72 22.14 4.5 24.75 4.5 29.37 4.5 33 8.13 33 12.75c0 5.67-5.1 10.29-12.83 17.31L18 32.03z"/>',
   favorite_filled:

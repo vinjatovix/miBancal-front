@@ -28,6 +28,25 @@ describe('auth and admin dictionary keys', () => {
   });
 });
 
+describe('navigation dictionary keys', () => {
+  it.each([
+    ['app.nav.plants', 'Plantas'],
+    ['app.nav.families', 'Familias'],
+    ['app.nav.menu', 'Menú de navegación'],
+    ['app.nav.menu_title', 'Menú'],
+    ['app.nav.close', 'Cerrar'],
+    ['app.nav.rail_title', 'Navegación principal'],
+    ['app.nav.bottom_title', 'Navegación inferior'],
+    ['app.nav.rail_toggle_expand', 'Expandir menú de navegación'],
+    ['app.nav.rail_toggle_collapse', 'Contraer menú de navegación'],
+    ['app.nav.account_menu', 'Menú de cuenta y configuración']
+  ] as const)('translates %s to %s', (key, expected) => {
+    const result = t(key);
+
+    expect(result).toBe(expected);
+  });
+});
+
 describe('admin dictionary keys', () => {
   it.each([
     ['admin.heading', 'Administración de usuarios'],

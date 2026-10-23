@@ -4,12 +4,16 @@ import { Link, Outlet, ScrollRestoration } from 'react-router-dom';
 import { IS_DEV } from '../../config/env';
 import { t } from '../../i18n/core/t';
 import Icon from '../../shared/components/Icon/Icon';
+import AccountDropdown from './AccountDropdown/AccountDropdown';
+import AppBottomNav from './AppBottomNav/AppBottomNav';
+import AppNavRail from './AppNavRail/AppNavRail';
 import DevBanner from './DevBanner/DevBanner';
-import NavDrawer from './NavDrawer/NavDrawer';
+import { useNavRailState } from './useNavRailState';
 import './mainLayout.css';
 
 export default function MainLayout() {
   const [isOpen, setIsOpen] = useState(false);
+  const { isExpanded: isRailExpanded, toggleRail } = useNavRailState();
   const toggleButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const shellClassName = IS_DEV ? 'app-shell app-shell--dev' : 'app-shell';
@@ -28,26 +32,39 @@ export default function MainLayout() {
           ref={toggleButtonRef}
           type="button"
           className="app-menu-toggle"
-          aria-label={t('app.nav.menu')}
+          aria-label={t('app.nav.account_menu')}
           aria-expanded={isOpen}
-          aria-controls="app-nav-dialog"
+          aria-haspopup="true"
+          aria-controls="account-dropdown-menu"
           onClick={() => setIsOpen((prev) => !prev)}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+              event.preventDefault();
+              setIsOpen(true);
+            }
+          }}
         >
           <span className="app-menu-bar" />
           <span className="app-menu-bar" />
           <span className="app-menu-bar" />
         </button>
+
+        <AccountDropdown
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
+          triggerRef={toggleButtonRef}
+        />
       </header>
 
-      <NavDrawer
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        triggerRef={toggleButtonRef}
-      />
+      <div className="app-body">
+        <AppNavRail isExpanded={isRailExpanded} onToggle={toggleRail} />
 
-      <main className="app-content">
-        <Outlet />
-      </main>
+        <main className="app-content">
+          <Outlet />
+        </main>
+      </div>
+
+      <AppBottomNav />
 
       <DevBanner />
     </div>

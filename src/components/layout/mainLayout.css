@@ -1,7 +1,52 @@
+.app-shell {
+  --app-header-height: 56px;
+  --app-nav-rail-width: 72px;
+  --app-nav-rail-expanded-width: 240px;
+  --bottom-nav-height: 56px;
+}
+
 .app-shell--dev {
   --dev-banner-height: 22px;
   padding-bottom: var(--dev-banner-height);
   box-sizing: border-box;
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+}
+
+@media (max-width: 767px) {
+  .app-nav-rail {
+    display: none;
+  }
+
+  .app-bottom-nav {
+    display: block;
+  }
+
+  .app-body > .app-content {
+    padding-bottom: calc(var(--bottom-nav-height, 56px) + var(--space-md));
+  }
+
+  .app-shell .plants-fab {
+    bottom: calc(
+      var(--bottom-nav-height, 56px) + var(--space-md) +
+        var(--dev-banner-height, 0px)
+    );
+  }
+}
+
+@media (min-width: 768px) {
+  .app-nav-rail {
+    display: flex;
+  }
+
+  .app-bottom-nav {
+    display: none;
+  }
 }
 
 .app-menu-toggle {

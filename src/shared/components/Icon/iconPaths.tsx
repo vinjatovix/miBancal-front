@@ -1203,6 +1203,32 @@ const yardGlyph = (
   </>
 );
 
+const chevron_leftGlyph = (
+  <>
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="m22 10-8 8 8 8"
+    />
+  </>
+);
+
+const chevron_rightGlyph = (
+  <>
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="m14 10 8 8-8 8"
+    />
+  </>
+);
+
 const favoriteGlyph = (
   <>
     <path
@@ -1357,6 +1383,8 @@ export const ICON_GLYPHS = {
   calendar_today: calendar_todayGlyph,
   check: checkGlyph,
   check_circle: check_circleGlyph,
+  chevron_left: chevron_leftGlyph,
+  chevron_right: chevron_rightGlyph,
   clear_all: clear_allGlyph,
   close: closeGlyph,
   content_copy: content_copyGlyph,
