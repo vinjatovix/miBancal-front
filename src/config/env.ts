@@ -14,6 +14,10 @@ export function parseRequiredEnv(name: string, value: unknown): string {
   return parsed;
 }
 
+export function parseBooleanEnv(value: unknown): boolean {
+  return parseOptionalEnv(value) === 'true';
+}
+
 export const API_URL: string = parseRequiredEnv(
   'VITE_API_URL',
   import.meta.env.VITE_API_URL
@@ -24,4 +28,4 @@ export const GOOGLE_CLIENT_ID: string | undefined = parseOptionalEnv(
 export const GITHUB_CLIENT_ID: string | undefined = parseOptionalEnv(
   import.meta.env.VITE_GITHUB_CLIENT_ID
 );
-export const IS_DEV = Boolean(import.meta.env.DEV);
+export const IS_DEV = parseBooleanEnv(import.meta.env.VITE_SHOW_DEV_BANNER);
