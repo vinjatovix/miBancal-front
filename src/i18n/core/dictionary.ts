@@ -30,7 +30,12 @@ export const dictionary = {
       families: 'Familias',
       menu: 'Menú de navegación',
       menu_title: 'Menú',
-      close: 'Cerrar'
+      close: 'Cerrar',
+      rail_title: 'Navegación principal',
+      bottom_title: 'Navegación inferior',
+      rail_toggle_expand: 'Expandir menú de navegación',
+      rail_toggle_collapse: 'Contraer menú de navegación',
+      account_menu: 'Menú de cuenta y configuración'
     }
   },
   auth: {

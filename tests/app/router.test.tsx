@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import {
   createMemoryRouter,
   RouterProvider,
@@ -47,7 +47,7 @@ describe('router', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: t('app.nav.menu') })
+      screen.getByRole('button', { name: t('app.nav.account_menu') })
     ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/ruta-inventada');
     expect(router.state.historyAction).toBe('POP');
@@ -68,9 +68,11 @@ describe('router', () => {
     expect(
       screen.getByRole('button', { name: t('errors.actions.reload') })
     ).toBeInTheDocument();
-    expect(getUnexpectedErrorReports(errorSpy)).toEqual([
-      expect.objectContaining({ kind: 'render', section: 'app' })
-    ]);
+    await waitFor(() => {
+      expect(getUnexpectedErrorReports(errorSpy)).toEqual([
+        expect.objectContaining({ kind: 'render', section: 'app' })
+      ]);
+    });
     errorSpy.mockRestore();
   });
 
@@ -96,7 +98,7 @@ describe('router', () => {
 
       expect(await screen.findByRole('banner')).toBeInTheDocument();
       expect(
-        await screen.findByRole('button', { name: t('app.nav.menu') })
+        await screen.findByRole('button', { name: t('app.nav.account_menu') })
       ).toBeInTheDocument();
       expect(await screen.findByRole('main')).toBeInTheDocument();
     }
