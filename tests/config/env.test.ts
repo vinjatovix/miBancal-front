@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { parseOptionalEnv, parseRequiredEnv } from '../../src/config/env';
+import {
+  parseBooleanEnv,
+  parseOptionalEnv,
+  parseRequiredEnv
+} from '../../src/config/env';
 
 describe('parseOptionalEnv', () => {
   it('returns trimmed string when non-empty string is provided', () => {
@@ -47,4 +51,35 @@ describe('parseRequiredEnv', () => {
       );
     }
   );
+});
+
+describe('parseBooleanEnv', () => {
+  it.each(['true', '  true  '])(
+    'returns true when value is trimmed "true": %j',
+    (input) => {
+      const result = parseBooleanEnv(input);
+
+      expect(result).toBe(true);
+    }
+  );
+
+  it.each([
+    'false',
+    'True',
+    'TRUE',
+    '1',
+    '0',
+    '',
+    '   ',
+    undefined,
+    null,
+    123,
+    true,
+    {},
+    []
+  ])('returns false when value is not the string "true": %s', (input) => {
+    const result = parseBooleanEnv(input);
+
+    expect(result).toBe(false);
+  });
 });
