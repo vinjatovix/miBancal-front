@@ -1,0 +1,45 @@
+.anomaly-hero {
+  display: grid;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.anomaly-hero h1,
+.anomaly-hero p {
+  margin: 0;
+}
+
+.anomaly-hero__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.anomaly-hero__actions,
+.anomaly-hero__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.anomaly-hero__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: var(--space-xs) var(--space-sm);
+  font: var(--type-label-lg);
+  color: var(--color-primary);
+  background: var(--color-primary-fixed);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.anomaly-hero__btn--danger {
+  color: var(--color-error);
+  background: var(--color-error-container);
+  border-color: var(--color-error);
+}

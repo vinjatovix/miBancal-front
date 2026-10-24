@@ -2,6 +2,8 @@ import { reportMissingTranslation } from '../../shared/observability/reportMissi
 import { lookup } from './t';
 
 export type ValueGroup =
+  | 'anomaly.categoryValues'
+  | 'anomaly.statusValues'
   | 'plant.calendar.seasonValues'
   | 'plant.safety.flagValues'
   | 'plant.statusValues'

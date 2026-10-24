@@ -3,15 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { NAVIGATION_ITEMS } from '../../../src/components/layout/navigationItems';
 
 describe('navigationItems', () => {
-  it('contains at least one navigation item and specifically plants and families in order', () => {
+  it('contains at least one navigation item and plants, families and anomalies in order', () => {
     const ids = NAVIGATION_ITEMS.map((item) => item.id);
 
-    expect(ids).toEqual(['plants', 'families']);
+    expect(ids).toEqual(['plants', 'families', 'anomalies']);
   });
 
   it.each([
     ['plants', 'app.nav.plants', '/plants', 'eco'],
-    ['families', 'app.nav.families', '/families', 'biotech']
+    ['families', 'app.nav.families', '/families', 'biotech'],
+    ['anomalies', 'app.nav.anomalies', '/anomalies', 'crisis_alert']
   ] as const)(
     'configures %s with correct labelKey, path, and icon',
     (id, expectedLabelKey, expectedPath, expectedIcon) => {
@@ -74,6 +75,26 @@ describe('navigationItems', () => {
         const result = familiesItem?.isMatch(pathname);
 
         expect(result).toBe(expectedResult);
+      }
+    );
+
+    it.each([
+      ['/anomalies', true],
+      ['/anomalies/', true],
+      ['/anomalies/pulgon-verde', true],
+      ['/anomalies/new', true],
+      ['/', false],
+      ['/plants', false],
+      ['/families', false],
+      ['/anomalies-other', false]
+    ] as const)(
+      'evaluates anomalies.isMatch(%s) to %s',
+      (pathname, expectedResult) => {
+        const anomaliesItem = NAVIGATION_ITEMS.find(
+          (item) => item.id === 'anomalies'
+        );
+
+        expect(anomaliesItem?.isMatch(pathname)).toBe(expectedResult);
       }
     );
   });

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   catalogEditKeys,
+  invalidateAnomalyQueries,
   invalidateFamilyQueries,
   invalidatePlantQueries
 } from '../../../src/shared/reactQuery/catalogMutationKeys';
@@ -18,6 +19,16 @@ describe('catalogEditKeys', () => {
     const key = catalogEditKeys.familyEdit('solanaceae');
 
     expect(key).toEqual(['families', 'edit', 'solanaceae']);
+  });
+});
+
+describe('catalogEditKeys.anomalyEdit', () => {
+  it('generates consistent anomalyEdit query key', () => {
+    expect(catalogEditKeys.anomalyEdit('pulgon-verde')).toEqual([
+      'anomalies',
+      'edit',
+      'pulgon-verde'
+    ]);
   });
 });
 
@@ -72,5 +83,33 @@ describe('invalidateFamilyQueries', () => {
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['families'] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['plants'] });
+  });
+});
+
+describe('invalidateAnomalyQueries', () => {
+  it('invalidates anomaly keys with specific slug', async () => {
+    const queryClient = new QueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await invalidateAnomalyQueries(queryClient, 'pulgon-verde');
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['anomalies'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: ['anomalies', 'detail', 'pulgon-verde']
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: ['anomalies', 'edit', 'pulgon-verde']
+    });
+    expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: ['plants'] });
+  });
+
+  it('invalidates only general anomaly keys when slug is omitted', async () => {
+    const queryClient = new QueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await invalidateAnomalyQueries(queryClient);
+
+    expect(invalidateSpy).toHaveBeenCalledOnce();
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['anomalies'] });
   });
 });

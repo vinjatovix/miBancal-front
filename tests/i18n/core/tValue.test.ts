@@ -37,4 +37,25 @@ describe('tValue', () => {
     expect(tValue('plant.statusValues', 'DELETED')).toBe('Borrada');
     expect(reportMissingTranslation).not.toHaveBeenCalled();
   });
+
+  it('translates the anomaly category values', () => {
+    expect(tValue('anomaly.categoryValues', 'pest')).toBe('Plaga');
+    expect(tValue('anomaly.categoryValues', 'disease')).toBe('Enfermedad');
+    expect(tValue('anomaly.categoryValues', 'disorder')).toBe('Desorden');
+    expect(tValue('anomaly.categoryValues', 'weed')).toBe('Maleza');
+    expect(reportMissingTranslation).not.toHaveBeenCalled();
+  });
+
+  it('translates the anomaly status values', () => {
+    expect(tValue('anomaly.statusValues', 'ACTIVE')).toBe('Activa');
+    expect(tValue('anomaly.statusValues', 'DELETED')).toBe('Eliminada');
+    expect(reportMissingTranslation).not.toHaveBeenCalled();
+  });
+
+  it('returns an unknown anomaly category as received and reports it', () => {
+    expect(tValue('anomaly.categoryValues', 'virus')).toBe('virus');
+    expect(reportMissingTranslation).toHaveBeenCalledExactlyOnceWith(
+      'anomaly.categoryValues.virus'
+    );
+  });
 });

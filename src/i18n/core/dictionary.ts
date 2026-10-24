@@ -28,6 +28,7 @@ export const dictionary = {
     nav: {
       plants: 'Plantas',
       families: 'Familias',
+      anomalies: 'Anomalías',
       menu: 'Menú de navegación',
       menu_title: 'Menú',
       close: 'Cerrar',
@@ -121,7 +122,8 @@ export const dictionary = {
       message:
         'Se requiere rol de Colaborador o Administrador para crear o modificar fichas del catálogo botánico.',
       back_to_plants: 'Volver al catálogo de plantas',
-      back_to_families: 'Volver al catálogo de familias'
+      back_to_families: 'Volver al catálogo de familias',
+      back_to_anomalies: 'Volver al catálogo de anomalías'
     }
   },
   admin: {
@@ -381,7 +383,12 @@ export const dictionary = {
     },
     backHome: 'Volver al inicio',
     backToPlants: 'Volver al listado de plantas',
-    backToFamilies: 'Volver al listado de familias'
+    anomaly: {
+      title: 'Anomalía no encontrada',
+      message: 'La anomalía no existe o ya no está disponible.'
+    },
+    backToFamilies: 'Volver al listado de familias',
+    backToAnomalies: 'Volver al catálogo de anomalías'
   },
 
   family: {
@@ -461,6 +468,123 @@ export const dictionary = {
       total_count: '{total} plantas en total',
       single_count: '1 planta en total',
       empty: 'No hay plantas registradas para esta familia.'
+    }
+  },
+  anomaly: {
+    title: 'Anomalías',
+    subtitle: 'Plagas, enfermedades, desórdenes y malezas de los cultivos.',
+    empty: 'No hay anomalías que coincidan con los filtros.',
+    empty_catalog: 'Aún no hay anomalías registradas.',
+    list_error: 'No se han podido cargar las anomalías.',
+    scientific_name_missing: 'Sin nombre científico',
+    open_detail: 'Ver ficha de {name}',
+    go_to_first_page: 'Ir a la primera página',
+    page_size: 'Mostrar',
+    catalog: {
+      new_anomaly: 'Nueva anomalía'
+    },
+    categoryValues: {
+      pest: 'Plaga',
+      disease: 'Enfermedad',
+      disorder: 'Desorden',
+      weed: 'Maleza'
+    },
+    statusValues: {
+      ACTIVE: 'Activa',
+      DELETED: 'Eliminada'
+    },
+    filters: {
+      category: 'Categoría',
+      category_any: 'Todas las categorías',
+      clear: 'Limpiar filtros'
+    },
+    sort: {
+      label: 'Ordenar por',
+      name_asc: 'Nombre (A-Z)',
+      name_desc: 'Nombre (Z-A)',
+      slug_asc: 'Slug (A-Z)',
+      slug_desc: 'Slug (Z-A)'
+    },
+    detail: {
+      loading: 'Cargando anomalía...',
+      edit: 'Editar',
+      delete: 'Eliminar',
+      deleting: 'Eliminando...',
+      delete_confirm_title: 'Eliminar anomalía',
+      delete_confirm_message:
+        'La anomalía dejará de ser visible para el público. ¿Deseas eliminarla?',
+      delete_confirm_action: 'Eliminar anomalía',
+      delete_error: 'No se ha podido eliminar la anomalía.',
+      delete_conflict:
+        'La anomalía fue modificada por otro usuario. Recarga la ficha para ver los datos más recientes.',
+      delete_reload: 'Recargar ficha',
+      scientific_name: 'Nombre científico',
+      category: 'Categoría',
+      slug: 'Identificador',
+      deleted_at: 'Eliminada el {date}',
+      no_data: 'Sin datos registrados.'
+    },
+    sections: {
+      description: 'Descripción',
+      symptoms: 'Síntomas',
+      damage: 'Daños',
+      causes: 'Causas',
+      affectedCrops: 'Cultivos afectados',
+      prevention: 'Prevención',
+      treatment: 'Tratamiento',
+      naturalEnemies: 'Enemigos naturales'
+    },
+    form: {
+      title_create: 'Nueva anomalía',
+      title_edit: 'Editar anomalía',
+      subtitle_create:
+        'Registra una plaga, enfermedad, desorden o maleza en el catálogo.',
+      subtitle_edit: 'Modifica los datos de la anomalía.',
+      fields: {
+        name: 'Nombre común',
+        name_placeholder: 'Ej. Pulgón verde',
+        scientific_name: 'Nombre científico',
+        scientific_name_placeholder: 'Ej. Myzus persicae',
+        slug: 'Slug para URL',
+        slug_placeholder: 'ej-pulgon-verde',
+        slug_hint:
+          'Identificador en minúsculas y separado por guiones. No se podrá cambiar después.',
+        slug_locked_hint: 'El slug no se puede modificar.',
+        category: 'Categoría',
+        category_placeholder: 'Selecciona una categoría',
+        description: 'Descripción',
+        description_placeholder: 'Resumen de la anomalía...',
+        list_hint: 'Introduce una línea por elemento.',
+        symptoms_placeholder: 'Un síntoma por línea...',
+        damage_placeholder: 'Un daño por línea...',
+        causes_placeholder: 'Una causa por línea...',
+        affectedCrops_placeholder: 'Un cultivo por línea...',
+        prevention_placeholder: 'Una medida preventiva por línea...',
+        treatment_placeholder: 'Un tratamiento por línea...',
+        naturalEnemies_placeholder: 'Un enemigo natural por línea...'
+      },
+      validation: {
+        required_field: 'Este campo es obligatorio.',
+        invalid_slug:
+          'El slug solo puede contener letras minúsculas, números y guiones sencillos (máximo 120).',
+        name_too_long: 'Máximo 200 caracteres.',
+        text_too_long: 'Máximo 2000 caracteres.',
+        invalid_category: 'Selecciona una categoría válida.',
+        list_line_too_long: 'Cada línea admite como máximo 2000 caracteres.',
+        summary:
+          'El formulario contiene errores o campos obligatorios pendientes de completar.'
+      },
+      conflict: {
+        title: 'Conflicto de edición',
+        message:
+          'La anomalía fue modificada por otro usuario. Recarga la ficha para ver los datos más recientes.',
+        reload_button: 'Recargar ficha'
+      },
+      duplicate_error: 'Ya existe una anomalía registrada con este slug.',
+      session_expired:
+        'Tu sesión ha caducado. Inicia sesión de nuevo; los datos del formulario se conservan en esta pantalla.',
+      login_again: 'Iniciar sesión',
+      cancel_confirm: 'Hay cambios sin guardar. ¿Deseas descartarlos y salir?'
     }
   },
   plant: {

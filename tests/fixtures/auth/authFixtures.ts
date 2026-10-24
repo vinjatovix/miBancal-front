@@ -81,6 +81,11 @@ export const ADMIN_TEST_TOKEN = createTestJwt({
   username: 'admin'
 });
 
+export const COLLABORATOR_TEST_TOKEN = createTestJwt({
+  roles: ['collaborator', 'user'],
+  username: 'colaborador'
+});
+
 export function buildLoginNavigationState(
   overrides: Partial<LoginNavigationState> = {}
 ): LoginNavigationState {

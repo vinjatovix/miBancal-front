@@ -99,7 +99,7 @@ function mergeHeaders(
 function isPublicGetEndpoint(path: string, method?: string): boolean {
   const isGet = !method || method.toUpperCase() === 'GET';
   if (!isGet) return false;
-  return /^\/(?:api\/v1\/)?(plants|families)(\/|\?|$)/.test(path);
+  return /^\/(?:api\/v1\/)?(plants|families|anomalies)(\/|\?|$)/.test(path);
 }
 
 async function parseResponseBody<T>(response: Response): Promise<T> {
