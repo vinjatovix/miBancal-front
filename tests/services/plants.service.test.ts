@@ -41,7 +41,7 @@ afterEach(() => {
 
 const FAMILY_ID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
 
-const LIST_FIELDS = 'fields[plants]=identity,traits,image,status';
+const LIST_FIELDS = 'fields[plants]=identity,traits,image,status,likesCount';
 
 const DEFAULT_LIST_REQUEST: PlantListRequest = {
   filters: {},

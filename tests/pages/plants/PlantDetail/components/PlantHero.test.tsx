@@ -60,8 +60,11 @@ describe('PlantHero: unavailable and missing family', () => {
       () => expect(screen.queryByRole('link')).not.toBeInTheDocument()
     ],
     [
-      'does not render a button',
-      () => expect(screen.queryByRole('button')).not.toBeInTheDocument()
+      'does not render a family link',
+      () =>
+        expect(
+          screen.queryByRole('link', { name: /Familia/i })
+        ).not.toBeInTheDocument()
     ],
     [
       'does not expose the raw family id',

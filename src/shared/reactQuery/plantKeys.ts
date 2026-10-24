@@ -15,5 +15,9 @@ export const plantKeys = {
   family: (familyId?: string, scope?: PlantRoleScope) =>
     scope !== undefined
       ? ([...plantKeys.all, 'family', familyId, scope] as const)
-      : ([...plantKeys.all, 'family', familyId] as const)
+      : ([...plantKeys.all, 'family', familyId] as const),
+  likeState: (plantId: string, userId?: string) =>
+    userId !== undefined
+      ? ([...plantKeys.all, 'likeState', plantId, userId] as const)
+      : ([...plantKeys.all, 'likeState', plantId] as const)
 };

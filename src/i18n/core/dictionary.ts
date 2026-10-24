@@ -701,6 +701,11 @@ export const dictionary = {
       species_count: '{n} especies',
       summary_prefix: 'Filtrado activo'
     },
+    card: {
+      likes_count_single: '1 persona ha indicado que le gusta esta planta',
+      likes_count_plural:
+        '{count} personas han indicado que les gusta esta planta'
+    },
     view: {
       label: 'Vista',
       grid: 'Cuadrícula',
@@ -829,5 +834,15 @@ export const dictionary = {
     add: 'Marcar como favorita',
     remove: 'Quitar de favoritas',
     error: 'No se pudo actualizar la favorita. Inténtalo de nuevo.'
+  },
+  plantLikeButton: {
+    be_first_to_like: 'Sé el primero en darle a like',
+    aria_label_zero_unpressed: 'Dar me gusta a esta planta',
+    aria_label_zero_pressed: 'Quitar me gusta a esta planta',
+    aria_label_count_unpressed:
+      'Dar me gusta a esta planta. Actualmente tiene {count} me gusta',
+    aria_label_count_pressed:
+      'Quitar me gusta a esta planta. Actualmente tiene {count} me gusta',
+    error: 'No se pudo actualizar el me gusta. Inténtalo de nuevo.'
   }
 } as const;

@@ -85,7 +85,8 @@ export const PLANT_FIELDS = [
   'metadata',
   'status',
   'deletedAt',
-  'version'
+  'version',
+  'likesCount'
 ] as const;
 
 export type PlantField = (typeof PLANT_FIELDS)[number];
@@ -94,7 +95,8 @@ export const PLANT_LIST_FIELDS: readonly PlantField[] = [
   'identity',
   'traits',
   'image',
-  'status'
+  'status',
+  'likesCount'
 ];
 
 export const FAMILY_PLANTS_FIELDS: readonly PlantField[] = [

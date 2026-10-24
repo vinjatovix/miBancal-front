@@ -15,6 +15,7 @@ export type PlantImage = {
 export interface Plant {
   id: string;
   version?: number;
+  likesCount: number;
 
   identity: {
     name: {
@@ -137,7 +138,8 @@ export type FamilyPlantItem = Pick<Plant, 'id' | 'identity'> & {
   status?: PlantStatus;
 };
 
-export type PlantListItem = FamilyPlantItem & Pick<Plant, 'traits' | 'image'>;
+export type PlantListItem = FamilyPlantItem &
+  Pick<Plant, 'traits' | 'image' | 'likesCount'>;
 
 export type PlantLifecycle = Plant['traits']['lifecycle'];
 

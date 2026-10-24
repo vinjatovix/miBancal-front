@@ -16,7 +16,9 @@ describe('icon accessibility contract - decorative icons', () => {
     'restaurant',
     'dangerous',
     'close',
-    'search'
+    'search',
+    'thumb_up',
+    'thumb_up_filled'
   ] as IconName[])(
     'renders decorative %s icon with aria-hidden="true"',
     (name) => {

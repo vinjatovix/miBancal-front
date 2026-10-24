@@ -57,3 +57,17 @@
   border-radius: var(--radius-lg);
   display: block;
 }
+
+.plant-card__footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+}
+
+.plant-card__likes {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-on-surface-variant);
+  font: var(--type-body-sm);
+}
