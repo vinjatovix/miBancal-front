@@ -7,8 +7,16 @@ import { buildPlant } from './buildPlant';
 export function buildPlantListItem(
   overrides: Partial<PlantListItem> = {}
 ): PlantListItem {
-  const { id, identity, traits, image } = buildPlant();
-  return { id, identity, traits, image, status: 'ACTIVE', ...overrides };
+  const { id, identity, traits, image, likesCount } = buildPlant();
+  return {
+    id,
+    identity,
+    traits,
+    image,
+    likesCount,
+    status: 'ACTIVE',
+    ...overrides
+  };
 }
 
 export function buildPlantListItemWithEcological(

@@ -41,6 +41,11 @@ vi.mock('../../../../src/services/bookmarks.service', () => ({
   addPlantBookmark: vi.fn(),
   removePlantBookmark: vi.fn()
 }));
+vi.mock('../../../../src/services/plantLikes.service', () => ({
+  checkPlantLike: vi.fn(() => Promise.resolve({ liked: false })),
+  likePlant: vi.fn(),
+  unlikePlant: vi.fn()
+}));
 
 const mockedDeletePlant = vi.mocked(deletePlant);
 const mockedGetPlantById = vi.mocked(getPlantById);
@@ -60,6 +65,10 @@ function renderPlantDetail() {
 describe('PlantDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedGetPlantForEdit.mockResolvedValue({
+      plant: mockPlant,
+      etag: '"1"'
+    });
   });
 
   it('should render loading state initially', () => {

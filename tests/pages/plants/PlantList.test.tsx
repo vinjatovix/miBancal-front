@@ -30,7 +30,7 @@ import {
   type FetchMock
 } from '../../test-utils/stubFetch';
 
-const LIST_FIELDS = 'fields[plants]=identity,traits,image,status';
+const LIST_FIELDS = 'fields[plants]=identity,traits,image,status,likesCount';
 
 const SORT_LABEL = t('plant.orders.sort_label');
 

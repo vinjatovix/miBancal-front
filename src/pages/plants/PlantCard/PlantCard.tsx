@@ -1,13 +1,16 @@
 import { Link } from 'react-router-dom';
 
 import PlantStatusBadge from '../../../components/plants/PlantStatusBadge/PlantStatusBadge';
+import { t } from '../../../i18n/core/t';
 import Badge from '../../../shared/components/Badge/Badge';
 import FavoriteButton from '../../../shared/components/FavoriteButton/FavoriteButton';
+import Icon from '../../../shared/components/Icon/Icon';
 import ScientificName from '../../../shared/components/ScientificName/ScientificName';
 import { useBookmarks } from '../../../shared/hooks/useBookmarks';
 import { capitalizeFirstLetter } from '../../../shared/utils/capitalizeFirstLetter';
 import type { PlantListItem } from '../../../types/Plants/Plant';
 import PlantSafetyIndicators from '../components/PlantSafetyIndicators/PlantSafetyIndicators';
+import { formatLikesCount } from './utils/formatLikesCount';
 import { readPlantSafety } from '../utils/plantSafety';
 
 import './plantCard.css';
@@ -18,6 +21,12 @@ export interface PlantCardProps {
 
 export default function PlantCard({ plant }: PlantCardProps) {
   const bookmarks = useBookmarks();
+  const hasLikes = plant.likesCount > 0;
+  const formattedCount = hasLikes ? formatLikesCount(plant.likesCount) : '';
+  const accessibleLabel =
+    plant.likesCount === 1
+      ? t('plant.card.likes_count_single')
+      : t('plant.card.likes_count_plural', { count: formattedCount });
 
   return (
     <article className="plant-card">
@@ -52,6 +61,15 @@ export default function PlantCard({ plant }: PlantCardProps) {
               </Badge>
             ))}
           </div>
+        )}
+
+        {hasLikes && (
+          <footer className="plant-card__footer">
+            <span className="plant-card__likes" aria-label={accessibleLabel}>
+              <Icon name="thumb_up" decorative />
+              <span aria-hidden="true">{formattedCount}</span>
+            </span>
+          </footer>
         )}
       </Link>
     </article>

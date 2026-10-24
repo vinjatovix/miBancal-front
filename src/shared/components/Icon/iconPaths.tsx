@@ -1313,6 +1313,24 @@ const copyGlyph = (
   </>
 );
 
+const thumb_upGlyph = (
+  <>
+    <path
+      fill="currentColor"
+      d="M 1.5 31.5h 6V 13.5H 1.5v 18zm 33 -16.5c 0 -1.65 -1.35 -3 -3 -3h -9.465l 1.425 -6.855 0.045 -0.48c 0 -0.615 -0.255 -1.185 -0.66 -1.59L 21.255 1.5 11.385 11.385C 10.83 11.925 10.5 12.675 10.5 13.5v 15c 0 1.65 1.35 3 3 3h 13.5c 1.245 0 2.31 -0.75 2.76 -1.83l 4.53 -10.575c 0.135 -0.345 0.21 -0.705 0.21 -1.095v -3zM 31.5 18l -4.5 10.5H 13.5V 13.5l 6.51 -6.51L 18 15h 13.5v 3z"
+    />
+  </>
+);
+
+const thumb_up_filledGlyph = (
+  <>
+    <path
+      fill="currentColor"
+      d="M 1.5 31.5h 6V 13.5H 1.5v 18zm 33 -16.5c 0 -1.65 -1.35 -3 -3 -3h -9.465l 1.425 -6.855 0.045 -0.48c 0 -0.615 -0.255 -1.185 -0.66 -1.59L 21.255 1.5 11.385 11.385C 10.83 11.925 10.5 12.675 10.5 13.5v 15c 0 1.65 1.35 3 3 3h 13.5c 1.245 0 2.31 -0.75 2.76 -1.83l 4.53 -10.575c 0.135 -0.345 0.21 -0.705 0.21 -1.095v -3z"
+    />
+  </>
+);
+
 const tickGlyph = (
   <>
     <path
@@ -1446,6 +1464,8 @@ export const ICON_GLYPHS = {
   sync_alt: sync_altGlyph,
   tag: labelGlyph,
   thermostat: thermostatGlyph,
+  thumb_up: thumb_upGlyph,
+  thumb_up_filled: thumb_up_filledGlyph,
   tick: tickGlyph,
   visibility: visibilityGlyph,
   visibility_off: visibility_offGlyph,

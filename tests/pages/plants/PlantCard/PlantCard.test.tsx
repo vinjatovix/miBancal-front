@@ -7,6 +7,7 @@ import { listPlantsResponse } from '../../../fixtures/plants/listPlants';
 import PlantCard from '../../../../src/pages/plants/PlantCard/PlantCard';
 import { getBookmarkedPlantIds } from '../../../../src/services/bookmarks.service';
 import { capitalizeFirstLetter } from '../../../../src/shared/utils/capitalizeFirstLetter';
+import { clearStoredToken } from '../../../../src/shared/auth/session';
 import type {
   Plant,
   PlantEcologicalTraits
@@ -24,8 +25,8 @@ vi.mock('../../../../src/services/bookmarks.service', () => ({
 
 const mockedGetBookmarkedPlantIds = vi.mocked(getBookmarkedPlantIds);
 
-function toListItem({ id, identity, traits, image }: Plant) {
-  return buildPlantListItem({ id, identity, traits, image });
+function toListItem({ id, identity, traits, image, likesCount }: Plant) {
+  return buildPlantListItem({ id, identity, traits, image, likesCount });
 }
 
 function LocationProbe() {
@@ -34,6 +35,7 @@ function LocationProbe() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  clearStoredToken();
   mockedGetBookmarkedPlantIds.mockResolvedValue(new Set());
 });
 
@@ -229,6 +231,94 @@ describe('PlantCard', () => {
       await user.click(button);
 
       expect(screen.getByTestId('pathname')).toHaveTextContent('/plants');
+    });
+  });
+
+  describe('contador de me gusta', () => {
+    it('no genera ningún elemento de likes en el DOM cuando likesCount es 0', () => {
+      renderComponent(buildPlantListItem({ likesCount: 0 }));
+
+      expect(
+        document.querySelector('.plant-card__likes')
+      ).not.toBeInTheDocument();
+      expect(
+        document.querySelector('.plant-card__footer')
+      ).not.toBeInTheDocument();
+    });
+
+    it('renderiza el icono favorite y el contador formateado cuando likesCount es mayor que 0', () => {
+      renderComponent(buildPlantListItem({ likesCount: 1200 }));
+
+      const likesContainer = document.querySelector('.plant-card__likes');
+      expect(likesContainer).toBeInTheDocument();
+      expect(screen.getByText('1.200')).toBeInTheDocument();
+      expect(likesContainer?.querySelector('svg')).toBeInTheDocument();
+    });
+
+    it('asigna la etiqueta accesible singular cuando likesCount es 1', () => {
+      renderComponent(buildPlantListItem({ likesCount: 1 }));
+
+      const likesContainer = screen.getByLabelText(
+        '1 persona ha indicado que le gusta esta planta'
+      );
+      expect(likesContainer).toBeInTheDocument();
+    });
+
+    it.each([
+      [5, '5 personas han indicado que les gusta esta planta'],
+      [15420, '15.420 personas han indicado que les gusta esta planta']
+    ])(
+      'asigna la etiqueta accesible plural para %i me gusta',
+      (count, expectedLabel) => {
+        renderComponent(buildPlantListItem({ likesCount: count }));
+
+        const likesContainer = screen.getByLabelText(expectedLabel);
+        expect(likesContainer).toBeInTheDocument();
+      }
+    );
+
+    it('muestra el contador junto al badge de borrada en plantas DELETED', () => {
+      renderComponent(
+        buildPlantListItem({ status: 'DELETED', likesCount: 42 })
+      );
+
+      expect(screen.getByText('Borrada')).toBeInTheDocument();
+      expect(screen.getByText('42')).toBeInTheDocument();
+    });
+  });
+
+  describe('coexistencia con la colección privada de favoritos', () => {
+    it('usuario sin sesión ve el contador público sin botón de favorito', () => {
+      renderComponent(buildPlantListItem({ likesCount: 10 }));
+
+      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      expect(screen.getByText('10')).toBeInTheDocument();
+    });
+
+    it('usuario con sesión ve ambos elementos simultáneamente', async () => {
+      renderWithProviders(
+        <PlantCard plant={buildPlantListItem({ likesCount: 7 })} />,
+        { initialToken: VALID_TEST_TOKEN }
+      );
+
+      const button = await screen.findByRole('button');
+      expect(button).toBeInTheDocument();
+      expect(screen.getByText('7')).toBeInTheDocument();
+    });
+
+    it('pulsar el botón de favorito no altera el contador estático de me gusta', async () => {
+      mockedGetBookmarkedPlantIds.mockResolvedValue(new Set());
+      const user = userEvent.setup();
+
+      renderWithProviders(
+        <PlantCard plant={buildPlantListItem({ likesCount: 7 })} />,
+        { initialToken: VALID_TEST_TOKEN }
+      );
+      const button = await screen.findByRole('button');
+
+      await user.click(button);
+
+      expect(screen.getByText('7')).toBeInTheDocument();
     });
   });
 });

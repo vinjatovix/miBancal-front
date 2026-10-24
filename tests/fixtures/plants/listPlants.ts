@@ -165,6 +165,7 @@ export const listPlantsResponse: PaginatedResponse<Plant> = {
         updatedBy: 'register1'
       },
       status: 'ACTIVE',
+      likesCount: 0,
       deletedAt: null
     },
     {
@@ -330,6 +331,7 @@ export const listPlantsResponse: PaginatedResponse<Plant> = {
         updatedBy: 'register1'
       },
       status: 'ACTIVE',
+      likesCount: 5,
       deletedAt: null
     }
   ],

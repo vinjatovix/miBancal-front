@@ -44,7 +44,8 @@ describe('plantListQuery', () => {
         'metadata',
         'status',
         'deletedAt',
-        'version'
+        'version',
+        'likesCount'
       ].sort()
     );
   });
@@ -54,7 +55,8 @@ describe('plantListQuery', () => {
       'identity',
       'traits',
       'image',
-      'status'
+      'status',
+      'likesCount'
     ]);
     expect(FAMILY_PLANTS_FIELDS).toEqual(['identity', 'status']);
     expect(PLANT_LIST_FIELDS).not.toContain('id');

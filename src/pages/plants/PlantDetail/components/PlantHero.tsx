@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-
+import { useAuth } from '../../../../shared/auth/useAuth';
 import { t } from '../../../../i18n/core/t';
 import Badge from '../../../../shared/components/Badge/Badge';
 import FavoriteButton from '../../../../shared/components/FavoriteButton/FavoriteButton';
@@ -9,6 +9,7 @@ import { useBookmarks } from '../../../../shared/hooks/useBookmarks';
 import { capitalizeFirstLetter } from '../../../../shared/utils/capitalizeFirstLetter';
 import type { Plant } from '../../../../types/Plants/Plant';
 import { readPlantFamily } from '../../utils/plantFamily';
+import { PlantLikeButton } from './PlantLikeButton/PlantLikeButton';
 
 import './plantHero.css';
 
@@ -19,6 +20,7 @@ interface Props {
 export default function PlantHero({ plant }: Props) {
   const familyView = readPlantFamily(plant.identity?.family);
   const bookmarks = useBookmarks();
+  const auth = useAuth();
 
   return (
     <header className="plant-hero">
@@ -63,6 +65,11 @@ export default function PlantHero({ plant }: Props) {
           </ScientificName>
         </p>
       )}
+      <PlantLikeButton
+        plantId={plant.id}
+        userId={auth.user?.id}
+        likesCount={plant.likesCount ?? 0}
+      />
     </header>
   );
 }
