@@ -169,7 +169,8 @@ export async function apiFetchWithMeta<T>(
   }
 
   const data = await parseResponseBody<T>(finalResponse);
-  const etag = finalResponse.headers.get('ETag');
+  const rawEtag = finalResponse.headers.get('ETag');
+  const etag = rawEtag ? rawEtag.replace(/^W\//i, '') : null;
 
   return { data, etag };
 }
