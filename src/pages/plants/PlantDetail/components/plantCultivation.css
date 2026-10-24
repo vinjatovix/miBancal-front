@@ -1,0 +1,23 @@
+.cultivation-basic {
+  display: grid;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.cultivation-section {
+  margin-top: var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.cultivation-section__title {
+  font: var(--type-headline-sm);
+  margin-bottom: var(--space-sm);
+  color: var(--color-on-surface);
+}
+
+.propagation-grid,
+.pruning-grid {
+  display: grid;
+  gap: var(--space-sm);
+}

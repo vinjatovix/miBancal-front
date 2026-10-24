@@ -1,0 +1,40 @@
+.family-create-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.family-create-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.family-create-page__title {
+  font-family: var(--font-display, 'Newsreader', serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.family-create-page__subtitle {
+  font-family: var(--font-ui, 'Manrope', sans-serif);
+  font-size: 0.95rem;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .family-create-page {
+    padding: 1rem 0.75rem 3rem;
+    gap: 1rem;
+  }
+
+  .family-create-page__title {
+    font-size: 1.5rem;
+  }
+}

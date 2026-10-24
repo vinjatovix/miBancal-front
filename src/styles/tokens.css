@@ -1,0 +1,124 @@
+:root {
+  --color-primary: #002718;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #133e2b;
+  --color-on-primary-container: #7da990;
+  --color-primary-fixed: #bfedd2;
+  --color-primary-fixed-dim: #a3d1b6;
+  --color-on-primary-fixed: #002113;
+  --color-on-primary-fixed-variant: #254f3a;
+  --color-inverse-primary: #a3d1b6;
+  --color-surface-tint: #3d6751;
+  --color-secondary: #486551;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #caebd1;
+  --color-on-secondary-container: #4e6b56;
+  --color-secondary-fixed: #caebd1;
+  --color-secondary-fixed-dim: #aeceb6;
+  --color-on-secondary-fixed: #042011;
+  --color-on-secondary-fixed-variant: #314d3a;
+  --color-tertiary: #341b00;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #502f09;
+  --color-on-tertiary-container: #c69667;
+  --color-tertiary-fixed: #ffdcbd;
+  --color-tertiary-fixed-dim: #f0bd8b;
+  --color-on-tertiary-fixed: #2c1600;
+  --color-on-tertiary-fixed-variant: #623f18;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+  --color-background: #f3fbf6;
+  --color-on-background: #151d1a;
+  --color-surface: #f3fbf6;
+  --color-on-surface: #151d1a;
+  --color-surface-dim: #d3dcd7;
+  --color-surface-bright: #f3fbf6;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #edf6f1;
+  --color-surface-container: #e7f0eb;
+  --color-surface-container-high: #e2eae5;
+  --color-surface-container-highest: #dce4e0;
+  --color-surface-variant: #dce4e0;
+  --color-on-surface-variant: #414943;
+  --color-outline: #717973;
+  --color-outline-variant: #c1c8c1;
+  --color-inverse-surface: #2a322f;
+  --color-inverse-on-surface: #eaf3ee;
+
+  --color-role-admin-bg: #ffdad6;
+  --color-role-admin-text: #93000a;
+  --color-role-user-bg: #d0e4ff;
+  --color-role-user-text: #004785;
+  --color-role-collab-bg: #caebd1;
+  --color-role-collab-text: #1b522b;
+  --color-tick-green: #22c55e;
+  --color-toast-close-hover: color-mix(
+    in srgb,
+    var(--color-on-surface) 12%,
+    transparent
+  );
+
+  --color-scrim: color-mix(in srgb, var(--color-on-surface) 40%, transparent);
+  --color-surface-translucent: color-mix(
+    in srgb,
+    var(--color-surface) 80%,
+    transparent
+  );
+
+  --elevation-1:
+    0 1px 3px rgba(19, 62, 43, 0.04), 0 6px 16px rgba(19, 62, 43, 0.03);
+  --elevation-1-hover: 0 8px 24px rgba(19, 62, 43, 0.08);
+  --elevation-2: 0 12px 32px rgba(19, 62, 43, 0.12);
+
+  --font-display:
+    'Newsreader', 'Newsreader Fallback', 'Newsreader Fallback Android', Georgia,
+    serif;
+  --font-ui:
+    'Manrope', 'Manrope Fallback', 'Manrope Fallback Android', system-ui,
+    sans-serif;
+
+  --type-headline-xl: 500 2.5rem/3rem var(--font-display);
+  --type-headline-lg: 500 1.75rem/2.25rem var(--font-display);
+  --type-headline-md: 600 1.375rem/1.75rem var(--font-display);
+  --type-headline-sm: 600 1.125rem/1.5rem var(--font-display);
+  --type-taxonomy-scientific: italic 400 0.875rem/1.25rem var(--font-display);
+  --tracking-taxonomy-scientific: 0.015em;
+  --type-body-lg: 400 1rem/1.5rem var(--font-ui);
+  --type-body-md: 400 0.875rem/1.375rem var(--font-ui);
+  --type-body-sm: 400 0.75rem/1.125rem var(--font-ui);
+  --type-label-lg: 600 0.875rem/1.25rem var(--font-ui);
+  --type-label-md: 600 0.75rem/1rem var(--font-ui);
+  --tracking-label-md: 0.025em;
+  --type-label-sm: 700 0.6875rem/0.875rem var(--font-ui);
+  --tracking-label-sm: 0.05em;
+
+  --radius-sm: 0.125rem;
+  --radius-default: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --gutter: 1.25rem;
+  --margin-inline: 1rem;
+  --margin-inline-desktop: 3rem;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --type-headline-xl: 500 2rem/2.5rem var(--font-display);
+  }
+}
+
+@media (min-width: 769px) {
+  :root {
+    --margin-inline: 2rem;
+  }
+}

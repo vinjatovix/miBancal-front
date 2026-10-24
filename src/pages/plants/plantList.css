@@ -1,0 +1,79 @@
+.plant-controls {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: baseline;
+  margin-bottom: var(--space-xs);
+  flex-wrap: wrap;
+  font: var(--type-body-md);
+}
+
+.plant-controls select {
+  padding: var(--space-sm);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font: var(--type-body-lg);
+  cursor: pointer;
+}
+
+.plant-list__empty {
+  margin: var(--space-lg) 0;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+  background: var(--color-surface-container-low);
+  border-radius: var(--radius-xl);
+}
+
+.plant-list__empty-message {
+  margin: 0;
+  font: var(--type-body-lg);
+  color: var(--color-on-surface-variant);
+}
+
+.plant-list__empty-action {
+  font: var(--type-label-lg);
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+}
+
+.plant-list__empty-action:hover {
+  background: var(--color-primary-container);
+}
+
+.plant-grid.plant-grid--list {
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: none;
+  gap: var(--space-xs);
+}
+
+.plant-grid--list .plant-card {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm) var(--space-md);
+  height: auto;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.plant-grid--list .plant-card img {
+  display: none;
+}
+
+.plant-grid--list .plant-card__heading {
+  justify-content: flex-start;
+  gap: var(--space-sm);
+}
+
+.plant-grid--list .plant-scientific-name,
+.plant-grid--list .plant-aliases {
+  margin: 0;
+}

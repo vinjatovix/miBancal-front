@@ -1,0 +1,50 @@
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-scrim);
+  z-index: 1200;
+}
+
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  height: 100vh;
+
+  width: var(--drawer-width);
+
+  background: var(--color-surface-container-lowest);
+  box-shadow: var(--elevation-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-md);
+
+  transition: transform 0.25s ease;
+  z-index: 1210;
+}
+
+.drawer-left {
+  left: 0;
+  border-right: 1px solid var(--color-outline-variant);
+  border-start-end-radius: var(--radius-xl);
+  border-end-end-radius: var(--radius-xl);
+}
+
+.drawer-right {
+  right: 0;
+  border-left: 1px solid var(--color-outline-variant);
+  border-start-start-radius: var(--radius-xl);
+  border-end-start-radius: var(--radius-xl);
+}
+
+.drawer-open {
+  transform: translateX(0);
+}
+
+.drawer-left.drawer-closed {
+  transform: translateX(-100%);
+}
+
+.drawer-right.drawer-closed {
+  transform: translateX(100%);
+}

@@ -1,0 +1,21 @@
+.month-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.month-chip {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-default);
+  border: 1px solid var(--color-outline);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface-variant);
+  font: var(--type-label-md);
+  letter-spacing: var(--tracking-label-md);
+}
+
+.month-chip--active {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  border-color: var(--color-primary-container);
+}

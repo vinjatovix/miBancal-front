@@ -1,0 +1,35 @@
+.github-auth-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 320px;
+  height: 40px;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--color-on-surface);
+  background-color: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.github-auth-button:hover:not(:disabled) {
+  background-color: var(--color-surface-container-high);
+}
+
+.github-auth-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.github-auth-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  display: inline-block;
+  flex-shrink: 0;
+}

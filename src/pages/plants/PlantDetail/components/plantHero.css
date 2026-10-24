@@ -1,0 +1,47 @@
+.plant-hero {
+  display: grid;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.plant-hero__image-wrapper {
+  position: relative;
+}
+
+.plant-hero__image {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+}
+
+.plant-hero__image-wrapper .favorite-button-wrapper {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+}
+
+.plant-hero__scientific {
+  font: var(--type-body-lg);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.plant-hero__scientific strong {
+  font: var(--type-label-lg);
+  color: var(--color-on-surface-variant);
+}
+
+.plant-hero__family-link {
+  display: inline-flex;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.plant-hero__family-link .badge {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}

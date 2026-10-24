@@ -1,0 +1,62 @@
+.plants-layout {
+  display: flex;
+  margin: calc(-1 * var(--space-lg));
+  flex: 1;
+}
+
+.plants-main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-lg);
+  overflow: visible;
+}
+
+.plants-sidebar {
+  position: sticky;
+  top: var(--app-header-height, 64px);
+  width: 320px;
+  height: calc(100vh - var(--app-header-height, 64px));
+  height: calc(100dvh - var(--app-header-height, 64px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-self: flex-start;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  background: var(--color-surface-container-lowest);
+  border-right: 1px solid var(--color-outline-variant);
+  padding: var(--space-md);
+}
+
+.plants-fab {
+  position: fixed;
+  bottom: calc(var(--space-md) + var(--dev-banner-height, 0px));
+  right: var(--space-md);
+  z-index: 1100;
+
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
+
+  border: none;
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  font: var(--type-label-lg);
+
+  box-shadow: var(--elevation-2);
+  cursor: pointer;
+
+  transition: transform 0.15s ease;
+}
+
+.plants-fab:hover {
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .plants-layout {
+    display: block;
+  }
+
+  .plants-main {
+    padding: var(--space-md);
+  }
+}
