@@ -22,6 +22,9 @@ export default function InsufficientPermissionsPage() {
         <Link to="/families" className="insufficient-permissions__link">
           {t('auth.insufficient_permissions.back_to_families')}
         </Link>
+        <Link to="/anomalies" className="insufficient-permissions__link">
+          {t('auth.insufficient_permissions.back_to_anomalies')}
+        </Link>
       </div>
     </div>
   );

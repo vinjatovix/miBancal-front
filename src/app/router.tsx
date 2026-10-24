@@ -80,6 +80,38 @@ export const routes: RouteObject[] = [
             })
           },
           {
+            path: '/anomalies',
+            lazy: async () => ({
+              Component: (await import('../pages/anomalies/AnomaliesPage'))
+                .default
+            })
+          },
+          {
+            path: '/anomalies/new',
+            lazy: async () => {
+              const [{ default: AnomalyCreatePage }, { EditorialRoute }] =
+                await Promise.all([
+                  import('../pages/anomalies/AnomalyCreatePage'),
+                  import('../shared/auth/EditorialRoute')
+                ]);
+              return {
+                Component: () => (
+                  <EditorialRoute>
+                    <AnomalyCreatePage />
+                  </EditorialRoute>
+                )
+              };
+            }
+          },
+          {
+            path: '/anomalies/:slug',
+            lazy: async () => ({
+              Component: (
+                await import('../pages/anomalies/AnomalyDetail/AnomalyDetail')
+              ).default
+            })
+          },
+          {
             path: '/login',
             lazy: async () => ({
               Component: (await import('../pages/auth/Login')).default

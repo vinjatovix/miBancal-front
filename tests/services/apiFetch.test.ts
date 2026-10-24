@@ -229,6 +229,39 @@ describe('apiFetch', () => {
     expect(retryHeaders.has('Authorization')).toBe(false);
   });
 
+  it.each(['/api/v1/anomalies', '/api/v1/anomalies/pulgon-verde'])(
+    'transparently retries the public anomalies GET %s on 401 without Authorization',
+    async (path) => {
+      setStoredToken(VALID_TEST_TOKEN);
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          statusText: 'Unauthorized',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: () => Promise.resolve({ message: 'Unauthorized' })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: () => Promise.resolve({ slug: 'pulgon-verde' })
+        });
+      vi.stubGlobal('fetch', fetchMock);
+
+      const result = await apiFetch(path);
+
+      expect(result).toEqual({ slug: 'pulgon-verde' });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      const retryHeaders = new Headers(
+        (fetchMock.mock.calls[1][1] as RequestInit).headers
+      );
+      expect(retryHeaders.has('Authorization')).toBe(false);
+    }
+  );
+
   it('strips any custom Authorization header on public endpoint retry', async () => {
     setStoredToken(VALID_TEST_TOKEN);
     const fetchMock = vi

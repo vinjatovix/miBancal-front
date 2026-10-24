@@ -15,6 +15,9 @@ const isPlantsMatch = (pathname: string): boolean =>
 const isFamiliesMatch = (pathname: string): boolean =>
   pathname === '/families' || pathname.startsWith('/families/');
 
+const isAnomaliesMatch = (pathname: string): boolean =>
+  pathname === '/anomalies' || pathname.startsWith('/anomalies/');
+
 export const NAVIGATION_ITEMS: readonly NavigationItem[] = [
   {
     id: 'plants',
@@ -29,5 +32,12 @@ export const NAVIGATION_ITEMS: readonly NavigationItem[] = [
     path: '/families',
     icon: 'biotech',
     isMatch: isFamiliesMatch
+  },
+  {
+    id: 'anomalies',
+    labelKey: 'app.nav.anomalies',
+    path: '/anomalies',
+    icon: 'crisis_alert',
+    isMatch: isAnomaliesMatch
   }
 ] as const;

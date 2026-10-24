@@ -1,0 +1,117 @@
+.anomaly-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.anomaly-list__create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: var(--space-xs) var(--space-md);
+  font: var(--type-label-lg);
+  color: var(--color-on-primary);
+  background-color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+
+.anomaly-list__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+  font: var(--type-body-md);
+}
+
+.anomaly-list__controls select {
+  padding: var(--space-sm);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font: var(--type-body-lg);
+  cursor: pointer;
+}
+
+.anomaly-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+  gap: var(--space-md);
+}
+
+.anomaly-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  text-decoration: none;
+}
+
+.anomaly-card:hover {
+  background: var(--color-surface-container-high);
+}
+
+.anomaly-card__name {
+  margin: 0;
+  font: var(--type-headline-sm);
+}
+
+.anomaly-card__scientific {
+  margin: 0;
+  font: var(--type-body-md);
+  color: var(--color-on-surface-variant);
+}
+
+.anomaly-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.anomaly-list__empty {
+  margin: var(--space-lg) 0;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+  background: var(--color-surface-container-low);
+  border-radius: var(--radius-xl);
+}
+
+.anomaly-list__empty-message {
+  margin: 0;
+  font: var(--type-body-lg);
+  color: var(--color-on-surface-variant);
+}
+
+.anomaly-list__empty-action {
+  font: var(--type-label-lg);
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .anomaly-list__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .anomaly-list__create-btn {
+    justify-content: center;
+    min-height: 44px;
+  }
+}

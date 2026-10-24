@@ -1,11 +1,14 @@
 import type { QueryClient } from '@tanstack/react-query';
+import { anomalyKeys } from './anomalyKeys';
 import { familyKeys } from './familyKeys';
 import { plantKeys } from './plantKeys';
 
 export const catalogEditKeys = {
   plantEdit: (id: string) => [...plantKeys.all, 'edit', id] as const,
   familyEdit: (idOrSlug: string) =>
-    [...familyKeys.all, 'edit', idOrSlug] as const
+    [...familyKeys.all, 'edit', idOrSlug] as const,
+  anomalyEdit: (idOrSlug: string) =>
+    [...anomalyKeys.all, 'edit', idOrSlug] as const
 };
 
 export async function invalidatePlantQueries(
@@ -38,6 +41,25 @@ export async function invalidateFamilyQueries(
     idOrSlug
       ? queryClient.invalidateQueries({
           queryKey: catalogEditKeys.familyEdit(idOrSlug)
+        })
+      : Promise.resolve()
+  ]);
+}
+
+export async function invalidateAnomalyQueries(
+  queryClient: QueryClient,
+  idOrSlug?: string
+): Promise<void> {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: anomalyKeys.all }),
+    idOrSlug
+      ? queryClient.invalidateQueries({
+          queryKey: anomalyKeys.detail(idOrSlug)
+        })
+      : Promise.resolve(),
+    idOrSlug
+      ? queryClient.invalidateQueries({
+          queryKey: catalogEditKeys.anomalyEdit(idOrSlug)
         })
       : Promise.resolve()
   ]);
