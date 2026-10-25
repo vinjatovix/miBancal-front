@@ -70,6 +70,8 @@ export const dictionary = {
     rate_limit_notice: 'Demasiados intentos. Por favor, inténtalo más tarde.',
     username_taken:
       'El nombre de usuario ya está en uso. Por favor, elige otro.',
+    username_requirements:
+      'El nombre de usuario debe tener entre 4 y 20 caracteres.',
     passwords_dont_match: 'Las contraseñas no coinciden',
     invalid_email: 'Introduce una dirección de correo válida',
     password_requirements:

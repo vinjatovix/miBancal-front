@@ -42,7 +42,7 @@ export function validateUsername(username: string): string | null {
   if (username.trim() !== username) {
     return 'trimmed';
   }
-  if (username.length < 1 || username.length > 50) {
+  if (username.length < 4 || username.length > 20) {
     return 'length';
   }
   return null;

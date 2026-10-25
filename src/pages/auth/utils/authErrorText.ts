@@ -7,11 +7,21 @@ const ERROR_KEYS: Record<string, string> = {
   mismatch: 'auth.passwords_dont_match',
   length: 'auth.password_requirements',
   complexity: 'auth.password_requirements',
-  bytes: 'auth.password_requirements'
+  bytes: 'auth.password_requirements',
+  username_requirements: 'auth.username_requirements'
 };
 
-export function resolveAuthErrorText(key?: string): string | null {
+export function resolveAuthErrorText(
+  key?: string,
+  field?: string
+): string | null {
   if (!key) return null;
+  if (
+    field === 'username' &&
+    (key === 'length' || key === 'trimmed' || key === 'username_requirements')
+  ) {
+    return t('auth.username_requirements');
+  }
   const dictKey = ERROR_KEYS[key];
   return dictKey ? t(dictKey as never) : null;
 }

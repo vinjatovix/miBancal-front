@@ -129,7 +129,7 @@ export default function Register() {
     const errorKey = fieldErrors[field];
     if (field === 'password' && errorKey !== 'required') return null;
     if (errorKey === 'required' && formData[field].trim() !== '') return null;
-    return resolveAuthErrorText(errorKey);
+    return resolveAuthErrorText(errorKey, field);
   };
 
   const renderFieldError = (field: FormField) => {
