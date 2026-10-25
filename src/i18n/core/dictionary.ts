@@ -474,7 +474,7 @@ export const dictionary = {
   },
   anomaly: {
     title: 'Anomalías',
-    subtitle: 'Plagas, enfermedades, desórdenes y malezas de los cultivos.',
+    subtitle: 'Plagas, enfermedades y desórdenes de los cultivos.',
     empty: 'No hay anomalías que coincidan con los filtros.',
     empty_catalog: 'Aún no hay anomalías registradas.',
     list_error: 'No se han podido cargar las anomalías.',
@@ -488,8 +488,7 @@ export const dictionary = {
     categoryValues: {
       pest: 'Plaga',
       disease: 'Enfermedad',
-      disorder: 'Desorden',
-      weed: 'Maleza'
+      disorder: 'Desorden'
     },
     statusValues: {
       ACTIVE: 'Activa',
@@ -559,7 +558,7 @@ export const dictionary = {
       title_create: 'Nueva anomalía',
       title_edit: 'Editar anomalía',
       subtitle_create:
-        'Registra una plaga, enfermedad, desorden o maleza en el catálogo.',
+        'Registra una plaga, enfermedad o desorden en el catálogo.',
       subtitle_edit: 'Modifica los datos de la anomalía.',
       sections: {
         resources: 'Fotografías y recursos',

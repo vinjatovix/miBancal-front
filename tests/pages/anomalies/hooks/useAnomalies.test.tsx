@@ -62,7 +62,7 @@ beforeEach(() => {
 describe('useAnomalies', () => {
   it('mapea la URL a la petición del listado', async () => {
     const { result } = renderUseAnomalies(
-      '/anomalies?category=weed&sortField=slug&sortDirection=desc&page=2&limit=50'
+      '/anomalies?category=disorder&sortField=slug&sortDirection=desc&page=2&limit=50'
     );
 
     await waitFor(() =>
@@ -70,7 +70,7 @@ describe('useAnomalies', () => {
     );
 
     expect(mockedGetAnomalyList).toHaveBeenCalledWith({
-      filters: { category: 'weed' },
+      filters: { category: 'disorder' },
       pagination: { page: 2, limit: 50 },
       sort: { field: 'slug', direction: 'desc' }
     });

@@ -17,19 +17,19 @@ function renderFilters(
 }
 
 describe('AnomalyFilters', () => {
-  it('ofrece las cuatro categorías traducidas y emite la elegida', async () => {
+  it('ofrece las tres categorías traducidas y emite la elegida', async () => {
     const handlers = renderFilters();
     const user = userEvent.setup();
 
     const select = screen.getByLabelText('Categoría');
-    await user.selectOptions(select, 'weed');
+    await user.selectOptions(select, 'disorder');
 
     expect(
       screen.getAllByRole('option', {
-        name: /Plaga|Enfermedad|Desorden|Maleza/
+        name: /Plaga|Enfermedad|Desorden/
       })
-    ).toHaveLength(4);
-    expect(handlers.onCategoryChange).toHaveBeenCalledWith('weed');
+    ).toHaveLength(3);
+    expect(handlers.onCategoryChange).toHaveBeenCalledWith('disorder');
   });
 
   it('refleja el valor recibido por props', () => {

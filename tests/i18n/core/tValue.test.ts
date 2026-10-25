@@ -42,7 +42,6 @@ describe('tValue', () => {
     expect(tValue('anomaly.categoryValues', 'pest')).toBe('Plaga');
     expect(tValue('anomaly.categoryValues', 'disease')).toBe('Enfermedad');
     expect(tValue('anomaly.categoryValues', 'disorder')).toBe('Desorden');
-    expect(tValue('anomaly.categoryValues', 'weed')).toBe('Maleza');
     expect(reportMissingTranslation).not.toHaveBeenCalled();
   });
 

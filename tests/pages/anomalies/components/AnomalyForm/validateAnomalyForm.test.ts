@@ -81,6 +81,15 @@ describe('validateAnomalyForm', () => {
     expect(errors.category).toBe('Selecciona una categoría válida.');
   });
 
+  it('rejects weed as a category value', () => {
+    const errors = validateAnomalyForm(
+      validState({ category: 'weed' as never }),
+      'edit'
+    );
+
+    expect(errors.category).toBe('Selecciona una categoría válida.');
+  });
+
   it('validates scientificName max 200 and description max 2000', () => {
     const errors = validateAnomalyForm(
       validState({
