@@ -11,6 +11,7 @@ import {
 } from '../../../src/shared/auth/session';
 import { ApiError } from '../../../src/shared/errors/ApiError';
 import { NetworkError } from '../../../src/shared/errors/NetworkError';
+import { t } from '../../../src/i18n/core/t';
 import { VALID_TEST_TOKEN } from '../../fixtures/auth/authFixtures';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
@@ -103,13 +104,15 @@ describe('ForgotPassword Page', () => {
     expect(await screen.findByText(UNIFORM_NOTICE)).toBeInTheDocument();
   });
 
-  it('shows a rate limit notice and keeps the form on 429', async () => {
+  it('shows a rate limit notice in error toast and keeps the form on 429', async () => {
     const user = userEvent.setup();
     vi.spyOn(authServiceModule, 'forgotPassword').mockRejectedValueOnce(
       new ApiError('Too Many Requests', 429)
     );
 
-    renderWithProviders(<TestApp />, { route: '/forgot-password' });
+    const { container } = renderWithProviders(<TestApp />, {
+      route: '/forgot-password'
+    });
 
     await user.type(
       screen.getByLabelText(/Correo electrónico/i),
@@ -117,14 +120,15 @@ describe('ForgotPassword Page', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
 
+    const toastAlert = await screen.findByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
     expect(
-      await screen.findByText(
-        'Demasiados intentos. Por favor, inténtalo más tarde.'
-      )
+      screen.getByText(t('errors.tooManyRequests.message'))
     ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Enviar enlace' })
     ).toBeInTheDocument();
+    expect(container.querySelector('.auth-alert-error')).toBeNull();
   });
 
   it('maps a 400 with email field error to the email field', async () => {
@@ -153,7 +157,9 @@ describe('ForgotPassword Page', () => {
       new NetworkError('Network unreachable')
     );
 
-    renderWithProviders(<TestApp />, { route: '/forgot-password' });
+    const { container } = renderWithProviders(<TestApp />, {
+      route: '/forgot-password'
+    });
 
     await user.type(
       screen.getByLabelText(/Correo electrónico/i),
@@ -161,8 +167,11 @@ describe('ForgotPassword Page', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
 
-    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    const toastAlert = await screen.findByRole('alert');
+    expect(toastAlert).toBeInTheDocument();
+    expect(toastAlert).toHaveClass('toast-item--error');
     expect(screen.getByRole('button', { name: 'Enviar enlace' })).toBeEnabled();
+    expect(container.querySelector('.auth-alert-error')).toBeNull();
   });
 
   it('disables the submit button while the request is in flight', async () => {

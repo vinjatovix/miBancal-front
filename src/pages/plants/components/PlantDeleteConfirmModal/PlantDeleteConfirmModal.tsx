@@ -11,7 +11,6 @@ export interface PlantDeleteConfirmModalProps {
   readonly onConfirm: () => void;
   readonly onCancel: () => void;
   readonly isDeleting?: boolean;
-  readonly error?: string | null;
   readonly isConflict?: boolean;
   readonly onReload?: () => void;
 }
@@ -22,7 +21,6 @@ export function PlantDeleteConfirmModal({
   onConfirm,
   onCancel,
   isDeleting = false,
-  error = null,
   isConflict = false,
   onReload
 }: PlantDeleteConfirmModalProps) {
@@ -96,15 +94,6 @@ export function PlantDeleteConfirmModal({
               {t('plant.form.conflict.reload_button')}
             </button>
           )}
-        </div>
-      )}
-
-      {error && !isConflict && (
-        <div
-          role="alert"
-          className="plant-delete-modal-alert plant-delete-modal-alert--error"
-        >
-          {error}
         </div>
       )}
     </Modal>

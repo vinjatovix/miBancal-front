@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { t } from '../../i18n/core/t';
 import { CancelConfirmModal } from '../../shared/components/Modal/CancelConfirmModal';
 import { UnsavedChangesGuard } from '../../shared/components/UnsavedChangesGuard/UnsavedChangesGuard';
+import { useToast } from '../../shared/toast/useToast';
 import { AnomalyFormActions } from './components/AnomalyForm/AnomalyFormActions';
 import { AnomalyFormFeedback } from './components/AnomalyForm/AnomalyFormFeedback';
 import { AnomalyFormFields } from './components/AnomalyForm/AnomalyFormFields';
@@ -30,7 +31,7 @@ const CATALOG_PATH = '/anomalies';
 export default function AnomalyCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreateAnomaly();
-  const [generalError, setGeneralError] = useState<string | null>(null);
+  const { dismissAll, showErrorToast } = useToast();
   const [isSessionExpired, setIsSessionExpired] = useState<boolean>(false);
   const [validationSummary, setValidationSummary] = useState<string | null>(
     null
@@ -62,6 +63,8 @@ export default function AnomalyCreatePage() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    dismissAll();
+
     if (!validate()) {
       setValidationSummary(t('anomaly.form.validation.summary'));
       focusFirstFormError();
@@ -69,7 +72,6 @@ export default function AnomalyCreatePage() {
     }
 
     setValidationSummary(null);
-    setGeneralError(null);
     setIsSessionExpired(false);
     try {
       const result = await createMutation.mutateAsync(
@@ -83,7 +85,16 @@ export default function AnomalyCreatePage() {
         setIsSessionExpired(true);
       } else if (failure.kind === 'general') {
         setErrors(failure.fieldErrors);
-        setGeneralError(failure.message);
+        if (failure.message) {
+          showErrorToast(failure.message);
+        } else if (Object.keys(failure.fieldErrors).length > 0) {
+          showErrorToast({
+            title: t('admin.toast_error_title'),
+            message: t('toast.form_validation_check')
+          });
+        } else {
+          showErrorToast(error);
+        }
       }
     }
   };
@@ -105,7 +116,6 @@ export default function AnomalyCreatePage() {
           prompt={t('anomaly.form.cancel_confirm')}
         />
         <AnomalyFormFeedback
-          generalError={generalError}
           validationSummary={validationSummary}
           isSessionExpired={isSessionExpired}
         />

@@ -40,18 +40,6 @@
   line-height: 1.4;
 }
 
-.confirm-modal-alert {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  padding: var(--space-md);
-  border-radius: var(--radius-md);
-  font: var(--type-body-sm);
-  background: var(--color-error-container);
-  color: var(--color-on-error-container);
-}
-
 .confirm-modal-actions {
   display: flex;
   gap: var(--space-md);

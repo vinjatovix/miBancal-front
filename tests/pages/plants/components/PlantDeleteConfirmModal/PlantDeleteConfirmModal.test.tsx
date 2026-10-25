@@ -131,19 +131,16 @@ describe('PlantDeleteConfirmModal', () => {
     expect(onReload).toHaveBeenCalled();
   });
 
-  it('renders general error message when error is provided', () => {
-    const errorMessage = 'Error al eliminar planta en el servidor';
-
+  it('does not render static error alert banner in modal body', () => {
     render(
       <PlantDeleteConfirmModal
         isOpen={true}
         plantName="Tomate cherry"
         onConfirm={vi.fn()}
         onCancel={vi.fn()}
-        error={errorMessage}
       />
     );
 
-    expect(screen.getByText(errorMessage)).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

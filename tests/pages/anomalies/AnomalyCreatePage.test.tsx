@@ -6,6 +6,7 @@ import { Route, Routes } from 'react-router-dom';
 import AnomalyCreatePage from '../../../src/pages/anomalies/AnomalyCreatePage';
 import { createAnomaly } from '../../../src/services/anomalies.service';
 import { ApiError } from '../../../src/shared/errors/ApiError';
+import { t } from '../../../src/i18n/core/t';
 import { buildAnomaly } from '../../fixtures/anomalies/buildAnomaly';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
@@ -137,18 +138,22 @@ describe('AnomalyCreatePage', () => {
     await user.type(screen.getByLabelText(/^Descripción/), 'Texto conservado');
     await user.click(screen.getByRole('button', { name: 'Guardar' }));
 
-    expect(
-      await screen.findByText(
-        'Ya existe una anomalía registrada con este slug.'
-      )
-    ).toBeInTheDocument();
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(
+      'Ya existe una anomalía registrada con este slug.'
+    );
+    expect(document.querySelector('div.anomaly-form__error')).toBeNull();
     expect(screen.getByLabelText(/^Nombre común/)).toHaveValue('Pulgón verde');
     expect(screen.getByLabelText(/^Descripción/)).toHaveValue(
       'Texto conservado'
     );
   });
 
-  it('asigna los errores 400 a sus campos', async () => {
+  it('asigna los errores 400 a sus campos y emite toast de revision general', async () => {
     mockedCreateAnomaly.mockRejectedValue(
       new ApiError('bad', 400, { name: 'Nombre no válido' })
     );
@@ -163,6 +168,15 @@ describe('AnomalyCreatePage', () => {
       'aria-invalid',
       'true'
     );
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(
+      'Por favor, revisa los datos introducidos en el formulario.'
+    );
+    expect(document.querySelector('div.anomaly-form__error')).toBeNull();
   });
 
   it('guía a reautenticarse sin perder los datos cuando la sesión caduca', async () => {

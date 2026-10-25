@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 
 import { ApiError } from '../../../../src/shared/errors/ApiError';
 import { PreconditionFailedError } from '../../../../src/shared/errors/PreconditionFailedError';
+import { t } from '../../../../src/i18n/core/t';
 import { COLLABORATOR_TEST_TOKEN } from '../../../fixtures/auth/authFixtures';
 import { buildAnomaly } from '../../../fixtures/anomalies/buildAnomaly';
 import {
@@ -114,6 +115,12 @@ describe('AnomalyDetail edición inline', () => {
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
     expect(await screen.findByText('Conflicto de edición')).toBeInTheDocument();
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(t('toast.concurrent_modification'));
     expect(mockedUpdateAnomaly).toHaveBeenCalledOnce();
 
     const callsBefore = mockedGetAnomalyForEdit.mock.calls.length;

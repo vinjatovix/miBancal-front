@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
+import { t } from '../../../src/i18n/core/t';
 import PlantCreatePage from '../../../src/pages/plants/PlantCreatePage';
 import { listFamilyItemsResponse } from '../../fixtures/families/listFamilyItems';
 import { buildPlant } from '../../fixtures/plants/buildPlant';
@@ -220,9 +221,20 @@ describe('PlantCreatePage', () => {
     const submitBtn = screen.getByRole('button', { name: /guardar|crear/i });
     await user.click(submitBtn);
 
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(
+      'Por favor, revisa los datos introducidos en el formulario.'
+    );
     expect(
-      await screen.findByText('Ya existe una planta con este nombre')
+      screen.getByText('Ya existe una planta con este nombre')
     ).toBeInTheDocument();
+    expect(
+      document.querySelector('.plant-create-page > .plant-form__error')
+    ).toBeNull();
     expect(nameInput).toHaveValue('Tomate duplicado');
   });
 
@@ -282,8 +294,66 @@ describe('PlantCreatePage', () => {
     expect(
       await screen.findByText('El nombre principal ya está registrado')
     ).toBeInTheDocument();
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent('Error general no mapeado');
     expect(
-      await screen.findByText('Error general no mapeado')
+      document.querySelector('.plant-create-page > .plant-form__error')
+    ).toBeNull();
+  });
+
+  it('emits review toast and renders field error when 400 has only mapped field errors', async () => {
+    const user = userEvent.setup();
+    stubFetchOk(listFamilyItemsResponse);
+
+    renderWithProviders(<PlantCreatePage />);
+
+    const nameInput = screen.getByLabelText(/nombre común principal/i);
+    await user.type(nameInput, 'Tomate nuevo');
+
+    const sciInput = screen.getByLabelText(/nombre científico/i);
+    await user.type(sciInput, 'Solanum lycopersicum');
+
+    const familySelect = screen.getByRole('combobox', {
+      name: /familia botánica/i
+    });
+    const option = await screen.findByRole('option', {
+      name: /amarilidáceas/i
+    });
+    await user.selectOptions(familySelect, option);
+
+    const sowingBtn = screen.getAllByRole('button', { name: 'Mar' })[0];
+    await user.click(sowingBtn);
+
+    const imageInput = screen.getByLabelText(/url de la fotografía/i);
+    await user.type(imageInput, 'https://example.com/tomate.jpg');
+
+    stubFetchError(400, {
+      message: 'Validation failed',
+      errors: {
+        'identity.name.primary': 'El nombre principal ya está registrado'
+      }
+    });
+
+    const submitBtn = screen.getByRole('button', { name: /guardar|crear/i });
+    await user.click(submitBtn);
+
+    expect(
+      await screen.findByText('El nombre principal ya está registrado')
     ).toBeInTheDocument();
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(
+      'Por favor, revisa los datos introducidos en el formulario.'
+    );
+    expect(
+      document.querySelector('.plant-create-page > .plant-form__error')
+    ).toBeNull();
   });
 });

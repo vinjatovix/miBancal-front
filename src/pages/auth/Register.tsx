@@ -12,6 +12,7 @@ import { t } from '../../i18n/core/t';
 import { useAuth } from '../../shared/auth/useAuth';
 import { validateRegisterForm } from '../../shared/auth/validation';
 import { ApiError } from '../../shared/errors/ApiError';
+import { useToast } from '../../shared/toast/useToast';
 import type { LoginNavigationState } from '../../types/auth';
 import './authPages.css';
 import './ssoButtons.css';
@@ -27,11 +28,11 @@ type FormField = 'email' | 'username' | 'password' | 'repeatPassword';
 
 export default function Register() {
   const { isAuthenticated, register, googleLogin } = useAuth();
+  const { dismissAll, showErrorToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
   const navState = location.state as LoginNavigationState | null;
-  const initialSsoError = navState?.ssoError ?? navState?.error;
 
   const [formData, setFormData] = useState<Record<FormField, string>>({
     email: '',
@@ -43,10 +44,6 @@ export default function Register() {
     {}
   );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [generalError, setGeneralError] = useState<string | null>(null);
-  const [ssoError, setSsoError] = useState<string | null>(
-    () => initialSsoError ?? null
-  );
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,11 +51,13 @@ export default function Register() {
 
   const purgedRef = useRef(false);
   useEffect(() => {
-    if (!purgedRef.current && (navState?.ssoError || navState?.error)) {
+    const ssoErr = navState?.ssoError ?? navState?.error;
+    if (!purgedRef.current && ssoErr) {
       purgedRef.current = true;
+      showErrorToast(ssoErr);
       navigate(location.pathname, { replace: true });
     }
-  }, [location.pathname, navState, navigate]);
+  }, [location.pathname, navState, navigate, showErrorToast]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -70,16 +69,15 @@ export default function Register() {
 
   const handleGoogleCredential = useCallback(
     async (idToken: string) => {
-      setGeneralError(null);
-      setSsoError(null);
+      dismissAll();
       try {
         await googleLogin({ idToken });
         navigate('/', { replace: true });
       } catch (error) {
-        setSsoError(classifySsoError(error, 'google'));
+        showErrorToast(classifySsoError(error, 'google'));
       }
     },
-    [googleLogin, navigate]
+    [googleLogin, navigate, dismissAll, showErrorToast]
   );
 
   if (isAuthenticated) {
@@ -97,8 +95,7 @@ export default function Register() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setGeneralError(null);
-    setSsoError(null);
+    dismissAll();
 
     const errors = validateRegisterForm(formData);
     setFieldErrors(errors);
@@ -117,19 +114,11 @@ export default function Register() {
       await register({ id, ...formData });
       setIsSubmitted(true);
     } catch (error) {
-      if (error instanceof ApiError) {
-        if (error.status === 409) {
-          setFieldErrors((prev) => ({ ...prev, username: 'taken' }));
-          return;
-        }
-        if (error.status === 429) {
-          setGeneralError(t('auth.rate_limit_notice'));
-          return;
-        }
+      if (error instanceof ApiError && error.status === 409) {
+        setFieldErrors((prev) => ({ ...prev, username: 'taken' }));
+        return;
       }
-      setGeneralError(
-        error instanceof Error ? error.message : t('errors.app.title')
-      );
+      showErrorToast(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -159,12 +148,6 @@ export default function Register() {
   return (
     <div className="auth-container">
       <h1 className="auth-title">{t('auth.register')}</h1>
-
-      {generalError && (
-        <div className="auth-alert-error" role="alert">
-          {generalError}
-        </div>
-      )}
 
       <form
         className="auth-form"
@@ -251,8 +234,7 @@ export default function Register() {
           <div
             className="auth-sso-buttons"
             onClick={() => {
-              setGeneralError(null);
-              setSsoError(null);
+              dismissAll();
             }}
           >
             <GoogleAuthButton
@@ -262,12 +244,6 @@ export default function Register() {
             <GitHubAuthButton disabled={isSubmitting} />
           </div>
         </>
-      )}
-
-      {ssoError && (
-        <div className="auth-alert-error auth-sso-alert-error" role="alert">
-          <div>{ssoError}</div>
-        </div>
       )}
 
       <div className="auth-footer">

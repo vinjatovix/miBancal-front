@@ -788,9 +788,13 @@ describe('PlantDetail', () => {
       });
       await user.click(confirmBtn);
 
-      expect(
-        await within(dialog).findByText('Network request failed')
-      ).toBeInTheDocument();
+      const toastRegion = await screen.findByRole('region', {
+        name: t('toast.region_label')
+      });
+      const toastAlert = within(toastRegion).getByRole('alert');
+      expect(toastAlert).toHaveTextContent(t('errors.offline.message'));
+      expect(dialog).toBeInTheDocument();
+      expect(within(dialog).queryByRole('alert')).toBeNull();
     });
   });
 });

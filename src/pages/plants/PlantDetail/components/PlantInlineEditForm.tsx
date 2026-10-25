@@ -5,6 +5,7 @@ import { t } from '../../../../i18n/core/t';
 import { CancelConfirmModal } from '../../../../shared/components/Modal/CancelConfirmModal';
 import { ApiError } from '../../../../shared/errors/ApiError';
 import { PreconditionFailedError } from '../../../../shared/errors/PreconditionFailedError';
+import { useToast } from '../../../../shared/toast/useToast';
 import type { Plant } from '../../../../types/Plants/Plant';
 import { PlantDeleteConfirmModal } from '../../components/PlantDeleteConfirmModal/PlantDeleteConfirmModal';
 import { usePlantFormState } from '../../components/PlantForm/hooks/usePlantFormState';
@@ -42,9 +43,9 @@ export function PlantInlineEditForm({
   const navigate = useNavigate();
   const { values, errors, isDirty, setField, validate, setErrors } =
     usePlantFormState(canonicalPlantToFormState(plant));
+  const { dismissAll, showErrorToast } = useToast();
 
   const [hasConflict, setHasConflict] = useState<boolean>(false);
-  const [generalError, setGeneralError] = useState<string | null>(null);
   const [validationSummary, setValidationSummary] = useState<string | null>(
     null
   );
@@ -75,16 +76,15 @@ export function PlantInlineEditForm({
       setIsDeleteModalOpen(false);
       if (err instanceof PreconditionFailedError) {
         setHasConflict(true);
-      } else {
-        setGeneralError(
-          err instanceof Error ? err.message : t('errors.app.title')
-        );
       }
+      showErrorToast(err);
     }
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    dismissAll();
+
     if (!validate()) {
       setValidationSummary(t('plant.form.validation.summary'));
       setTimeout(() => {
@@ -104,7 +104,6 @@ export function PlantInlineEditForm({
 
     setValidationSummary(null);
     setHasConflict(false);
-    setGeneralError(null);
     try {
       const patch = formStateToUpdatePlantRequest(values, plant);
       const result = await updateMutation.mutateAsync({
@@ -116,6 +115,7 @@ export function PlantInlineEditForm({
     } catch (err: unknown) {
       if (err instanceof PreconditionFailedError) {
         setHasConflict(true);
+        showErrorToast(err);
       } else if (err instanceof ApiError) {
         if (err.errors) {
           const { fieldErrors, unmappedErrors } = normalizePlantApiErrors(
@@ -123,30 +123,29 @@ export function PlantInlineEditForm({
           );
           setErrors(fieldErrors);
           if (unmappedErrors.length > 0) {
-            setGeneralError(unmappedErrors.join('; '));
-          } else if (Object.keys(fieldErrors).length === 0) {
-            setGeneralError(err.message);
+            showErrorToast(unmappedErrors.join('; '));
+          } else {
+            showErrorToast({
+              title: t('admin.toast_error_title'),
+              message: t('toast.form_validation_check')
+            });
           }
         } else if (err.status === 409) {
-          setGeneralError(t('plant.form.duplicate_error'));
+          showErrorToast({
+            title: t('admin.toast_error_title'),
+            message: t('plant.form.duplicate_error')
+          });
         } else {
-          setGeneralError(err.message);
+          showErrorToast(err);
         }
       } else {
-        setGeneralError(
-          err instanceof Error ? err.message : t('errors.app.title')
-        );
+        showErrorToast(err);
       }
     }
   };
 
   return (
     <form className="plant-form" onSubmit={handleSubmit}>
-      {generalError && (
-        <div role="alert" className="plant-form__error">
-          {generalError}
-        </div>
-      )}
       {hasConflict && (
         <div role="alert" className="plant-form__conflict-banner">
           <strong>{t('plant.form.conflict.title')}</strong>

@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import { useUserRolesManagement } from './hooks/useUserRolesManagement';
-import { UserSearchForm } from './components/UserSearchForm';
-import { UserDetailsCard } from './components/UserDetailsCard';
-import { RoleManagementForm } from './components/RoleManagementForm';
-import { RoleChangeConfirmModal } from './components/RoleChangeConfirmModal';
-import { getParsedErrorMessage } from '../../shared/errors/parseApiError';
-import Icon from '../../shared/components/Icon/Icon';
+import { useEffect, useState } from 'react';
 import { t } from '../../i18n/core/t';
+import Icon from '../../shared/components/Icon/Icon';
+import { useToast } from '../../shared/toast/useToast';
 import type { UserRole } from '../../types/auth';
+import { RoleChangeConfirmModal } from './components/RoleChangeConfirmModal';
+import { RoleManagementForm } from './components/RoleManagementForm';
+import { UserDetailsCard } from './components/UserDetailsCard';
+import { UserSearchForm } from './components/UserSearchForm';
+import { useUserRolesManagement } from './hooks/useUserRolesManagement';
 import './adminDashboard.css';
 
 export default function AdminDashboard() {
@@ -21,42 +21,43 @@ export default function AdminDashboard() {
     saveRoles,
     successMessage
   } = useUserRolesManagement();
+  const { showToast, showErrorToast, dismissAll } = useToast();
 
   const [targetRoles, setTargetRoles] = useState<UserRole[]>([]);
-  const [dismissedError, setDismissedError] = useState<string | null>(null);
-  const [dismissedSuccess, setDismissedSuccess] = useState<string | null>(null);
-
-  const errorMessage = error ? getParsedErrorMessage(error) : null;
+  const [submitCount, setSubmitCount] = useState(0);
   const username = user?.username || '';
 
-  const activeError =
-    errorMessage && dismissedError !== errorMessage ? errorMessage : null;
-
-  const successToastVisible = Boolean(
-    successMessage && dismissedSuccess !== successMessage
-  );
+  useEffect(() => {
+    if (error) {
+      showErrorToast(error);
+    }
+  }, [error, submitCount, showErrorToast]);
 
   useEffect(() => {
-    if (!successToastVisible || !successMessage) return;
-    const timer = setTimeout(() => {
-      setDismissedSuccess(successMessage);
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [successToastVisible, successMessage]);
+    if (successMessage) {
+      showToast({
+        title: t('admin.toast_success_title'),
+        message: t('admin.role_change_success_message'),
+        variant: 'success',
+        duration: 4000
+      });
+    }
+  }, [successMessage, showToast]);
 
   const handleSearch = (term: string) => {
-    setDismissedError(null);
+    dismissAll();
     search(term);
   };
 
   const handleOpenModal = (roles: UserRole[]) => {
-    setDismissedError(null);
+    dismissAll();
     setTargetRoles(roles);
     setIsModalOpen(true);
   };
 
   const handleConfirmRoleChange = () => {
-    setDismissedError(null);
+    dismissAll();
+    setSubmitCount((c) => c + 1);
     saveRoles(targetRoles);
   };
 
@@ -106,50 +107,6 @@ export default function AdminDashboard() {
         targetRoles={targetRoles}
         isLoading={isLoading}
       />
-
-      {successToastVisible && (
-        <div
-          className="admin-toast-notification admin-toast-notification--success"
-          role="status"
-        >
-          <span className="admin-toast-icon admin-toast-icon--success">
-            <Icon name="tick" decorative />
-          </span>
-          <div className="admin-toast-texts">
-            <span className="admin-toast-title">
-              {t('admin.toast_success_title')}
-            </span>
-            <span className="admin-toast-subtitle">
-              {t('admin.role_change_success_message')}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {activeError && (
-        <div
-          className="admin-toast-notification admin-toast-notification--error"
-          role="alert"
-        >
-          <span className="admin-toast-icon admin-toast-icon--error">
-            <Icon name="warning" decorative />
-          </span>
-          <div className="admin-toast-texts">
-            <span className="admin-toast-title">
-              {t('admin.toast_error_title')}
-            </span>
-            <span className="admin-toast-subtitle">{activeError}</span>
-          </div>
-          <button
-            type="button"
-            className="admin-toast-close"
-            onClick={() => setDismissedError(activeError)}
-            aria-label={t('admin.modal_close')}
-          >
-            <Icon name="close" decorative />
-          </button>
-        </div>
-      )}
     </div>
   );
 }

@@ -5,15 +5,16 @@ import { t } from '../../../i18n/core/t';
 import { useAuth } from '../../../shared/auth/useAuth';
 import { validateEmail } from '../../../shared/auth/validation';
 import { ApiError } from '../../../shared/errors/ApiError';
+import { useToast } from '../../../shared/toast/useToast';
 import '../authPages.css';
 import { resolveAuthErrorText } from '../utils/authErrorText';
 
 export default function ForgotPassword() {
   const { isAuthenticated, forgotPassword } = useAuth();
+  const { dismissAll, showErrorToast } = useToast();
 
   const [email, setEmail] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
-  const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -23,7 +24,7 @@ export default function ForgotPassword() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setServerError(null);
+    dismissAll();
 
     const emailError = validateEmail(email);
     if (emailError) {
@@ -37,19 +38,15 @@ export default function ForgotPassword() {
       await forgotPassword({ email });
       setIsSubmitted(true);
     } catch (error) {
-      if (error instanceof ApiError) {
-        if (error.status === 400 && error.errors?.email) {
-          setFieldError(error.errors.email);
-          return;
-        }
-        if (error.status === 429) {
-          setServerError(t('auth.rate_limit_notice'));
-          return;
-        }
+      if (
+        error instanceof ApiError &&
+        error.status === 400 &&
+        error.errors?.email
+      ) {
+        setFieldError(error.errors.email);
+        return;
       }
-      setServerError(
-        error instanceof Error ? error.message : t('errors.app.title')
-      );
+      showErrorToast(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -76,12 +73,6 @@ export default function ForgotPassword() {
   return (
     <div className="auth-container">
       <h1 className="auth-title">{t('auth.forgot_title')}</h1>
-
-      {serverError && (
-        <div className="auth-alert-error" role="alert">
-          {serverError}
-        </div>
-      )}
 
       <form
         className="auth-form"

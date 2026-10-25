@@ -269,12 +269,14 @@ describe('AccountSettings Page', () => {
     expect(oldInput).toHaveValue('WrongPassword123!');
   });
 
-  it('handles server general error displaying error alert banner', async () => {
+  it('handles server general error displaying error toast without static alert banner', async () => {
     const user = userEvent.setup();
     vi.spyOn(authServiceModule, 'updatePassword').mockRejectedValueOnce(
       new ApiError('Internal server error', 500)
     );
-    renderWithProviders(<TestSettingsApp />, { route: '/settings' });
+    const { container } = renderWithProviders(<TestSettingsApp />, {
+      route: '/settings'
+    });
 
     await user.type(
       screen.getByLabelText(t('settings.old_password')),
@@ -295,7 +297,9 @@ describe('AccountSettings Page', () => {
     );
 
     const alert = await screen.findByRole('alert');
+    expect(alert).toHaveClass('toast-item--error');
     expect(alert).toHaveTextContent('Internal server error');
+    expect(container.querySelector('.settings-alert-error')).toBeNull();
   });
 
   it('purges session and triggers redirect when updatePassword returns 401', async () => {
@@ -475,13 +479,15 @@ describe('AccountSettings Page', () => {
     'Password must be different from current password',
     'different'
   ])(
-    'displays translated Spanish error alert when 400 error message is "%s"',
+    'displays translated Spanish error toast when 400 error message is "%s"',
     async (errorMessage) => {
       const user = userEvent.setup();
       vi.spyOn(authServiceModule, 'updatePassword').mockRejectedValueOnce(
         new ApiError(errorMessage, 400)
       );
-      renderWithProviders(<TestSettingsApp />, { route: '/settings' });
+      const { container } = renderWithProviders(<TestSettingsApp />, {
+        route: '/settings'
+      });
 
       await user.type(
         screen.getByLabelText(t('settings.old_password')),
@@ -502,7 +508,9 @@ describe('AccountSettings Page', () => {
       );
 
       const alert = await screen.findByRole('alert');
+      expect(alert).toHaveClass('toast-item--error');
       expect(alert).toHaveTextContent(t('settings.password_must_be_different'));
+      expect(container.querySelector('.settings-alert-error')).toBeNull();
     }
   );
 

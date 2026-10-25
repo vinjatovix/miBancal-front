@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
+import { t } from '../../../src/i18n/core/t';
 import FamilyCreatePage from '../../../src/pages/families/FamilyCreatePage';
 import { buildFamily } from '../../fixtures/families/buildFamily';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
@@ -163,6 +164,14 @@ describe('FamilyCreatePage', () => {
     expect(
       await screen.findByText('Ya existe una familia registrada con este slug')
     ).toBeInTheDocument();
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(
+      document.querySelector('.family-create-page > .family-form__error')
+    ).toBeNull();
     expect(nameInput).toHaveValue('Solanáceas');
   });
 
@@ -181,7 +190,7 @@ describe('FamilyCreatePage', () => {
     ).toBeInTheDocument();
   });
 
-  it('displays nested extra field validation errors on the corresponding field', async () => {
+  it('displays nested extra field validation errors on the corresponding field and general review toast', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(<FamilyCreatePage />);
@@ -215,9 +224,20 @@ describe('FamilyCreatePage', () => {
     expect(
       await screen.findByText('Debe ser un número mayor a cero')
     ).toBeInTheDocument();
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(
+      'Por favor, revisa los datos introducidos en el formulario.'
+    );
+    expect(
+      document.querySelector('.family-create-page > .family-form__error')
+    ).toBeNull();
   });
 
-  it('displays unmapped server validation errors in general alert banner', async () => {
+  it('displays unmapped server validation errors in general error toast', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(<FamilyCreatePage />);
@@ -244,9 +264,15 @@ describe('FamilyCreatePage', () => {
     const submitBtn = screen.getByRole('button', { name: /guardar|crear/i });
     await user.click(submitBtn);
 
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent('Subfamilias no permitidas');
     expect(
-      await screen.findByText('Subfamilias no permitidas')
-    ).toBeInTheDocument();
+      document.querySelector('.family-create-page > .family-form__error')
+    ).toBeNull();
   });
 
   it('displays duplicate error message when 409 conflict returns an empty errors object', async () => {
@@ -270,11 +296,17 @@ describe('FamilyCreatePage', () => {
     const submitBtn = screen.getByRole('button', { name: /guardar|crear/i });
     await user.click(submitBtn);
 
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(
+      'Ya existe una familia registrada con este nombre o slug.'
+    );
     expect(
-      await screen.findByText(
-        'Ya existe una familia registrada con este nombre o slug.'
-      )
-    ).toBeInTheDocument();
+      document.querySelector('.family-create-page > .family-form__error')
+    ).toBeNull();
   });
 
   it('displays API error message when server error returns an empty errors object', async () => {
@@ -298,8 +330,14 @@ describe('FamilyCreatePage', () => {
     const submitBtn = screen.getByRole('button', { name: /guardar|crear/i });
     await user.click(submitBtn);
 
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent('Operación no válida en el catálogo');
     expect(
-      await screen.findByText('Operación no válida en el catálogo')
-    ).toBeInTheDocument();
+      document.querySelector('.family-create-page > .family-form__error')
+    ).toBeNull();
   });
 });

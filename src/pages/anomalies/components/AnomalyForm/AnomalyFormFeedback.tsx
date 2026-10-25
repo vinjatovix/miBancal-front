@@ -3,13 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { t } from '../../../../i18n/core/t';
 
 interface Props {
-  readonly generalError: string | null;
   readonly validationSummary: string | null;
   readonly isSessionExpired: boolean;
 }
 
 export function AnomalyFormFeedback({
-  generalError,
   validationSummary,
   isSessionExpired
 }: Props) {
@@ -23,11 +21,6 @@ export function AnomalyFormFeedback({
           <Link to="/login" state={{ from: location }}>
             {t('anomaly.form.login_again')}
           </Link>
-        </div>
-      )}
-      {generalError && (
-        <div role="alert" className="anomaly-form__error">
-          {generalError}
         </div>
       )}
       {validationSummary && (

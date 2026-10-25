@@ -7,6 +7,7 @@ import { router } from './app/router';
 import { queryClient } from './app/queryClient';
 import { AppErrorBoundary } from './app/AppErrorBoundary';
 import { AuthProvider } from './shared/auth/AuthContext';
+import { ToastProvider } from './shared/toast/ToastContext';
 
 import './index.css';
 
@@ -15,7 +16,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <AppErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <RouterProvider router={router} />
+          <ToastProvider>
+            <RouterProvider router={router} />
+          </ToastProvider>
         </AuthProvider>
       </QueryClientProvider>
     </AppErrorBoundary>

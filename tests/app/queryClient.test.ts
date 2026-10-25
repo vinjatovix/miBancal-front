@@ -3,6 +3,8 @@ import { queryClient } from '../../src/app/queryClient';
 import { ApiError } from '../../src/shared/errors/ApiError';
 import { NetworkError } from '../../src/shared/errors/NetworkError';
 import { shouldRetryQuery } from '../../src/shared/reactQuery/retryPolicy';
+import { toastStore } from '../../src/shared/toast/toastStore';
+import { t } from '../../src/i18n/core/t';
 
 const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -32,6 +34,7 @@ function reportedPayloads() {
 describe('queryClient', () => {
   beforeEach(() => {
     errorSpy.mockClear();
+    toastStore.clearToasts();
   });
 
   it('retries with the shared retry policy and does not refetch on focus', () => {
@@ -79,5 +82,25 @@ describe('queryClient', () => {
     expect(reportedPayloads()).toEqual([
       expect.objectContaining({ kind: 'forbidden', status: 403 })
     ]);
+  });
+
+  it('emits unified 429 error toast when query encounters rate limit', async () => {
+    await failQuery(new ApiError('Rate limit exceeded', 429));
+
+    const toasts = toastStore.getSnapshot();
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0]).toMatchObject({
+      title: t('errors.tooManyRequests.title'),
+      message: t('errors.tooManyRequests.message'),
+      variant: 'error',
+      duration: 0
+    });
+  });
+
+  it('does not emit toast when query fails with non-429 error', async () => {
+    await failQuery(new ApiError('Server error', 500));
+
+    const toasts = toastStore.getSnapshot();
+    expect(toasts).toEqual([]);
   });
 });

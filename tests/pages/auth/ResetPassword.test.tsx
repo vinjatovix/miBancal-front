@@ -7,6 +7,7 @@ import ResetPassword from '../../../src/pages/auth/ResetPassword/ResetPassword';
 import * as authServiceModule from '../../../src/services/auth.service';
 import { clearStoredToken } from '../../../src/shared/auth/session';
 import { ApiError } from '../../../src/shared/errors/ApiError';
+import { t } from '../../../src/i18n/core/t';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
 function TestApp() {
@@ -192,7 +193,7 @@ describe('ResetPassword Page', () => {
     expect(sessionStorage.getItem('auth_token')).toBeNull();
   });
 
-  it('shows a rate limit notice on 429 keeping the form', async () => {
+  it('shows a rate limit notice in error toast on 429 keeping the form', async () => {
     const user = userEvent.setup();
     withToken();
     vi.spyOn(authServiceModule, 'resetPassword').mockRejectedValueOnce(
@@ -206,14 +207,15 @@ describe('ResetPassword Page', () => {
       screen.getByRole('button', { name: 'Confirmar contraseña' })
     );
 
+    const toastAlert = await screen.findByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
     expect(
-      await screen.findByText(
-        'Demasiados intentos. Por favor, inténtalo más tarde.'
-      )
+      screen.getByText(t('errors.tooManyRequests.message'))
     ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Confirmar contraseña' })
     ).toBeInTheDocument();
+    expect(document.querySelector('.auth-alert-error')).toBeNull();
   });
 
   it('prioritizes the password validation over an invalid token', async () => {

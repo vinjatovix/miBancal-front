@@ -6,6 +6,7 @@ import { extractAndSanitizeToken } from '../../../shared/auth/tokenUrl';
 import { useAuth } from '../../../shared/auth/useAuth';
 import { validateResetPasswordForm } from '../../../shared/auth/validation';
 import { ApiError } from '../../../shared/errors/ApiError';
+import { useToast } from '../../../shared/toast/useToast';
 import PasswordField from '../components/PasswordField';
 import PasswordStrengthBar from '../components/PasswordStrengthBar';
 import '../authPages.css';
@@ -16,24 +17,15 @@ type FormField = 'password' | 'repeatPassword';
 type SubmitFailure =
   | { readonly kind: 'fields'; readonly errors: Record<string, string> }
   | { readonly kind: 'tokenError' }
-  | { readonly kind: 'rateLimited' }
-  | { readonly kind: 'serverError'; readonly message: string };
+  | { readonly kind: 'toastError'; readonly error: unknown };
 
 function classifyResetError(error: unknown): SubmitFailure {
-  if (error instanceof ApiError) {
-    if (error.status === 400) {
-      return error.errors
-        ? { kind: 'fields', errors: error.errors }
-        : { kind: 'tokenError' };
-    }
-    if (error.status === 429) {
-      return { kind: 'rateLimited' };
-    }
+  if (error instanceof ApiError && error.status === 400) {
+    return error.errors
+      ? { kind: 'fields', errors: error.errors }
+      : { kind: 'tokenError' };
   }
-  return {
-    kind: 'serverError',
-    message: error instanceof Error ? error.message : t('errors.app.title')
-  };
+  return { kind: 'toastError', error };
 }
 
 function InvalidLink() {
@@ -57,6 +49,7 @@ function InvalidLink() {
 
 export default function ResetPassword() {
   const { resetPassword } = useAuth();
+  const { dismissAll, showErrorToast } = useToast();
   const [token] = useState<string | null>(extractAndSanitizeToken);
 
   const [password, setPassword] = useState('');
@@ -65,7 +58,6 @@ export default function ResetPassword() {
     {}
   );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [serverError, setServerError] = useState<string | null>(null);
   const [tokenError, setTokenError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -86,7 +78,7 @@ export default function ResetPassword() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setServerError(null);
+    dismissAll();
     setTouched({ password: true, repeatPassword: true });
 
     const errors = validateResetPasswordForm(password, repeatPassword);
@@ -103,11 +95,13 @@ export default function ResetPassword() {
       setIsSuccess(true);
     } catch (error) {
       const failure = classifyResetError(error);
-      if (failure.kind === 'fields') setFieldErrors(failure.errors);
-      else if (failure.kind === 'tokenError') setTokenError(true);
-      else if (failure.kind === 'rateLimited')
-        setServerError(t('auth.rate_limit_notice'));
-      else setServerError(failure.message);
+      if (failure.kind === 'fields') {
+        setFieldErrors(failure.errors);
+      } else if (failure.kind === 'tokenError') {
+        setTokenError(true);
+      } else {
+        showErrorToast(failure.error);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -141,12 +135,6 @@ export default function ResetPassword() {
   return (
     <div className="auth-container">
       <h1 className="auth-title">{t('auth.reset_title')}</h1>
-
-      {serverError && (
-        <div className="auth-alert-error" role="alert">
-          {serverError}
-        </div>
-      )}
 
       <form
         className="auth-form"

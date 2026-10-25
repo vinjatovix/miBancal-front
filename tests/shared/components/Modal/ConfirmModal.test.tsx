@@ -127,20 +127,17 @@ describe('ConfirmModal', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders alert when error is provided', () => {
-    render(
+  it('does not render static alert in modal body', () => {
+    const { container } = render(
       <ConfirmModal
         isOpen={true}
         onConfirm={vi.fn()}
         onCancel={vi.fn()}
         title="Error State"
-        error="Server error occurred"
       />
     );
 
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Server error occurred'
-    );
+    expect(container.querySelector('.confirm-modal-alert')).toBeNull();
   });
 
   it('renders custom children inside body', () => {

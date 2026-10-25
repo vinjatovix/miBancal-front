@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { t } from '../../../../i18n/core/t';
 import { CancelConfirmModal } from '../../../../shared/components/Modal/CancelConfirmModal';
 import { UnsavedChangesGuard } from '../../../../shared/components/UnsavedChangesGuard/UnsavedChangesGuard';
+import { useToast } from '../../../../shared/toast/useToast';
 import type { Anomaly } from '../../../../types/Anomaly/Anomaly';
 import { AnomalyFormActions } from '../../components/AnomalyForm/AnomalyFormActions';
 import { AnomalyFormFeedback } from '../../components/AnomalyForm/AnomalyFormFeedback';
@@ -36,9 +37,9 @@ export function AnomalyInlineEditForm({
   const [initialState] = useState(() => anomalyToFormState(anomaly));
   const { values, errors, isDirty, setField, validate, setErrors } =
     useAnomalyFormState(initialState, 'edit');
+  const { dismissAll, showErrorToast } = useToast();
   const [hasConflict, setHasConflict] = useState<boolean>(false);
   const [isSessionExpired, setIsSessionExpired] = useState<boolean>(false);
-  const [generalError, setGeneralError] = useState<string | null>(null);
   const [validationSummary, setValidationSummary] = useState<string | null>(
     null
   );
@@ -55,6 +56,8 @@ export function AnomalyInlineEditForm({
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    dismissAll();
+
     if (!validate()) {
       setValidationSummary(t('anomaly.form.validation.summary'));
       focusFirstFormError();
@@ -70,7 +73,6 @@ export function AnomalyInlineEditForm({
     setValidationSummary(null);
     setHasConflict(false);
     setIsSessionExpired(false);
-    setGeneralError(null);
     try {
       const result = await updateMutation.mutateAsync({
         idOrSlug: anomaly.slug,
@@ -82,11 +84,21 @@ export function AnomalyInlineEditForm({
       const failure = resolveAnomalySubmitError(error);
       if (failure.kind === 'conflict') {
         setHasConflict(true);
+        showErrorToast(error);
       } else if (failure.kind === 'session') {
         setIsSessionExpired(true);
       } else {
         setErrors(failure.fieldErrors);
-        setGeneralError(failure.message);
+        if (failure.message) {
+          showErrorToast(failure.message);
+        } else if (Object.keys(failure.fieldErrors).length > 0) {
+          showErrorToast({
+            title: t('admin.toast_error_title'),
+            message: t('toast.form_validation_check')
+          });
+        } else {
+          showErrorToast(error);
+        }
       }
     }
   };
@@ -111,7 +123,6 @@ export function AnomalyInlineEditForm({
         </div>
       )}
       <AnomalyFormFeedback
-        generalError={generalError}
         validationSummary={validationSummary}
         isSessionExpired={isSessionExpired}
       />

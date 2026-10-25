@@ -14,6 +14,7 @@ import { useDeletePlant } from '../hooks/useDeletePlant';
 import { usePlant } from '../hooks/usePlant';
 import { usePlantForEdit } from '../hooks/usePlantForEdit';
 import { readPlantSafety } from '../utils/plantSafety';
+import { useToast } from '../../../shared/toast/useToast';
 import { PlantDeleteConfirmModal } from '../components/PlantDeleteConfirmModal/PlantDeleteConfirmModal';
 
 import { PlantDetailStickyHeader } from './components/PlantDetailStickyHeader';
@@ -43,15 +44,14 @@ export default function PlantDetail() {
   const [hemisphere, setHemisphere] = useState<'north' | 'south'>('north');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleteConflict, setIsDeleteConflict] = useState<boolean>(false);
   const [prevId, setPrevId] = useState<string | undefined>(id);
+  const { dismissAll, showErrorToast } = useToast();
 
   if (prevId !== id) {
     setPrevId(id);
     setIsEditing(false);
     setIsDeleteModalOpen(false);
-    setDeleteError(null);
     setIsDeleteConflict(false);
   }
 
@@ -62,7 +62,7 @@ export default function PlantDetail() {
   const plant = plantQuery.data;
 
   const handleOpenDeleteModal = () => {
-    setDeleteError(null);
+    dismissAll();
     setIsDeleteConflict(false);
     setIsDeleteModalOpen(true);
   };
@@ -70,7 +70,6 @@ export default function PlantDetail() {
   const handleCloseDeleteModal = () => {
     if (deleteMutation.isPending) return;
     setIsDeleteModalOpen(false);
-    setDeleteError(null);
     setIsDeleteConflict(false);
   };
 
@@ -82,16 +81,15 @@ export default function PlantDetail() {
         const refetched = await plantForEditQuery.refetch();
         etag = refetched.data?.etag;
       } catch {
-        setDeleteError(t('errors.app.title'));
+        showErrorToast(t('errors.app.title'));
         return;
       }
     }
     if (!etag) {
-      setDeleteError(t('errors.app.title'));
+      showErrorToast(t('errors.app.title'));
       return;
     }
 
-    setDeleteError(null);
     setIsDeleteConflict(false);
 
     try {
@@ -101,17 +99,13 @@ export default function PlantDetail() {
     } catch (err: unknown) {
       if (err instanceof PreconditionFailedError) {
         setIsDeleteConflict(true);
-      } else {
-        setDeleteError(
-          err instanceof Error ? err.message : t('errors.app.title')
-        );
       }
+      showErrorToast(err);
     }
   };
 
   const handleReloadConflict = async () => {
     setIsDeleteConflict(false);
-    setDeleteError(null);
     await Promise.all([plantQuery.refetch(), plantForEditQuery.refetch()]);
   };
 
@@ -220,7 +214,6 @@ export default function PlantDetail() {
         onConfirm={handleConfirmDelete}
         onCancel={handleCloseDeleteModal}
         isDeleting={deleteMutation.isPending}
-        error={deleteError}
         isConflict={isDeleteConflict}
         onReload={handleReloadConflict}
       />

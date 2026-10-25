@@ -3,6 +3,7 @@ import { useContext, type MouseEvent } from 'react';
 import { t } from '../../../i18n/core/t';
 import { AuthContext } from '../../auth/authContextDef';
 import { useToggleBookmark } from '../../hooks/useToggleBookmark';
+import { useToastActions } from '../../toast/useToast';
 import Icon from '../Icon/Icon';
 
 import './favoriteButton.css';
@@ -20,13 +21,22 @@ export default function FavoriteButton({
 }: Props) {
   const auth = useContext(AuthContext);
   const toggleBookmark = useToggleBookmark();
+  const { dismissAll, showErrorToast } = useToastActions();
 
   if (!auth?.isAuthenticated) return null;
 
   function handleClick(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    toggleBookmark.mutate({ plantId, isFavorite });
+    dismissAll();
+    toggleBookmark.mutate(
+      { plantId, isFavorite },
+      {
+        onError: () => {
+          showErrorToast(t('favoriteButton.error'));
+        }
+      }
+    );
   }
 
   return (
@@ -43,12 +53,6 @@ export default function FavoriteButton({
       >
         <Icon name={isFavorite ? 'favorite_filled' : 'favorite'} decorative />
       </button>
-
-      {toggleBookmark.isError && (
-        <p role="alert" className="favorite-button__error">
-          {t('favoriteButton.error')}
-        </p>
-      )}
     </div>
   );
 }

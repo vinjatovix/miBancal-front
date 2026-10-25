@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { t } from '../../i18n/core/t';
 import { CancelConfirmModal } from '../../shared/components/Modal/CancelConfirmModal';
 import { ApiError } from '../../shared/errors/ApiError';
+import { useToast } from '../../shared/toast/useToast';
 import { usePlantFormState } from './components/PlantForm/hooks/usePlantFormState';
 import { PlantIdentitySection } from './components/PlantForm/PlantIdentitySection';
 import { PlantKnowledgeSection } from './components/PlantForm/PlantKnowledgeSection';
@@ -24,7 +25,7 @@ import './components/PlantForm/plantForm.css';
 export default function PlantCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreatePlant();
-  const [generalError, setGeneralError] = useState<string | null>(null);
+  const { dismissAll, showErrorToast } = useToast();
   const [validationSummary, setValidationSummary] = useState<string | null>(
     null
   );
@@ -48,6 +49,8 @@ export default function PlantCreatePage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    dismissAll();
+
     if (!validate()) {
       setValidationSummary(t('plant.form.validation.summary'));
       setTimeout(() => {
@@ -66,7 +69,6 @@ export default function PlantCreatePage() {
     }
 
     setValidationSummary(null);
-    setGeneralError(null);
     try {
       const request = formStateToCreatePlantRequest(values);
       const result = await createMutation.mutateAsync(request);
@@ -79,19 +81,23 @@ export default function PlantCreatePage() {
           );
           setErrors(fieldErrors);
           if (unmappedErrors.length > 0) {
-            setGeneralError(unmappedErrors.join('; '));
-          } else if (Object.keys(fieldErrors).length === 0) {
-            setGeneralError(err.message);
+            showErrorToast(unmappedErrors.join('; '));
+          } else {
+            showErrorToast({
+              title: t('admin.toast_error_title'),
+              message: t('toast.form_validation_check')
+            });
           }
         } else if (err.status === 409) {
-          setGeneralError(t('plant.form.duplicate_error'));
+          showErrorToast({
+            title: t('admin.toast_error_title'),
+            message: t('plant.form.duplicate_error')
+          });
         } else {
-          setGeneralError(err.message);
+          showErrorToast(err);
         }
       } else {
-        setGeneralError(
-          err instanceof Error ? err.message : t('errors.app.title')
-        );
+        showErrorToast(err);
       }
     }
   };
@@ -106,12 +112,6 @@ export default function PlantCreatePage() {
           {t('plant.form.subtitle_create')}
         </p>
       </header>
-
-      {generalError && (
-        <div role="alert" className="plant-form__error">
-          {generalError}
-        </div>
-      )}
 
       <form className="plant-form" onSubmit={handleSubmit}>
         <PlantIdentitySection
