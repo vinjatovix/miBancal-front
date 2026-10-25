@@ -37,4 +37,20 @@ describe('resolveAuthErrorText', () => {
 
     expect(result).toBe(expected);
   });
+
+  it.each([
+    ['length', 'El nombre de usuario debe tener entre 4 y 20 caracteres.'],
+    ['trimmed', 'El nombre de usuario debe tener entre 4 y 20 caracteres.'],
+    [
+      'username_requirements',
+      'El nombre de usuario debe tener entre 4 y 20 caracteres.'
+    ]
+  ])(
+    'resolves username requirements error text for key %s with username field',
+    (key, expected) => {
+      const result = resolveAuthErrorText(key, 'username');
+
+      expect(result).toBe(expected);
+    }
+  );
 });

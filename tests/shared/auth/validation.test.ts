@@ -72,8 +72,17 @@ describe('validateLoginForm', () => {
 });
 
 describe('validateUsername', () => {
-  it('accepts valid username within 1 to 50 characters', () => {
+  it('accepts valid username within 4 to 20 characters', () => {
     const error = validateUsername('hortelano');
+
+    expect(error).toBeNull();
+  });
+
+  it.each([
+    ['minimum 4 characters', 'abcd'],
+    ['maximum 20 characters', 'a'.repeat(20)]
+  ])('accepts valid username with boundary length (%s)', (_, value) => {
+    const error = validateUsername(value);
 
     expect(error).toBeNull();
   });
@@ -99,8 +108,21 @@ describe('validateUsername', () => {
     }
   );
 
-  it('returns length error when username exceeds 50 characters', () => {
-    const error = validateUsername('a'.repeat(51));
+  it.each([
+    ['1 character', 'a'],
+    ['2 characters', 'ab'],
+    ['3 characters', 'abc']
+  ])(
+    'returns length error when username has fewer than 4 characters (%s)',
+    (_, value) => {
+      const error = validateUsername(value);
+
+      expect(error).toBe('length');
+    }
+  );
+
+  it('returns length error when username exceeds 20 characters', () => {
+    const error = validateUsername('a'.repeat(21));
 
     expect(error).toBe('length');
   });

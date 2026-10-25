@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -227,6 +227,99 @@ describe('Register Page', () => {
       await screen.findByText('Revisa tu correo para activar la cuenta')
     ).toBeInTheDocument();
     expect(sessionStorage.getItem('auth_token')).toBeNull();
+  });
+
+  it('disables submit button when username has fewer than 4 characters', async () => {
+    const user = userEvent.setup();
+    const registerSpy = vi.spyOn(authServiceModule, 'register');
+
+    renderWithProviders(<TestApp />, { route: '/register' });
+    await user.type(
+      screen.getByLabelText(/Correo electrónico/i),
+      'hortelano@example.com'
+    );
+    await user.type(screen.getByLabelText(/Nombre de usuario/i), 'abc');
+    await user.type(screen.getByLabelText(/^Contraseña/i), 'Password123!');
+    await user.type(
+      screen.getByLabelText(/Repetir contraseña/i),
+      'Password123!'
+    );
+
+    const submitButton = screen.getByRole('button', { name: 'Crear cuenta' });
+    expect(submitButton).toBeDisabled();
+    expect(registerSpy).not.toHaveBeenCalled();
+  });
+
+  it('disables submit button when username exceeds 20 characters', async () => {
+    const user = userEvent.setup();
+    const registerSpy = vi.spyOn(authServiceModule, 'register');
+
+    renderWithProviders(<TestApp />, { route: '/register' });
+    await user.type(
+      screen.getByLabelText(/Correo electrónico/i),
+      'hortelano@example.com'
+    );
+    await user.type(
+      screen.getByLabelText(/Nombre de usuario/i),
+      'a'.repeat(21)
+    );
+    await user.type(screen.getByLabelText(/^Contraseña/i), 'Password123!');
+    await user.type(
+      screen.getByLabelText(/Repetir contraseña/i),
+      'Password123!'
+    );
+
+    const submitButton = screen.getByRole('button', { name: 'Crear cuenta' });
+    expect(submitButton).toBeDisabled();
+    expect(registerSpy).not.toHaveBeenCalled();
+  });
+
+  it('displays username requirements error when username has fewer than 4 characters and is blurred', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<TestApp />, { route: '/register' });
+    const usernameInput = screen.getByLabelText(/Nombre de usuario/i);
+    await user.type(usernameInput, 'a');
+
+    await user.tab();
+
+    expect(
+      await screen.findByText(
+        'El nombre de usuario debe tener entre 4 y 20 caracteres.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('does not send register request when submitting form with username with fewer than 4 characters', async () => {
+    const user = userEvent.setup();
+    const registerSpy = vi.spyOn(authServiceModule, 'register');
+
+    renderWithProviders(<TestApp />, { route: '/register' });
+    await user.type(
+      screen.getByLabelText(/Correo electrónico/i),
+      'hortelano@example.com'
+    );
+    await user.type(screen.getByLabelText(/Nombre de usuario/i), 'a');
+    await user.type(screen.getByLabelText(/^Contraseña/i), 'Password123!');
+    await user.type(
+      screen.getByLabelText(/Repetir contraseña/i),
+      'Password123!'
+    );
+    const form = screen
+      .getByRole('button', { name: 'Crear cuenta' })
+      .closest('form');
+
+    if (!form) {
+      throw new Error('Form element not found');
+    }
+    fireEvent.submit(form);
+
+    expect(registerSpy).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText(
+        'El nombre de usuario debe tener entre 4 y 20 caracteres.'
+      )
+    ).toBeInTheDocument();
   });
 
   it('handles 409 conflict by marking username in use', async () => {
