@@ -129,6 +129,44 @@ describe('AnomalyCreatePage', () => {
     expect(sent.id).toBeTruthy();
   });
 
+  it('crea la anomalía incluyendo recursos multimedia y diagnóstico diferencial', async () => {
+    mockedCreateAnomaly.mockResolvedValue({
+      anomaly: buildAnomaly(),
+      etag: '"v1"'
+    });
+    const user = userEvent.setup();
+    renderCreatePage();
+
+    await fillRequired(user);
+    await user.click(screen.getByRole('button', { name: 'Añadir fotografía' }));
+    await user.type(
+      screen.getByLabelText('URL de la imagen'),
+      'https://images.example.com/pulgon.jpg'
+    );
+    await user.type(
+      screen.getByLabelText('Pie de foto o título'),
+      'Colonia en hoja'
+    );
+    await user.type(screen.getByLabelText('Fuente o autor'), 'INIA');
+    await user.type(
+      screen.getByLabelText(/Se confunde con/),
+      'pulgon-negro{Enter}mosca-blanca'
+    );
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    expect(await screen.findByText('ANOMALY DETAIL')).toBeInTheDocument();
+    const sent = mockedCreateAnomaly.mock.calls[0][0];
+    expect(sent.resources).toEqual([
+      {
+        type: 'image',
+        url: 'https://images.example.com/pulgon.jpg',
+        title: 'Colonia en hoja',
+        source: 'INIA'
+      }
+    ]);
+    expect(sent.confusedWith).toEqual(['pulgon-negro', 'mosca-blanca']);
+  });
+
   it('avisa del slug duplicado (409) sin perder el formulario', async () => {
     mockedCreateAnomaly.mockRejectedValue(new ApiError('dup', 409));
     const user = userEvent.setup();

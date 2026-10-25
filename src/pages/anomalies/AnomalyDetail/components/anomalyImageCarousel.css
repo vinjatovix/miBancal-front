@@ -1,0 +1,129 @@
+.anomaly-carousel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+  max-width: 48rem;
+  margin: var(--space-md) auto 0;
+  justify-self: center;
+  align-self: center;
+  border-radius: var(--radius-lg);
+  outline: none;
+}
+
+.anomaly-carousel:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-surface-tint);
+}
+
+.anomaly-carousel__stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--color-surface-container-low);
+}
+
+.anomaly-carousel__slide {
+  width: 100%;
+}
+
+.anomaly-carousel__figure {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  width: 100%;
+}
+
+.anomaly-carousel__img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.anomaly-carousel__caption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  align-items: baseline;
+  justify-content: center;
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  font: var(--type-body-sm);
+  text-align: center;
+}
+
+.anomaly-carousel__caption-title {
+  font-weight: 500;
+  color: var(--color-on-surface);
+}
+
+.anomaly-carousel__caption-source {
+  opacity: 0.8;
+}
+
+.anomaly-carousel__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  cursor: pointer;
+  opacity: 0.85;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease;
+  z-index: 2;
+}
+
+.anomaly-carousel__nav:hover {
+  opacity: 1;
+  background-color: var(--color-surface-container-highest);
+}
+
+.anomaly-carousel__nav--prev {
+  left: var(--space-sm);
+}
+
+.anomaly-carousel__nav--next {
+  right: var(--space-sm);
+}
+
+.anomaly-carousel__dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-xs);
+  padding-block: var(--space-xs);
+}
+
+.anomaly-carousel__dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: var(--color-outline-variant);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.anomaly-carousel__dot--active {
+  background-color: var(--color-surface-tint);
+  transform: scale(1.25);
+}

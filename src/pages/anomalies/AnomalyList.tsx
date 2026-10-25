@@ -29,12 +29,24 @@ import './anomalyList.css';
 const SORT_OPTIONS = buildAnomalySortOptions();
 
 function AnomalyCard({ anomaly }: { readonly anomaly: AnomalyListItem }) {
+  const coverImage = (anomaly.resources ?? []).find((r) => r.type === 'image');
+
   return (
     <Link
       to={`/anomalies/${anomaly.slug}`}
       className="anomaly-card"
       aria-label={t('anomaly.open_detail', { name: anomaly.name })}
     >
+      {coverImage && (
+        <div className="anomaly-card__media">
+          <img
+            src={coverImage.url}
+            alt={coverImage.title || anomaly.name}
+            className="anomaly-card__img"
+            loading="lazy"
+          />
+        </div>
+      )}
       <h2 className="anomaly-card__name">
         {capitalizeFirstLetter(anomaly.name)}
       </h2>

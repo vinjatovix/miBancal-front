@@ -63,7 +63,7 @@ describe('getAnomalyList', () => {
 
     expect(result).toEqual(response);
     expect(lastRequest(fetchMock)).toEqual({
-      url: `${ANOMALIES_URL}?pagination[page]=1&pagination[limit]=25&sort[name]=asc&fields[anomalies]=slug,name,scientificName,category,status,deletedAt`,
+      url: `${ANOMALIES_URL}?pagination[page]=1&pagination[limit]=25&sort[name]=asc&fields[anomalies]=slug,name,scientificName,category,status,deletedAt,resources`,
       init: { headers: JSON_HEADERS }
     });
   });
@@ -78,7 +78,7 @@ describe('getAnomalyList', () => {
     });
 
     expect(lastRequest(fetchMock).url).toBe(
-      `${ANOMALIES_URL}?filter[category][eq]=weed&pagination[page]=1&pagination[limit]=25&sort[slug]=desc&fields[anomalies]=slug,name,scientificName,category,status,deletedAt`
+      `${ANOMALIES_URL}?filter[category][eq]=weed&pagination[page]=1&pagination[limit]=25&sort[slug]=desc&fields[anomalies]=slug,name,scientificName,category,status,deletedAt,resources`
     );
   });
 });
@@ -95,6 +95,25 @@ describe('getAnomalyBySlug', () => {
       url: `${ANOMALIES_URL}/pulgon-verde`,
       init: { headers: JSON_HEADERS }
     });
+  });
+
+  it('devuelve anomalía con recursos multimedia y diagnóstico diferencial', async () => {
+    const anomaly = buildAnomaly({
+      resources: [
+        {
+          type: 'image',
+          url: 'https://example.com/pulgon.jpg',
+          title: 'Detalle'
+        }
+      ],
+      confusedWith: ['pulgon-negro']
+    });
+    stubFetchOk(anomaly);
+
+    const result = await getAnomalyBySlug('pulgon-verde');
+
+    expect(result.resources).toHaveLength(1);
+    expect(result.confusedWith).toEqual(['pulgon-negro']);
   });
 
   it('propaga el 404 como ApiError', async () => {
@@ -147,6 +166,30 @@ describe('createAnomaly', () => {
     expect(JSON.parse(init?.body as string)).toEqual(body);
   });
 
+  it('envía resources y confusedWith en el cuerpo de creación', async () => {
+    const fullBody = {
+      ...body,
+      resources: [
+        {
+          type: 'image' as const,
+          url: 'https://example.com/pulgon.jpg',
+          title: 'Detalle'
+        }
+      ],
+      confusedWith: ['pulgon-negro']
+    };
+    const created = buildAnomaly(fullBody);
+    const fetchMock = stubFetchOk(created, { ETag: ETAG });
+
+    const result = await createAnomaly(fullBody);
+
+    expect(result.anomaly.resources).toHaveLength(1);
+    expect(result.anomaly.confusedWith).toEqual(['pulgon-negro']);
+    const sent = JSON.parse(lastRequest(fetchMock).init?.body as string);
+    expect(sent.resources).toEqual(fullBody.resources);
+    expect(sent.confusedWith).toEqual(fullBody.confusedWith);
+  });
+
   it('genera el id con randomUUID si falta', async () => {
     const fetchMock = stubFetchOk(buildAnomaly(), { ETag: ETAG });
     vi.spyOn(crypto, 'randomUUID').mockReturnValue(
@@ -181,6 +224,42 @@ describe('updateAnomaly', () => {
     expect(init?.method).toBe('PATCH');
     expect(init?.headers).toMatchObject({ 'If-Match': ETAG });
     expect(init?.body).toBe(JSON.stringify({ name: 'Nuevo' }));
+  });
+
+  it('envía resources y confusedWith actualizados en PATCH', async () => {
+    const patch = {
+      resources: [
+        {
+          type: 'image' as const,
+          url: 'https://example.com/nuevo-pulgon.jpg'
+        }
+      ],
+      confusedWith: ['cochinilla-algodonosa']
+    };
+    const updated = buildAnomaly(patch);
+    const fetchMock = stubFetchOk(updated, { ETag: '"v4"' });
+
+    const result = await updateAnomaly('pulgon-verde', patch, ETAG);
+
+    expect(result.anomaly.resources).toEqual(patch.resources);
+    expect(result.anomaly.confusedWith).toEqual(patch.confusedWith);
+    const { init } = lastRequest(fetchMock);
+    expect(init?.body).toBe(JSON.stringify(patch));
+  });
+
+  it('envía null para limpiar resources y confusedWith en PATCH', async () => {
+    const patch = {
+      resources: null,
+      confusedWith: null
+    };
+    const updated = buildAnomaly();
+    const fetchMock = stubFetchOk(updated, { ETag: '"v4"' });
+
+    const result = await updateAnomaly('pulgon-verde', patch, ETAG);
+
+    expect(result.etag).toBe('"v4"');
+    const { init } = lastRequest(fetchMock);
+    expect(init?.body).toBe(JSON.stringify(patch));
   });
 
   it('lanza PreconditionFailedError ante 412', async () => {

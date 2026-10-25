@@ -1,12 +1,23 @@
 import { t } from '../../../../i18n/core/t';
-import type { I18nKey } from '../../../../i18n/core/types';
 import { tValue } from '../../../../i18n/core/tValue';
 import {
   ANOMALY_CATEGORIES,
-  ANOMALY_TEXT_LIST_FIELDS,
-  type AnomalyTextListField
+  ANOMALY_TEXT_LIST_FIELDS
 } from '../../../../types/Anomaly/Anomaly';
-import type { AnomalyFormMode, AnomalyFormState } from './types';
+import { AnomalyConfusedWithSection } from './AnomalyConfusedWithSection';
+import { FieldError, TextArea, TextInput } from './AnomalyFormControls';
+import { AnomalyResourcesSection } from './AnomalyResourcesSection';
+import {
+  LIST_LABEL_KEYS,
+  LIST_PLACEHOLDER_KEYS
+} from './utils/anomalyTextListKeys';
+import type {
+  AnomalyFormMode,
+  AnomalyFormState,
+  ArticleResourceFormItem,
+  ImageResourceFormItem,
+  VideoResourceFormItem
+} from './types';
 
 interface Props {
   readonly mode: AnomalyFormMode;
@@ -18,116 +29,71 @@ interface Props {
   ) => void;
 }
 
-const LIST_PLACEHOLDER_KEYS: Record<AnomalyTextListField, I18nKey> = {
-  symptoms: 'anomaly.form.fields.symptoms_placeholder',
-  damage: 'anomaly.form.fields.damage_placeholder',
-  causes: 'anomaly.form.fields.causes_placeholder',
-  affectedCrops: 'anomaly.form.fields.affectedCrops_placeholder',
-  prevention: 'anomaly.form.fields.prevention_placeholder',
-  treatment: 'anomaly.form.fields.treatment_placeholder',
-  naturalEnemies: 'anomaly.form.fields.naturalEnemies_placeholder'
-};
-
-const LIST_LABEL_KEYS: Record<AnomalyTextListField, I18nKey> = {
-  symptoms: 'anomaly.sections.symptoms',
-  damage: 'anomaly.sections.damage',
-  causes: 'anomaly.sections.causes',
-  affectedCrops: 'anomaly.sections.affectedCrops',
-  prevention: 'anomaly.sections.prevention',
-  treatment: 'anomaly.sections.treatment',
-  naturalEnemies: 'anomaly.sections.naturalEnemies'
-};
-
-function FieldError({ message }: { readonly message?: string }) {
-  if (!message) return null;
-  return (
-    <span role="alert" className="anomaly-form__error">
-      {message}
-    </span>
-  );
-}
-
-function TextInput({
-  id,
-  label,
-  value,
-  error,
-  placeholder,
-  required,
-  disabled,
-  hint,
-  onChange
-}: {
-  readonly id: string;
-  readonly label: string;
-  readonly value: string;
-  readonly error?: string;
-  readonly placeholder?: string;
-  readonly required?: boolean;
-  readonly disabled?: boolean;
-  readonly hint?: string;
-  readonly onChange: (value: string) => void;
-}) {
-  return (
-    <div className="anomaly-form__field">
-      <label htmlFor={id} className="anomaly-form__label">
-        {label}
-        {required && <span aria-hidden="true"> *</span>}
-      </label>
-      <input
-        id={id}
-        type="text"
-        className="anomaly-form__input"
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
-        aria-invalid={error ? 'true' : 'false'}
-        placeholder={placeholder}
-      />
-      {hint && <span className="anomaly-form__hint">{hint}</span>}
-      <FieldError message={error} />
-    </div>
-  );
-}
-
-function TextArea({
-  id,
-  label,
-  value,
-  error,
-  placeholder,
-  rows = 3,
-  onChange
-}: {
-  readonly id: string;
-  readonly label: string;
-  readonly value: string;
-  readonly error?: string;
-  readonly placeholder?: string;
-  readonly rows?: number;
-  readonly onChange: (value: string) => void;
-}) {
-  return (
-    <div className="anomaly-form__field">
-      <label htmlFor={id} className="anomaly-form__label">
-        {label}
-      </label>
-      <textarea
-        id={id}
-        className="anomaly-form__textarea"
-        rows={rows}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-invalid={error ? 'true' : 'false'}
-        placeholder={placeholder}
-      />
-      <FieldError message={error} />
-    </div>
-  );
-}
-
 export function AnomalyFormFields({ mode, values, errors, setField }: Props) {
   const isCreate = mode === 'create';
+
+  const handleAddImage = () =>
+    setField('images', [
+      ...values.images,
+      { id: crypto.randomUUID(), url: '', title: '', source: '' }
+    ]);
+
+  const handleUpdateImage = (
+    id: string,
+    patch: Partial<Omit<ImageResourceFormItem, 'id'>>
+  ) =>
+    setField(
+      'images',
+      values.images.map((i) => (i.id === id ? { ...i, ...patch } : i))
+    );
+
+  const handleRemoveImage = (id: string) =>
+    setField(
+      'images',
+      values.images.filter((i) => i.id !== id)
+    );
+
+  const handleAddVideo = () =>
+    setField('videoResources', [
+      ...values.videoResources,
+      { id: crypto.randomUUID(), url: '', title: '' }
+    ]);
+
+  const handleUpdateVideo = (
+    id: string,
+    patch: Partial<Omit<VideoResourceFormItem, 'id'>>
+  ) =>
+    setField(
+      'videoResources',
+      values.videoResources.map((v) => (v.id === id ? { ...v, ...patch } : v))
+    );
+
+  const handleRemoveVideo = (id: string) =>
+    setField(
+      'videoResources',
+      values.videoResources.filter((v) => v.id !== id)
+    );
+
+  const handleAddArticle = () =>
+    setField('articleResources', [
+      ...values.articleResources,
+      { id: crypto.randomUUID(), url: '', title: '' }
+    ]);
+
+  const handleUpdateArticle = (
+    id: string,
+    patch: Partial<Omit<ArticleResourceFormItem, 'id'>>
+  ) =>
+    setField(
+      'articleResources',
+      values.articleResources.map((a) => (a.id === id ? { ...a, ...patch } : a))
+    );
+
+  const handleRemoveArticle = (id: string) =>
+    setField(
+      'articleResources',
+      values.articleResources.filter((a) => a.id !== id)
+    );
 
   return (
     <>
@@ -212,6 +178,28 @@ export function AnomalyFormFields({ mode, values, errors, setField }: Props) {
           onChange={(value) => setField(field, value)}
         />
       ))}
+
+      <AnomalyConfusedWithSection
+        value={values.confusedWithInput}
+        error={errors.confusedWith}
+        onChange={(value) => setField('confusedWithInput', value)}
+      />
+
+      <AnomalyResourcesSection
+        images={values.images}
+        videoResources={values.videoResources}
+        articleResources={values.articleResources}
+        onAddImage={handleAddImage}
+        onUpdateImage={handleUpdateImage}
+        onRemoveImage={handleRemoveImage}
+        onAddVideo={handleAddVideo}
+        onUpdateVideo={handleUpdateVideo}
+        onRemoveVideo={handleRemoveVideo}
+        onAddArticle={handleAddArticle}
+        onUpdateArticle={handleUpdateArticle}
+        onRemoveArticle={handleRemoveArticle}
+        error={errors.resources}
+      />
     </>
   );
 }

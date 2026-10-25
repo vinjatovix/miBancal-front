@@ -1,0 +1,15 @@
+.anomaly-confused-with__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.anomaly-confused-with__link {
+  text-decoration: none;
+  display: inline-flex;
+  transition: opacity 0.15s ease;
+}
+
+.anomaly-confused-with__link:hover {
+  opacity: 0.8;
+}

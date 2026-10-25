@@ -14,6 +14,8 @@ import { AnomalyDeleteDialog } from './components/AnomalyDeleteDialog';
 import { AnomalyHero } from './components/AnomalyHero';
 import { AnomalyInlineEditForm } from './components/AnomalyInlineEditForm';
 import { AnomalySections } from './components/AnomalySections';
+import { AnomalyConfusedWith } from './components/AnomalyConfusedWith';
+import { AnomalyResources } from './components/AnomalyResources';
 
 import './anomalyDetail.css';
 
@@ -97,8 +99,14 @@ export default function AnomalyDetail() {
             onDelete={() => setIsDeleteOpen(true)}
           />
         </SectionErrorBoundary>
+        <SectionErrorBoundary section="anomaly.confusedWith">
+          <AnomalyConfusedWith slugs={anomaly.confusedWith} />
+        </SectionErrorBoundary>
         <SectionErrorBoundary section="anomaly.sections">
           <AnomalySections anomaly={anomaly} />
+        </SectionErrorBoundary>
+        <SectionErrorBoundary section="anomaly.resources">
+          <AnomalyResources resources={anomaly.resources} />
         </SectionErrorBoundary>
         <AnomalyDeleteDialog
           isOpen={isDeleteOpen}

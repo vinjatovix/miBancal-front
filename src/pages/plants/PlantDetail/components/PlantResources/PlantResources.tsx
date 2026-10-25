@@ -2,8 +2,8 @@ import { t } from '../../../../../i18n/core/t';
 import BodySection from '../../../../../shared/components/BodySection/BodySection';
 import Icon from '../../../../../shared/components/Icon/Icon';
 import { getDomainFromUrl } from '../../../../../shared/utils/getDomainFromUrl';
+import { getYoutubeEmbedUrl } from '../../../../../shared/utils/getYoutubeEmbedUrl';
 import type { Plant } from '../../../../../types/Plants/Plant';
-import { getYoutubeEmbedUrl } from '../../../utils/getYoutubeEmbedUrl';
 import { usePlantResources } from './hooks/usePlantResourcesTabs';
 
 import './plantResources.css';

@@ -8,7 +8,10 @@ describe('OpenAPI catalog mutations contract', () => {
     ['patch', '/api/v1/plants/678efda2-ac3d-4623-81cd-fc1d0ab80315'],
     ['post', '/api/v1/families'],
     ['patch', '/api/v1/families/solanaceae'],
-    ['patch', '/api/v1/families/678efda2-ac3d-4623-81cd-fc1d0ab80315']
+    ['patch', '/api/v1/families/678efda2-ac3d-4623-81cd-fc1d0ab80315'],
+    ['post', '/api/v1/anomalies'],
+    ['patch', '/api/v1/anomalies/pulgon-verde'],
+    ['patch', '/api/v1/anomalies/4f0f9a2e-7a0b-4a0e-9d52-2d6a8d1c0a11']
   ] as const)('validates openapi path for %s %s', (method, path) => {
     const violations = validateRequest(method, path);
 
@@ -257,6 +260,106 @@ describe('OpenAPI catalog mutations contract', () => {
       };
 
       const violations = validateSchema('UpdateFamily', payload);
+
+      expect(violations).toEqual([]);
+    });
+  });
+
+  describe('CreateAnomaly schema', () => {
+    it('accepts an anomaly creation payload with resources and confusedWith', () => {
+      const payload = {
+        id: '4f0f9a2e-7a0b-4a0e-9d52-2d6a8d1c0a11',
+        slug: 'pulgon-verde',
+        name: 'Pulgón verde',
+        scientificName: 'Myzus persicae',
+        category: 'pest',
+        description: 'Insecto chupador de savia.',
+        symptoms: ['Hojas enrolladas'],
+        resources: [
+          {
+            type: 'image',
+            url: 'https://example.com/pulgon.jpg',
+            title: 'Colonia en hoja',
+            source: 'INIA'
+          },
+          {
+            type: 'video',
+            url: 'https://www.youtube.com/watch?v=pulgon123',
+            title: 'Identificación visual'
+          },
+          {
+            type: 'article',
+            url: 'https://example.com/articulo',
+            title: 'Ficha de manejo'
+          }
+        ],
+        confusedWith: ['pulgon-negro', 'mosca-blanca']
+      };
+
+      const violations = validateSchema('CreateAnomaly', payload);
+
+      expect(violations).toEqual([]);
+    });
+
+    it('rejects an anomaly creation payload with invalid resource url format', () => {
+      const payload = {
+        id: '4f0f9a2e-7a0b-4a0e-9d52-2d6a8d1c0a11',
+        slug: 'pulgon-verde',
+        name: 'Pulgón verde',
+        category: 'pest',
+        resources: [
+          {
+            type: 'image',
+            url: 'ftp://not-http-url.com/image.jpg'
+          }
+        ]
+      };
+
+      const violations = validateSchema('CreateAnomaly', payload);
+
+      expect(violations.length).toBeGreaterThan(0);
+    });
+
+    it('rejects an anomaly creation payload with invalid confusedWith slug format', () => {
+      const payload = {
+        id: '4f0f9a2e-7a0b-4a0e-9d52-2d6a8d1c0a11',
+        slug: 'pulgon-verde',
+        name: 'Pulgón verde',
+        category: 'pest',
+        confusedWith: ['Invalid Slug!']
+      };
+
+      const violations = validateSchema('CreateAnomaly', payload);
+
+      expect(violations.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('UpdateAnomaly schema', () => {
+    it('accepts partial update patch with updated resources and confusedWith', () => {
+      const payload = {
+        name: 'Pulgón verde común',
+        resources: [
+          {
+            type: 'image',
+            url: 'https://example.com/pulgon-nuevo.jpg'
+          }
+        ],
+        confusedWith: ['cochinilla-algodonosa']
+      };
+
+      const violations = validateSchema('UpdateAnomaly', payload);
+
+      expect(violations).toEqual([]);
+    });
+
+    it('accepts clearing resources and confusedWith with null', () => {
+      const payload = {
+        resources: null,
+        confusedWith: null
+      };
+
+      const violations = validateSchema('UpdateAnomaly', payload);
 
       expect(violations).toEqual([]);
     });

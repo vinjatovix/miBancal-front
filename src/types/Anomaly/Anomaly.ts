@@ -1,4 +1,5 @@
 import type { Metadata } from '../Metadata';
+import type { SupportResource } from '../SupportResource';
 
 export const ANOMALY_CATEGORIES = [
   'pest',
@@ -35,6 +36,8 @@ export interface Anomaly extends AnomalyTextLists {
   scientificName?: string;
   category: AnomalyCategory;
   description?: string;
+  resources?: SupportResource[];
+  confusedWith?: string[];
   status: AnomalyStatus;
   deletedAt?: string;
   metadata?: Metadata;
@@ -49,6 +52,7 @@ export type AnomalyListItem = Pick<
   | 'category'
   | 'status'
   | 'deletedAt'
+  | 'resources'
 >;
 
 export interface CreateAnomalyRequest extends AnomalyTextLists {
@@ -58,6 +62,8 @@ export interface CreateAnomalyRequest extends AnomalyTextLists {
   category: AnomalyCategory;
   scientificName?: string;
   description?: string;
+  resources?: SupportResource[];
+  confusedWith?: string[];
 }
 
 type NullableAnomalyTextLists = {
@@ -69,4 +75,6 @@ export interface UpdateAnomalyRequest extends NullableAnomalyTextLists {
   category?: AnomalyCategory;
   scientificName?: string | null;
   description?: string | null;
+  resources?: SupportResource[] | null;
+  confusedWith?: string[] | null;
 }

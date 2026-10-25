@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import {
   ANOMALY_FIELDS_QUERY_KEY,
   ANOMALY_FILTER_QUERY_KEYS,
@@ -9,28 +11,42 @@ import {
 } from '../../src/services/anomalyListQuery';
 
 describe('anomalyListQuery', () => {
-  it('declara solo las claves de filtro del contrato', () => {
-    expect(ANOMALY_FILTER_QUERY_KEYS).toEqual({
+  it('declares only contract filter keys', () => {
+    const keys = ANOMALY_FILTER_QUERY_KEYS;
+
+    expect(keys).toEqual({
       category: 'filter[category][eq]'
     });
   });
 
-  it('pide en el listado solo los campos que se pintan', () => {
-    expect(ANOMALY_FIELDS_QUERY_KEY).toBe('fields[anomalies]');
-    expect(ANOMALY_LIST_FIELDS.join(',')).toBe(
-      'slug,name,scientificName,category,status,deletedAt'
+  it('declares the sparse fieldset query key as fields[anomalies]', () => {
+    const key = ANOMALY_FIELDS_QUERY_KEY;
+
+    expect(key).toBe('fields[anomalies]');
+  });
+
+  it('includes resources in the list sparse fieldset fields', () => {
+    const fieldsString = ANOMALY_LIST_FIELDS.join(',');
+
+    expect(fieldsString).toBe(
+      'slug,name,scientificName,category,status,deletedAt,resources'
     );
   });
 
-  it('ordena por name o slug con name ascendente por defecto', () => {
+  it('sorts by name or slug with ascending name by default', () => {
+    const defaultSort = DEFAULT_ANOMALY_SORT;
+
     expect(ANOMALY_SORT_FIELDS).toEqual(['name', 'slug']);
-    expect(DEFAULT_ANOMALY_SORT).toEqual({ field: 'name', direction: 'asc' });
+    expect(defaultSort).toEqual({ field: 'name', direction: 'asc' });
     expect(anomalySortQueryKey('name')).toBe('sort[name]');
     expect(anomalySortQueryKey('slug')).toBe('sort[slug]');
   });
 
-  it('reconoce solo campos de orden declarados', () => {
-    expect(isAnomalySortField('slug')).toBe(true);
-    expect(isAnomalySortField('category')).toBe(false);
+  it('recognizes only declared sort fields', () => {
+    const isSlug = isAnomalySortField('slug');
+    const isCategory = isAnomalySortField('category');
+
+    expect(isSlug).toBe(true);
+    expect(isCategory).toBe(false);
   });
 });
