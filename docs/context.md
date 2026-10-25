@@ -12,7 +12,7 @@ SPA de **solo lectura** que consume la "MiBancal API" (`agro-back`, repo aparte)
 
 - **Plantas**: listado paginado con filtros agronómicos (familia, texto, ciclo de vida, método de siembra, luz, sistema radicular, mes de siembra con conversión de hemisferio, pH, horas de luz, espaciado, profundidad de suelo) y ficha de detalle (calendario de siembra/floración/cosecha, datos rápidos, cultivo, poda, propagación, ecología, notas, recursos: vídeos de YouTube embebidos y artículos).
 - **Familias botánicas**: listado y ficha de detalle con las plantas de esa familia.
-- **Anomalías**: catálogo de plagas, enfermedades, desórdenes y malezas con recursos multimedia (fotografías con carrusel accesible, vídeos de YouTube embebidos y artículos) y diagnóstico diferencial interactivo.
+- **Anomalías**: catálogo de plagas, enfermedades y desórdenes con recursos multimedia (fotografías con carrusel accesible, vídeos de YouTube embebidos y artículos) y diagnóstico diferencial interactivo.
 - **Home**: página informativa del proyecto (open source, sin ánimo de lucro, avisos sobre imágenes/vídeos, contacto).
 
 Lo que **no** hace hoy (aunque hay rutas o contrato para ello):

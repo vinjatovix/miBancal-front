@@ -58,7 +58,7 @@ describe('AnomaliesPage', () => {
   it('limpia los filtros y vuelve a pedir el listado sin ellos', async () => {
     const user = userEvent.setup();
     renderWithProviders(<AnomaliesPage />, {
-      route: '/anomalies?category=weed',
+      route: '/anomalies?category=disorder',
       path: '/anomalies'
     });
 

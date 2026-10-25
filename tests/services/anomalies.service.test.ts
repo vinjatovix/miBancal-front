@@ -73,12 +73,12 @@ describe('getAnomalyList', () => {
 
     await getAnomalyList({
       ...request,
-      filters: { category: 'weed' },
+      filters: { category: 'disorder' },
       sort: { field: 'slug', direction: 'desc' }
     });
 
     expect(lastRequest(fetchMock).url).toBe(
-      `${ANOMALIES_URL}?filter[category][eq]=weed&pagination[page]=1&pagination[limit]=25&sort[slug]=desc&fields[anomalies]=slug,name,scientificName,category,status,deletedAt,resources`
+      `${ANOMALIES_URL}?filter[category][eq]=disorder&pagination[page]=1&pagination[limit]=25&sort[slug]=desc&fields[anomalies]=slug,name,scientificName,category,status,deletedAt,resources`
     );
   });
 });

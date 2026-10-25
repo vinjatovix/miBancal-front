@@ -1,12 +1,7 @@
 import type { Metadata } from '../Metadata';
 import type { SupportResource } from '../SupportResource';
 
-export const ANOMALY_CATEGORIES = [
-  'pest',
-  'disease',
-  'disorder',
-  'weed'
-] as const;
+export const ANOMALY_CATEGORIES = ['pest', 'disease', 'disorder'] as const;
 
 export type AnomalyCategory = (typeof ANOMALY_CATEGORIES)[number];
 

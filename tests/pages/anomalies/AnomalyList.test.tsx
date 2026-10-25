@@ -40,17 +40,17 @@ function renderList(route = '/anomalies') {
 }
 
 const pulgon = buildAnomalyListItem();
-const ortiga = buildAnomalyListItem({
-  id: 'id-ortiga',
-  slug: 'ortiga',
-  name: 'Ortiga',
+const oidio = buildAnomalyListItem({
+  id: 'id-oidio',
+  slug: 'oidio',
+  name: 'Oídio',
   scientificName: undefined,
-  category: 'weed'
+  category: 'disease'
 });
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockedGetAnomalyList.mockResolvedValue(pageOf([pulgon, ortiga]));
+  mockedGetAnomalyList.mockResolvedValue(pageOf([pulgon, oidio]));
 });
 
 describe('AnomalyList', () => {
@@ -72,7 +72,7 @@ describe('AnomalyList', () => {
     expect(within(links[0]).getByText('Pulgón verde')).toBeInTheDocument();
     expect(within(links[0]).getByText('Myzus persicae')).toBeInTheDocument();
     expect(within(links[0]).getByText('Plaga')).toBeInTheDocument();
-    expect(within(links[1]).getByText('Maleza')).toBeInTheDocument();
+    expect(within(links[1]).getByText('Enfermedad')).toBeInTheDocument();
     expect(
       within(links[1]).getByText('Sin nombre científico')
     ).toBeInTheDocument();
@@ -118,7 +118,7 @@ describe('AnomalyList', () => {
   it('ofrece quitar filtros cuando el vacío viene de filtros activos', async () => {
     mockedGetAnomalyList.mockResolvedValue(pageOf([], { totalPages: 0 }));
 
-    renderList('/anomalies?category=weed');
+    renderList('/anomalies?category=disease');
 
     expect(
       await screen.findByText('No hay anomalías que coincidan con los filtros.')

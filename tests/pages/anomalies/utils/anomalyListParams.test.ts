@@ -22,9 +22,11 @@ describe('parseAnomalyListSearchParams', () => {
 
   it('lee categoría, orden, página y límite tipados', () => {
     expect(
-      parse('category=weed&sortField=slug&sortDirection=desc&page=3&limit=50')
+      parse(
+        'category=disorder&sortField=slug&sortDirection=desc&page=3&limit=50'
+      )
     ).toEqual({
-      filters: { category: 'weed' },
+      filters: { category: 'disorder' },
       pagination: { page: 3, limit: 50 },
       sort: { field: 'slug', direction: 'desc' }
     });
@@ -62,10 +64,10 @@ describe('escrituras de parámetros', () => {
     const next = withListParam(
       new URLSearchParams('page=4&category=pest'),
       'category',
-      'weed'
+      'disorder'
     );
 
-    expect(next.get('category')).toBe('weed');
+    expect(next.get('category')).toBe('disorder');
     expect(next.has('page')).toBe(false);
   });
 
