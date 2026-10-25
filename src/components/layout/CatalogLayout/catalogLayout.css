@@ -1,17 +1,10 @@
-.plants-layout {
+.catalog-layout {
   display: flex;
   margin: calc(-1 * var(--space-lg));
   flex: 1;
 }
 
-.plants-main {
-  flex: 1;
-  min-width: 0;
-  padding: var(--space-lg);
-  overflow: visible;
-}
-
-.plants-sidebar {
+.catalog-layout__sidebar {
   position: sticky;
   top: var(--app-header-height, 64px);
   width: 320px;
@@ -27,13 +20,28 @@
   padding: var(--space-md);
 }
 
-.plants-fab {
+.catalog-layout__main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-lg);
+  overflow: visible;
+}
+
+.catalog-layout__fab {
   position: fixed;
-  bottom: calc(var(--space-md) + var(--dev-banner-height, 0px));
+  bottom: calc(
+    var(--bottom-nav-height, 56px) + var(--space-md) +
+      var(--dev-banner-height, 0px)
+  );
   right: var(--space-md);
   z-index: 1100;
 
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+
   padding: var(--space-sm) var(--space-md);
+  min-height: 48px;
   border-radius: var(--radius-full);
 
   border: none;
@@ -47,16 +55,36 @@
   transition: transform 0.15s ease;
 }
 
-.plants-fab:hover {
+.catalog-layout__fab:hover {
   transform: scale(1.05);
 }
 
+.catalog-layout__fab-label {
+  font: var(--type-label-lg);
+}
+
+.catalog-layout__fab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-xs);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font: var(--type-label-sm);
+  font-weight: 700;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
 @media (max-width: 768px) {
-  .plants-layout {
+  .catalog-layout {
     display: block;
   }
 
-  .plants-main {
+  .catalog-layout__main {
     padding: var(--space-md);
   }
 }

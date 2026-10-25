@@ -1,28 +1,23 @@
 import { useSearchParams } from 'react-router-dom';
 
 import AnomalyFilters from '../../components/anomalies/AnomalyFilters/AnomalyFilters';
-import { t } from '../../i18n/core/t';
-import Drawer from '../../shared/components/Drawer/Drawer';
+import CatalogLayout from '../../components/layout/CatalogLayout/CatalogLayout';
 import {
   ANOMALY_LIST_URL_PARAMS,
   withoutAnomalyListFilters
 } from '../../shared/constants/anomalyListUrlParams';
-import useDrawer from '../../shared/hooks/useDrawer';
-import useMediaQuery from '../../shared/hooks/useMediaQuery';
-
 import AnomalyList from './AnomalyList';
 import {
+  countActiveFilters,
   parseAnomalyListSearchParams,
   withListParam
 } from './utils/anomalyListParams';
 
-import './anomaliesPage.css';
-
 export default function AnomaliesPage() {
-  const isMobile = useMediaQuery('(max-width: 768px)');
-  const drawer = useDrawer(false);
   const [params, setParams] = useSearchParams();
-  const { filters } = parseAnomalyListSearchParams(params);
+  const parsedParams = parseAnomalyListSearchParams(params);
+  const { filters } = parsedParams;
+  const activeCount = countActiveFilters(parsedParams);
 
   const filtersView = (
     <AnomalyFilters
@@ -37,28 +32,8 @@ export default function AnomaliesPage() {
   );
 
   return (
-    <div className="anomalies-layout">
-      {!isMobile && (
-        <aside className="anomalies-sidebar" aria-label={t('common.filters')}>
-          {filtersView}
-        </aside>
-      )}
-
-      {isMobile && !drawer.isOpen && (
-        <button type="button" onClick={drawer.open} className="anomalies-fab">
-          {t('common.filters')}
-        </button>
-      )}
-
-      {isMobile && (
-        <Drawer isOpen={drawer.isOpen} onClose={drawer.close}>
-          {filtersView}
-        </Drawer>
-      )}
-
-      <section className="anomalies-main">
-        <AnomalyList />
-      </section>
-    </div>
+    <CatalogLayout filters={filtersView} activeCount={activeCount}>
+      <AnomalyList />
+    </CatalogLayout>
   );
 }

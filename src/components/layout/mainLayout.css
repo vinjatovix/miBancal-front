@@ -30,13 +30,6 @@
   .app-body > .app-content {
     padding-bottom: calc(var(--bottom-nav-height, 56px) + var(--space-md));
   }
-
-  .app-shell .plants-fab {
-    bottom: calc(
-      var(--bottom-nav-height, 56px) + var(--space-md) +
-        var(--dev-banner-height, 0px)
-    );
-  }
 }
 
 @media (min-width: 768px) {
