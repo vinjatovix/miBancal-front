@@ -5,29 +5,33 @@ import { t } from '../../i18n/core/t';
 import { extractAndSanitizeToken } from '../../shared/auth/tokenUrl';
 import { useAuth } from '../../shared/auth/useAuth';
 import { ApiError } from '../../shared/errors/ApiError';
+import { useToast } from '../../shared/toast/useToast';
 import './authPages.css';
 
 export default function Activate() {
   const { activate } = useAuth();
+  const { dismissAll, showErrorToast } = useToast();
   const [token] = useState<string | null>(extractAndSanitizeToken);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleActivate = async () => {
     if (!token) return;
 
     setIsSubmitting(true);
-    setErrorMessage(null);
+    dismissAll();
     try {
       await activate({ token });
       setIsSuccess(true);
     } catch (error) {
       if (error instanceof ApiError && error.status === 429) {
-        setErrorMessage(t('auth.rate_limit_notice'));
+        showErrorToast(error);
         return;
       }
-      setErrorMessage(t('auth.activate_error_text'));
+      showErrorToast({
+        title: t('auth.activate_error'),
+        message: t('auth.activate_error_text')
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -49,12 +53,12 @@ export default function Activate() {
     );
   }
 
-  if (!token || errorMessage) {
+  if (!token) {
     return (
       <div className="auth-container">
         <h1 className="auth-title">{t('auth.activate_error')}</h1>
         <div className="auth-alert-error" role="alert">
-          {errorMessage ?? t('auth.activate_error_text')}
+          {t('auth.activate_error_text')}
         </div>
         <div className="auth-footer">
           <Link to="/login" className="auth-footer-link">

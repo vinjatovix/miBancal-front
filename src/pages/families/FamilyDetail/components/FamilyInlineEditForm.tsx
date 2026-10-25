@@ -4,6 +4,7 @@ import { t } from '../../../../i18n/core/t';
 import { CancelConfirmModal } from '../../../../shared/components/Modal/CancelConfirmModal';
 import { ApiError } from '../../../../shared/errors/ApiError';
 import { PreconditionFailedError } from '../../../../shared/errors/PreconditionFailedError';
+import { useToast } from '../../../../shared/toast/useToast';
 import type { Family } from '../../../../types/Family';
 import { FamilyFormFields } from '../../components/FamilyForm/FamilyFormFields';
 import { useFamilyFormState } from '../../components/FamilyForm/hooks/useFamilyFormState';
@@ -33,9 +34,9 @@ export function FamilyInlineEditForm({
 }: Props) {
   const { values, errors, isDirty, setField, validate, setErrors } =
     useFamilyFormState(canonicalFamilyToFormState(family));
+  const { dismissAll, showErrorToast } = useToast();
 
   const [hasConflict, setHasConflict] = useState<boolean>(false);
-  const [generalError, setGeneralError] = useState<string | null>(null);
   const [validationSummary, setValidationSummary] = useState<string | null>(
     null
   );
@@ -57,6 +58,8 @@ export function FamilyInlineEditForm({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    dismissAll();
+
     if (!validate()) {
       setValidationSummary(t('family.form.validation.summary'));
       setTimeout(() => {
@@ -76,7 +79,6 @@ export function FamilyInlineEditForm({
 
     setValidationSummary(null);
     setHasConflict(false);
-    setGeneralError(null);
     try {
       const patch = formStateToUpdateFamilyRequest(values);
       const result = await updateMutation.mutateAsync({
@@ -88,6 +90,7 @@ export function FamilyInlineEditForm({
     } catch (err: unknown) {
       if (err instanceof PreconditionFailedError) {
         setHasConflict(true);
+        showErrorToast(err);
       } else if (err instanceof ApiError) {
         if (err.errors) {
           const { fieldErrors, unmappedErrors } = normalizeFamilyApiErrors(
@@ -95,34 +98,37 @@ export function FamilyInlineEditForm({
           );
           setErrors(fieldErrors);
           if (unmappedErrors.length > 0) {
-            setGeneralError(unmappedErrors.join('; '));
+            showErrorToast(unmappedErrors.join('; '));
           } else if (Object.keys(fieldErrors).length === 0) {
-            setGeneralError(
-              err.status === 409
-                ? t('family.form.duplicate_error')
-                : err.message
-            );
+            showErrorToast({
+              title: t('admin.toast_error_title'),
+              message:
+                err.status === 409
+                  ? t('family.form.duplicate_error')
+                  : err.message
+            });
+          } else {
+            showErrorToast({
+              title: t('admin.toast_error_title'),
+              message: t('toast.form_validation_check')
+            });
           }
         } else if (err.status === 409) {
-          setGeneralError(t('family.form.duplicate_error'));
+          showErrorToast({
+            title: t('admin.toast_error_title'),
+            message: t('family.form.duplicate_error')
+          });
         } else {
-          setGeneralError(err.message);
+          showErrorToast(err);
         }
       } else {
-        setGeneralError(
-          err instanceof Error ? err.message : t('errors.app.title')
-        );
+        showErrorToast(err);
       }
     }
   };
 
   return (
     <form className="family-form" onSubmit={handleSubmit}>
-      {generalError && (
-        <div role="alert" className="family-form__error">
-          {generalError}
-        </div>
-      )}
       {hasConflict && (
         <div role="alert" className="family-form__conflict-banner">
           <strong>{t('family.form.conflict.title')}</strong>

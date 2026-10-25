@@ -4,6 +4,7 @@ import { t } from '../../i18n/core/t';
 import { useAuth } from '../../shared/auth/useAuth';
 import { validateUpdatePasswordForm } from '../../shared/auth/validation';
 import { ApiError } from '../../shared/errors/ApiError';
+import { useToast } from '../../shared/toast/useToast';
 import PasswordField from '../auth/components/PasswordField';
 import PasswordStrengthBar from '../auth/components/PasswordStrengthBar';
 import { resolveAuthErrorText } from '../auth/utils/authErrorText';
@@ -38,10 +39,10 @@ function isSamePasswordErrorMessage(message?: unknown): boolean {
 
 export default function AccountSettings() {
   const { user, updatePassword, logout } = useAuth();
+  const { dismissAll, showErrorToast } = useToast();
 
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [serverError, setServerError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -66,7 +67,7 @@ export default function AccountSettings() {
   const handleSubmit = useCallback(
     async (event: FormEvent) => {
       event.preventDefault();
-      setServerError(null);
+      dismissAll();
 
       const errors = validateUpdatePasswordForm(values);
       if (Object.keys(errors).length > 0) {
@@ -94,9 +95,13 @@ export default function AccountSettings() {
               mappedErrors.password = t('settings.password_must_be_different');
             }
             setFieldErrors(mappedErrors);
+            showErrorToast({
+              title: t('admin.toast_error_title'),
+              message: t('toast.form_validation_check')
+            });
           } else {
             const isSamePassword = isSamePasswordErrorMessage(error.message);
-            setServerError(
+            showErrorToast(
               isSamePassword
                 ? t('settings.password_must_be_different')
                 : error.message || t('settings.invalid_current_password')
@@ -105,17 +110,13 @@ export default function AccountSettings() {
         } else if (error instanceof ApiError && error.status === 401) {
           logout();
         } else {
-          const message =
-            error instanceof Error
-              ? error.message
-              : t('errors.unknown.message');
-          setServerError(message);
+          showErrorToast(error);
         }
       } finally {
         setIsSubmitting(false);
       }
     },
-    [values, updatePassword, logout]
+    [values, updatePassword, logout, dismissAll, showErrorToast]
   );
 
   return (
@@ -157,12 +158,6 @@ export default function AccountSettings() {
           {isSuccess && (
             <div className="settings-alert-success" role="status">
               {t('settings.success_message')}
-            </div>
-          )}
-
-          {serverError && (
-            <div className="settings-alert-error" role="alert">
-              {serverError}
             </div>
           )}
 

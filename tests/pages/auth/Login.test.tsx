@@ -20,6 +20,7 @@ import {
 import { ApiError } from '../../../src/shared/errors/ApiError';
 import { NetworkError } from '../../../src/shared/errors/NetworkError';
 import { t } from '../../../src/i18n/core/t';
+import { toastStore } from '../../../src/shared/toast/toastStore';
 import { VALID_TEST_TOKEN } from '../../fixtures/auth/authFixtures';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
@@ -38,6 +39,7 @@ describe('Login Page', () => {
   beforeEach(() => {
     sessionStorage.clear();
     clearStoredToken();
+    toastStore.clearToasts();
     vi.restoreAllMocks();
     vi.stubGlobal('google', {
       accounts: {
@@ -118,13 +120,13 @@ describe('Login Page', () => {
     expect(await screen.findByText('Página principal')).toBeInTheDocument();
   });
 
-  it('shows uniform error message and activation notice on 401', async () => {
+  it('shows error toast and activation notice on 401 without static alert banner', async () => {
     const user = userEvent.setup();
     vi.spyOn(authServiceModule, 'login').mockRejectedValueOnce(
       new ApiError('Unauthorized', 401)
     );
 
-    renderWithProviders(<TestApp />, {
+    const { container } = renderWithProviders(<TestApp />, {
       route: '/login'
     });
 
@@ -136,21 +138,23 @@ describe('Login Page', () => {
     await user.type(passwordInput, 'WrongPassword!');
     await user.click(submitButton);
 
-    expect(
-      await screen.findByText('Credenciales no válidas')
-    ).toBeInTheDocument();
+    const toastAlert = await screen.findByRole('alert');
+    expect(toastAlert).toBeInTheDocument();
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(screen.getByText('Credenciales no válidas')).toBeInTheDocument();
     expect(
       screen.getByText('¿No has activado tu cuenta? Revisa tu correo')
     ).toBeInTheDocument();
+    expect(container.querySelector('.auth-alert-error')).toBeNull();
   });
 
-  it('handles 429 rate limit error showing localized message', async () => {
+  it('handles 429 rate limit error showing error toast without static alert banner', async () => {
     const user = userEvent.setup();
     vi.spyOn(authServiceModule, 'login').mockRejectedValueOnce(
       new ApiError('Too Many Requests', 429)
     );
 
-    renderWithProviders(<TestApp />, {
+    const { container } = renderWithProviders(<TestApp />, {
       route: '/login'
     });
 
@@ -162,15 +166,17 @@ describe('Login Page', () => {
     await user.type(passwordInput, 'Password123!');
     await user.click(submitButton);
 
+    const toastAlert = await screen.findByRole('alert');
+    expect(toastAlert).toBeInTheDocument();
+    expect(toastAlert).toHaveClass('toast-item--error');
     expect(
-      await screen.findByText(
-        'Demasiados intentos. Por favor, inténtalo más tarde.'
-      )
+      screen.getByText(t('errors.tooManyRequests.message'))
     ).toBeInTheDocument();
+    expect(container.querySelector('.auth-alert-error')).toBeNull();
   });
 
-  it('displays rate limit notice in alert when arriving with ssoError', () => {
-    renderWithProviders(<TestApp />, {
+  it('displays rate limit notice in error toast when arriving with ssoError', async () => {
+    const { container } = renderWithProviders(<TestApp />, {
       route: {
         pathname: '/login',
         state: {
@@ -179,12 +185,13 @@ describe('Login Page', () => {
       }
     });
 
-    const alert = screen.getByRole('alert');
-
-    expect(alert).toHaveClass('auth-alert-error');
-    expect(alert).toHaveTextContent(
+    const toastAlert = await screen.findByRole('alert');
+    expect(toastAlert).toBeInTheDocument();
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(
       'Demasiados intentos. Por favor, inténtalo más tarde.'
     );
+    expect(container.querySelector('.auth-alert-error')).toBeNull();
   });
 
   it('keeps form inputs fully interactive when arriving with ssoError', () => {
@@ -275,7 +282,7 @@ describe('Login Page', () => {
     expect(await screen.findByText('Página principal')).toBeInTheDocument();
   });
 
-  it('displays sso_unavailable alert when Google SSO encounters network failure', async () => {
+  it('displays error toast when Google SSO encounters network failure', async () => {
     let capturedCallback: ((res: { credential: string }) => void) | undefined;
     vi.stubGlobal('google', {
       accounts: {
@@ -304,9 +311,9 @@ describe('Login Page', () => {
       capturedCallback?.({ credential: 'test-id-token' });
     });
 
-    expect(
-      await screen.findByText(t('auth.sso_unavailable'))
-    ).toBeInTheDocument();
+    const toastAlert = await screen.findByRole('alert');
+    expect(toastAlert).toBeInTheDocument();
+    expect(toastAlert).toHaveTextContent(t('auth.sso_unavailable'));
   });
 
   it('redirects to originating location including search query and hash', () => {
@@ -367,6 +374,7 @@ describe('Login Page - password visibility toggle', () => {
   beforeEach(() => {
     sessionStorage.clear();
     clearStoredToken();
+    toastStore.clearToasts();
     vi.restoreAllMocks();
   });
 
@@ -491,10 +499,11 @@ describe('Login Page - password visibility toggle', () => {
   });
 });
 
-describe('Login Page - User Story 3 (Alerts & Navigation Integration)', () => {
+describe('Login Page - Alerts & Navigation Integration', () => {
   beforeEach(() => {
     sessionStorage.clear();
     clearStoredToken();
+    toastStore.clearToasts();
     vi.restoreAllMocks();
     Object.defineProperty(window, 'location', {
       value: {
@@ -510,78 +519,24 @@ describe('Login Page - User Story 3 (Alerts & Navigation Integration)', () => {
     ['ssoError', { ssoError: 'Error desde proveedor externo' }],
     ['error', { error: 'Error legacy compatible' }]
   ])(
-    'renders alert when receiving error via %s in location state',
-    (_, statePayload) => {
+    'renders error toast when receiving error via %s in location state',
+    async (_, statePayload) => {
       const expectedMessage =
         'ssoError' in statePayload ? statePayload.ssoError : statePayload.error;
-      renderWithProviders(<TestApp />, {
+      const { container } = renderWithProviders(<TestApp />, {
         route: {
           pathname: '/login',
           state: statePayload
         }
       });
 
-      const alert = screen.getByRole('alert');
+      const alert = await screen.findByRole('alert');
 
-      expect(alert).toHaveClass('auth-alert-error');
+      expect(alert).toHaveClass('toast-item--error');
       expect(alert).toHaveTextContent(expectedMessage);
+      expect(container.querySelector('.auth-alert-error')).toBeNull();
     }
   );
-
-  it('positions sso error alert immediately after sso buttons and before footer link', () => {
-    const { container } = renderWithProviders(<TestApp />, {
-      route: {
-        pathname: '/login',
-        state: { ssoError: 'Error en proveedor SSO' }
-      }
-    });
-
-    const ssoButtons = container.querySelector('.auth-sso-buttons');
-    const alert = screen.getByRole('alert');
-    const footer = container.querySelector('.auth-footer');
-
-    expect(alert).toHaveClass('auth-sso-alert-error');
-    expect(
-      Boolean(
-        ssoButtons &&
-        ssoButtons.compareDocumentPosition(alert) &
-          Node.DOCUMENT_POSITION_FOLLOWING
-      )
-    ).toBe(true);
-    expect(
-      Boolean(
-        footer &&
-        alert.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING
-      )
-    ).toBe(true);
-  });
-
-  it('positions form server error above the form', async () => {
-    const user = userEvent.setup();
-    vi.spyOn(authServiceModule, 'login').mockRejectedValueOnce(
-      new ApiError('Invalid credentials', 401)
-    );
-    const { container } = renderWithProviders(<TestApp />, {
-      route: '/login'
-    });
-
-    const emailInput = screen.getByLabelText(/Correo electrónico/i);
-    const passwordInput = screen.getByLabelText('Contraseña');
-    const submitButton = screen.getByRole('button', { name: 'Iniciar sesión' });
-    await user.type(emailInput, 'user@example.com');
-    await user.type(passwordInput, 'Password123!');
-    await user.click(submitButton);
-
-    const alert = await screen.findByRole('alert');
-    const form = container.querySelector('.auth-form');
-
-    expect(
-      Boolean(
-        form &&
-        alert.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING
-      )
-    ).toBe(true);
-  });
 
   it('purges error from location state on mount while preserving from', async () => {
     function StateTracker() {
@@ -619,7 +574,7 @@ describe('Login Page - User Story 3 (Alerts & Navigation Integration)', () => {
     );
   });
 
-  it('renders without error alert after simulated reload with purged state', () => {
+  it('renders without error toast after simulated reload with purged state', () => {
     renderWithProviders(<TestApp />, {
       route: {
         pathname: '/login',
@@ -630,7 +585,7 @@ describe('Login Page - User Story 3 (Alerts & Navigation Integration)', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('dismisses error alert when submitting login form', async () => {
+  it('dismisses active toasts when submitting login form', async () => {
     const user = userEvent.setup();
     renderWithProviders(<TestApp />, {
       route: {
@@ -638,6 +593,8 @@ describe('Login Page - User Story 3 (Alerts & Navigation Integration)', () => {
         state: { ssoError: 'Error inicial' }
       }
     });
+
+    await screen.findByRole('alert');
 
     const submitButton = screen.getByRole('button', {
       name: 'Iniciar sesión'
@@ -647,7 +604,7 @@ describe('Login Page - User Story 3 (Alerts & Navigation Integration)', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('dismisses error alert when clicking Google SSO button', async () => {
+  it('dismisses active toasts when clicking SSO button container', async () => {
     const user = userEvent.setup();
     renderWithProviders(<TestApp />, {
       route: {
@@ -655,28 +612,13 @@ describe('Login Page - User Story 3 (Alerts & Navigation Integration)', () => {
         state: { ssoError: 'Error inicial' }
       }
     });
+
+    await screen.findByRole('alert');
 
     const googleButton = screen.getByRole('button', {
       name: /continuar con google/i
     });
     await user.click(googleButton);
-
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  });
-
-  it('dismisses error alert when clicking GitHub SSO button', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<TestApp />, {
-      route: {
-        pathname: '/login',
-        state: { ssoError: 'Error inicial' }
-      }
-    });
-
-    const githubButton = screen.getByRole('button', {
-      name: /continuar con github/i
-    });
-    await user.click(githubButton);
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });

@@ -12,6 +12,7 @@ import { t } from '../../i18n/core/t';
 import { useAuth } from '../../shared/auth/useAuth';
 import { validateLoginForm } from '../../shared/auth/validation';
 import { ApiError } from '../../shared/errors/ApiError';
+import { useToast } from '../../shared/toast/useToast';
 import type { LoginNavigationState } from '../../types/auth';
 import './authPages.css';
 import GoogleAuthButton from './components/GoogleAuthButton';
@@ -22,53 +23,45 @@ import { resolveAuthErrorText } from './utils/authErrorText';
 import { resolveRedirectDestination } from './utils/destination';
 import { classifySsoError } from './utils/ssoError';
 
-interface ServerErrorState {
-  readonly message: string;
-  readonly notice?: string;
-}
-
 export default function Login() {
   const { isAuthenticated, login, googleLogin, isLoading } = useAuth();
+  const { dismissAll, showErrorToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
 
   const navState = location.state as LoginNavigationState | null;
-  const initialSsoError = navState?.ssoError ?? navState?.error;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [serverError, setServerError] = useState<ServerErrorState | null>(null);
-  const [ssoError, setSsoError] = useState<string | null>(
-    () => initialSsoError ?? null
-  );
 
   const destination = resolveRedirectDestination(location.state);
 
   const handleGoogleCredential = useCallback(
     async (idToken: string) => {
-      setServerError(null);
-      setSsoError(null);
+      dismissAll();
       try {
         await googleLogin({ idToken });
         navigate(destination, { replace: true });
       } catch (error) {
-        setSsoError(classifySsoError(error, 'google'));
+        showErrorToast(classifySsoError(error, 'google'));
       }
     },
-    [googleLogin, destination, navigate]
+    [googleLogin, destination, navigate, dismissAll, showErrorToast]
   );
 
   const purgedRef = useRef(false);
   useEffect(() => {
-    if (!purgedRef.current && (navState?.ssoError || navState?.error)) {
+    const ssoErr = navState?.ssoError ?? navState?.error;
+    if (!purgedRef.current && ssoErr) {
       purgedRef.current = true;
+      showErrorToast(ssoErr);
       navigate(location.pathname, {
         replace: true,
-        state: { from: navState.from }
+        state: { from: navState?.from }
       });
     }
-  }, [location.pathname, navState, navigate]);
+  }, [location.pathname, navState, navigate, showErrorToast]);
 
   if (isAuthenticated) {
     return <Navigate to={destination} replace />;
@@ -76,8 +69,7 @@ export default function Login() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setServerError(null);
-    setSsoError(null);
+    dismissAll();
 
     const errors = validateLoginForm(email, password);
     setFieldErrors(errors);
@@ -89,24 +81,14 @@ export default function Login() {
       await login({ email, password });
       navigate(destination, { replace: true });
     } catch (error) {
-      if (error instanceof ApiError) {
-        if (error.status === 401) {
-          setServerError({
-            message: t('auth.invalid_credentials'),
-            notice: t('auth.unverified_account_notice')
-          });
-          return;
-        }
-        if (error.status === 429) {
-          setServerError({
-            message: t('auth.rate_limit_notice')
-          });
-          return;
-        }
+      if (error instanceof ApiError && error.status === 401) {
+        showErrorToast({
+          title: t('auth.invalid_credentials'),
+          message: t('auth.unverified_account_notice')
+        });
+        return;
       }
-      setServerError({
-        message: error instanceof Error ? error.message : t('errors.app.title')
-      });
+      showErrorToast(error);
     }
   };
 
@@ -118,13 +100,6 @@ export default function Login() {
   return (
     <div className="auth-container">
       <h1 className="auth-title">{t('auth.login')}</h1>
-
-      {serverError && (
-        <div className="auth-alert-error" role="alert">
-          <div>{serverError.message}</div>
-          {serverError.notice && <div>{serverError.notice}</div>}
-        </div>
-      )}
 
       <form
         className="auth-form"
@@ -183,8 +158,7 @@ export default function Login() {
           <div
             className="auth-sso-buttons"
             onClick={() => {
-              setServerError(null);
-              setSsoError(null);
+              dismissAll();
             }}
           >
             <GoogleAuthButton
@@ -194,12 +168,6 @@ export default function Login() {
             <GitHubAuthButton disabled={isLoading} />
           </div>
         </>
-      )}
-
-      {ssoError && (
-        <div className="auth-alert-error auth-sso-alert-error" role="alert">
-          <div>{ssoError}</div>
-        </div>
       )}
 
       <div className="auth-footer">

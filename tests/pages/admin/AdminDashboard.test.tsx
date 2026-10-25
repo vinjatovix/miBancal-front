@@ -10,6 +10,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import AdminDashboard from '../../../src/pages/admin/AdminDashboard';
 import * as userService from '../../../src/services/users.service';
+import { ToastProvider } from '../../../src/shared/toast/ToastContext';
+import { toastStore } from '../../../src/shared/toast/toastStore';
+import { t } from '../../../src/i18n/core/t';
 
 vi.mock('../../../src/services/users.service');
 
@@ -25,7 +28,9 @@ const renderDashboard = () => {
   const queryClient = createTestQueryClient();
   return render(
     <QueryClientProvider client={queryClient}>
-      <AdminDashboard />
+      <ToastProvider>
+        <AdminDashboard />
+      </ToastProvider>
     </QueryClientProvider>
   );
 };
@@ -33,6 +38,7 @@ const renderDashboard = () => {
 describe('AdminDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    toastStore.clearToasts();
   });
 
   it('renders accessible page title heading', () => {
@@ -103,13 +109,15 @@ describe('AdminDashboard', () => {
       expect(screen.getByRole('alert')).toBeInTheDocument();
     });
 
-    const closeButton = screen.getByRole('button', { name: /cerrar ventana/i });
+    const closeButton = screen.getByRole('button', {
+      name: t('toast.close')
+    });
     fireEvent.click(closeButton);
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('displays success toast with status role after saving role change', async () => {
+  it('displays success toast after saving role change', async () => {
     const mockUser = {
       id: '550e8400-e29b-41d4-a716-446655440000',
       username: 'test',
@@ -157,7 +165,9 @@ describe('AdminDashboard', () => {
     fireEvent.click(confirmButton);
 
     await waitFor(() => {
-      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(
+        screen.getByText(t('admin.role_change_success_message'))
+      ).toBeInTheDocument();
     });
   });
 
@@ -217,7 +227,9 @@ describe('AdminDashboard', () => {
         { add: ['collaborator'] },
         '"1"'
       );
-      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(
+        screen.getByText(t('admin.role_change_success_message'))
+      ).toBeInTheDocument();
     });
   });
 
@@ -277,7 +289,9 @@ describe('AdminDashboard', () => {
         { remove: ['admin'] },
         '"1"'
       );
-      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(
+        screen.getByText(t('admin.role_change_success_message'))
+      ).toBeInTheDocument();
     });
   });
 
@@ -332,7 +346,9 @@ describe('AdminDashboard', () => {
     await waitFor(() => {
       expect(screen.getByRole('alert')).toBeInTheDocument();
     });
-    const closeButton = screen.getByRole('button', { name: /cerrar ventana/i });
+    const closeButton = screen.getByRole('button', {
+      name: t('toast.close')
+    });
     fireEvent.click(closeButton);
     await waitFor(() => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -377,7 +393,7 @@ describe('AdminDashboard', () => {
     fireEvent.click(confirmButton);
     const alert = await screen.findByRole('alert');
     const closeButton = within(alert).getByRole('button', {
-      name: /cerrar ventana/i
+      name: t('toast.close')
     });
     fireEvent.click(closeButton);
     await waitFor(() => {

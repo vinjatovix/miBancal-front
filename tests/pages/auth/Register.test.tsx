@@ -262,7 +262,9 @@ describe('Register Page', () => {
       new ApiError('Too many requests', 429)
     );
 
-    renderWithProviders(<TestApp />, { route: '/register' });
+    const { container } = renderWithProviders(<TestApp />, {
+      route: '/register'
+    });
 
     await user.type(
       screen.getByLabelText(/Correo electrónico/i),
@@ -276,11 +278,13 @@ describe('Register Page', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
+    const toastAlert = await screen.findByRole('alert');
+    expect(toastAlert).toBeInTheDocument();
+    expect(toastAlert).toHaveClass('toast-item--error');
     expect(
-      await screen.findByText(
-        'Demasiados intentos. Por favor, inténtalo más tarde.'
-      )
+      screen.getByText(t('errors.tooManyRequests.message'))
     ).toBeInTheDocument();
+    expect(container.querySelector('.auth-alert-error')).toBeNull();
   });
 
   it('renders link to login page', () => {
@@ -363,7 +367,7 @@ describe('Register Page - SSO Error Handling & Placement', () => {
     vi.restoreAllMocks();
   });
 
-  it('positions sso error alert immediately after sso buttons and before footer link when arriving with ssoError', () => {
+  it('renders error toast instead of inline alert when arriving with ssoError', async () => {
     const { container } = renderWithProviders(<TestApp />, {
       route: {
         pathname: '/register',
@@ -371,27 +375,15 @@ describe('Register Page - SSO Error Handling & Placement', () => {
       }
     });
 
-    const ssoButtons = container.querySelector('.auth-sso-buttons');
-    const alert = screen.getByRole('alert');
-    const footer = container.querySelector('.auth-footer');
+    const alert = await screen.findByRole('alert');
 
-    expect(alert).toHaveClass('auth-sso-alert-error');
-    expect(
-      Boolean(
-        ssoButtons &&
-        ssoButtons.compareDocumentPosition(alert) &
-          Node.DOCUMENT_POSITION_FOLLOWING
-      )
-    ).toBe(true);
-    expect(
-      Boolean(
-        footer &&
-        alert.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING
-      )
-    ).toBe(true);
+    expect(alert).toHaveClass('toast-item--error');
+    expect(alert).toHaveTextContent('Error en proveedor SSO');
+    expect(container.querySelector('.auth-sso-alert-error')).toBeNull();
+    expect(container.querySelector('.auth-alert-error')).toBeNull();
   });
 
-  it('positions general form error alert above the form when registration fails with 429', async () => {
+  it('renders error toast without inline form alert when registration fails with 429', async () => {
     const user = userEvent.setup();
     vi.spyOn(authServiceModule, 'register').mockRejectedValueOnce(
       new ApiError('Too many requests', 429)
@@ -413,14 +405,9 @@ describe('Register Page - SSO Error Handling & Placement', () => {
     await user.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
     const alert = await screen.findByRole('alert');
-    const form = container.querySelector('.auth-form');
 
-    expect(
-      Boolean(
-        form &&
-        alert.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING
-      )
-    ).toBe(true);
+    expect(alert).toHaveClass('toast-item--error');
+    expect(container.querySelector('.auth-alert-error')).toBeNull();
   });
 
   it('dismisses sso error alert when clicking sso button container', async () => {
@@ -466,7 +453,7 @@ describe('Register Page - SSO Error Handling & Placement', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('displays sso error alert below sso buttons when Google SSO encounters network failure', async () => {
+  it('displays error toast when Google SSO encounters network failure', async () => {
     let capturedCallback: ((res: { credential: string }) => void) | undefined;
     vi.stubGlobal('google', {
       accounts: {
@@ -496,16 +483,9 @@ describe('Register Page - SSO Error Handling & Placement', () => {
     });
 
     const alert = await screen.findByRole('alert');
-    const ssoButtons = container.querySelector('.auth-sso-buttons');
 
-    expect(alert).toHaveClass('auth-sso-alert-error');
+    expect(alert).toHaveClass('toast-item--error');
     expect(alert).toHaveTextContent(t('auth.sso_unavailable'));
-    expect(
-      Boolean(
-        ssoButtons &&
-        ssoButtons.compareDocumentPosition(alert) &
-          Node.DOCUMENT_POSITION_FOLLOWING
-      )
-    ).toBe(true);
+    expect(container.querySelector('.auth-sso-alert-error')).toBeNull();
   });
 });

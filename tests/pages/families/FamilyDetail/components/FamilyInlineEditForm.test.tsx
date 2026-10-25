@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
+import { t } from '../../../../../src/i18n/core/t';
 import { FamilyInlineEditForm } from '../../../../../src/pages/families/FamilyDetail/components/FamilyInlineEditForm';
 import { buildFamily } from '../../../../fixtures/families/buildFamily';
 import { renderWithProviders } from '../../../../test-utils/renderWithProviders';
@@ -150,7 +151,7 @@ describe('FamilyInlineEditForm', () => {
     expect(onSuccess).toHaveBeenCalledWith(updated, '"2"');
   });
 
-  it('shows 412 conflict banner when update fails with precondition', async () => {
+  it('shows 412 conflict banner and emits error toast when update fails with precondition', async () => {
     const user = userEvent.setup();
     const family = buildFamily({ slug: 'solanaceae' });
     stubFetchError(412, { message: 'Precondition Failed' });
@@ -170,6 +171,13 @@ describe('FamilyInlineEditForm', () => {
     expect(
       await screen.findByText('Conflicto de edición (412)')
     ).toBeInTheDocument();
+
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(t('toast.concurrent_modification'));
   });
 
   it('calls onReload when user clicks reload button on 412 conflict banner', async () => {
@@ -246,9 +254,15 @@ describe('FamilyInlineEditForm', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent('Subfamilias no permitidas');
     expect(
-      await screen.findByText('Subfamilias no permitidas')
-    ).toBeInTheDocument();
+      document.querySelector('.family-form > .family-form__error')
+    ).toBeNull();
   });
 
   it('displays duplicate error message when 409 conflict returns an empty errors object', async () => {
@@ -270,11 +284,17 @@ describe('FamilyInlineEditForm', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(
+      'Ya existe una familia registrada con este nombre o slug.'
+    );
     expect(
-      await screen.findByText(
-        'Ya existe una familia registrada con este nombre o slug.'
-      )
-    ).toBeInTheDocument();
+      document.querySelector('.family-form > .family-form__error')
+    ).toBeNull();
   });
 
   it('displays API error message when server error returns an empty errors object', async () => {
@@ -296,8 +316,14 @@ describe('FamilyInlineEditForm', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent('Error al actualizar familia');
     expect(
-      await screen.findByText('Error al actualizar familia')
-    ).toBeInTheDocument();
+      document.querySelector('.family-form > .family-form__error')
+    ).toBeNull();
   });
 });

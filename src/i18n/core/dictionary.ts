@@ -968,5 +968,13 @@ export const dictionary = {
     aria_label_count_pressed:
       'Quitar me gusta a esta planta. Actualmente tiene {count} me gusta',
     error: 'No se pudo actualizar el me gusta. Inténtalo de nuevo.'
+  },
+  toast: {
+    close: 'Cerrar notificación',
+    region_label: 'Notificaciones del sistema',
+    concurrent_modification:
+      'El registro ha sido modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+    form_validation_check:
+      'Por favor, revisa los datos introducidos en el formulario.'
   }
 } as const;

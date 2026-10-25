@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -129,7 +129,7 @@ describe('FavoriteButton: clics rápidos repetidos', () => {
 });
 
 describe('FavoriteButton: fallo del toggle', () => {
-  it('revierte el estado y muestra un mensaje accesible en castellano', async () => {
+  it('revierte el estado y muestra toast de error sin mensaje inline', async () => {
     mockedRemove.mockRejectedValue(new Error('network down'));
     const user = userEvent.setup();
 
@@ -141,8 +141,12 @@ describe('FavoriteButton: fallo del toggle', () => {
       screen.getByRole('button', { name: t('favoriteButton.remove') })
     );
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      t('favoriteButton.error')
-    );
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(t('favoriteButton.error'));
+    expect(document.querySelector('.favorite-button__error')).toBeNull();
   });
 });

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 
 import { ApiError } from '../../../../src/shared/errors/ApiError';
 import { PreconditionFailedError } from '../../../../src/shared/errors/PreconditionFailedError';
+import { t } from '../../../../src/i18n/core/t';
 import { ADMIN_TEST_TOKEN } from '../../../fixtures/auth/authFixtures';
 import { buildDeletedAnomaly } from '../../../fixtures/anomalies/buildAnomaly';
 import {
@@ -81,7 +82,7 @@ describe('AnomalyDetail eliminación', () => {
     expect(mockedDeleteAnomaly).toHaveBeenCalledOnce();
   });
 
-  it('muestra el error de la API sin cerrar el diálogo', async () => {
+  it('muestra el error de la API en un toast sin cerrar el diálogo ni mostrar alerta estática', async () => {
     mockedDeleteAnomaly.mockRejectedValue(new ApiError('Fallo al borrar', 500));
     const user = userEvent.setup();
     const dialog = await openDeleteDialog(user);
@@ -90,12 +91,16 @@ describe('AnomalyDetail eliminación', () => {
       within(dialog).getByRole('button', { name: 'Eliminar anomalía' })
     );
 
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
-      'Fallo al borrar'
-    );
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveTextContent('Fallo al borrar');
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).queryByRole('alert')).toBeNull();
   });
 
-  it('no elimina si no se puede obtener el ETag', async () => {
+  it('no elimina si no se puede obtener el ETag y emite toast de error', async () => {
     mockedGetAnomalyForEdit.mockRejectedValue(new ApiError('boom', 500));
     const user = userEvent.setup();
     const dialog = await openDeleteDialog(user);
@@ -104,10 +109,15 @@ describe('AnomalyDetail eliminación', () => {
       within(dialog).getByRole('button', { name: 'Eliminar anomalía' })
     );
 
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveTextContent(
       'No se ha podido eliminar la anomalía.'
     );
     expect(mockedDeleteAnomaly).not.toHaveBeenCalled();
+    expect(within(dialog).queryByRole('alert')).toBeNull();
   });
 
   it('no ofrece eliminar una anomalía ya eliminada y la marca con badge para el editor', async () => {

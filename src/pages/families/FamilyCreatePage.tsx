@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { t } from '../../i18n/core/t';
 import { CancelConfirmModal } from '../../shared/components/Modal/CancelConfirmModal';
 import { ApiError } from '../../shared/errors/ApiError';
+import { useToast } from '../../shared/toast/useToast';
 import { FamilyFormFields } from './components/FamilyForm/FamilyFormFields';
 import { useFamilyFormState } from './components/FamilyForm/hooks/useFamilyFormState';
 import {
@@ -19,7 +20,7 @@ import './components/FamilyForm/familyForm.css';
 export default function FamilyCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreateFamily();
-  const [generalError, setGeneralError] = useState<string | null>(null);
+  const { dismissAll, showErrorToast } = useToast();
   const [validationSummary, setValidationSummary] = useState<string | null>(
     null
   );
@@ -43,6 +44,8 @@ export default function FamilyCreatePage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    dismissAll();
+
     if (!validate()) {
       setValidationSummary(t('family.form.validation.summary'));
       setTimeout(() => {
@@ -61,7 +64,6 @@ export default function FamilyCreatePage() {
     }
 
     setValidationSummary(null);
-    setGeneralError(null);
     try {
       const request = formStateToCreateFamilyRequest(values);
       const result = await createMutation.mutateAsync(request);
@@ -74,23 +76,31 @@ export default function FamilyCreatePage() {
           );
           setErrors(fieldErrors);
           if (unmappedErrors.length > 0) {
-            setGeneralError(unmappedErrors.join('; '));
+            showErrorToast(unmappedErrors.join('; '));
           } else if (Object.keys(fieldErrors).length === 0) {
-            setGeneralError(
-              err.status === 409
-                ? t('family.form.duplicate_error')
-                : err.message
-            );
+            showErrorToast({
+              title: t('admin.toast_error_title'),
+              message:
+                err.status === 409
+                  ? t('family.form.duplicate_error')
+                  : err.message
+            });
+          } else {
+            showErrorToast({
+              title: t('admin.toast_error_title'),
+              message: t('toast.form_validation_check')
+            });
           }
         } else if (err.status === 409) {
-          setGeneralError(t('family.form.duplicate_error'));
+          showErrorToast({
+            title: t('admin.toast_error_title'),
+            message: t('family.form.duplicate_error')
+          });
         } else {
-          setGeneralError(err.message);
+          showErrorToast(err);
         }
       } else {
-        setGeneralError(
-          err instanceof Error ? err.message : t('errors.app.title')
-        );
+        showErrorToast(err);
       }
     }
   };
@@ -105,12 +115,6 @@ export default function FamilyCreatePage() {
           {t('family.form.subtitle_create')}
         </p>
       </header>
-
-      {generalError && (
-        <div role="alert" className="family-form__error">
-          {generalError}
-        </div>
-      )}
 
       <form className="family-form" onSubmit={handleSubmit}>
         <fieldset className="family-form__section">

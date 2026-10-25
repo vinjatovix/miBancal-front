@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
+import { t } from '../../../../../src/i18n/core/t';
 import { PlantInlineEditForm } from '../../../../../src/pages/plants/PlantDetail/components/PlantInlineEditForm';
 import { buildPlant } from '../../../../fixtures/plants/buildPlant';
 import { renderWithProviders } from '../../../../test-utils/renderWithProviders';
@@ -251,7 +252,7 @@ describe('PlantInlineEditForm', () => {
     );
   });
 
-  it('displays 412 conflict banner when update fails with precondition', async () => {
+  it('displays 412 conflict banner and emits error toast when update fails with precondition', async () => {
     const user = userEvent.setup();
     const plant = buildPlant({ id: 'p-1' });
     stubFetchError(412, { message: 'Precondition Failed' });
@@ -272,6 +273,13 @@ describe('PlantInlineEditForm', () => {
       'Conflicto de concurrencia (412)'
     );
     expect(conflictTitle).toBeInTheDocument();
+
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent(t('toast.concurrent_modification'));
   });
 
   it('calls onReload when clicking reload button on 412 conflict banner', async () => {
@@ -378,8 +386,14 @@ describe('PlantInlineEditForm', () => {
     expect(
       await screen.findByText('Nombre inválido en edición')
     ).toBeInTheDocument();
+    const toastRegion = await screen.findByRole('region', {
+      name: t('toast.region_label')
+    });
+    const toastAlert = within(toastRegion).getByRole('alert');
+    expect(toastAlert).toHaveClass('toast-item--error');
+    expect(toastAlert).toHaveTextContent('Error no mapeado en edición');
     expect(
-      await screen.findByText('Error no mapeado en edición')
-    ).toBeInTheDocument();
+      document.querySelector('.plant-form > .plant-form__error')
+    ).toBeNull();
   });
 });

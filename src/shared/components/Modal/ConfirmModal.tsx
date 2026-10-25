@@ -22,7 +22,6 @@ export interface ConfirmModalProps {
   readonly isLoading?: boolean;
   readonly loadingText?: string;
   readonly warningText?: string;
-  readonly error?: string | null;
   readonly children?: ReactNode;
   readonly role?: 'dialog' | 'alertdialog';
   readonly maxWidth?: string;
@@ -44,7 +43,6 @@ export function ConfirmModal({
   isLoading = false,
   loadingText,
   warningText,
-  error = null,
   children,
   role = 'dialog',
   maxWidth,
@@ -114,12 +112,6 @@ export function ConfirmModal({
               <Icon name="warning" decorative />
             </div>
             <p className="confirm-modal-warning-text">{warningText}</p>
-          </div>
-        )}
-
-        {error && (
-          <div role="alert" className="confirm-modal-alert">
-            {error}
           </div>
         )}
 

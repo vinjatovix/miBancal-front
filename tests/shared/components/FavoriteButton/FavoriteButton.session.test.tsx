@@ -23,7 +23,7 @@ describe('FavoriteButton: 401 al togglear', () => {
     await user.click(screen.getByRole('button'));
 
     await waitFor(() => {
-      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      expect(document.querySelector('.favorite-button')).toBeNull();
     });
   });
 });
