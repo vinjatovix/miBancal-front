@@ -1,3 +1,4 @@
+import type { SupportResource } from '../../../../../types/SupportResource';
 import {
   ANOMALY_TEXT_LIST_FIELDS,
   type Anomaly,
@@ -15,6 +16,10 @@ export function initialAnomalyFormState(): AnomalyFormState {
     scientificName: '',
     category: '',
     description: '',
+    images: [],
+    videoResources: [],
+    articleResources: [],
+    confusedWithInput: '',
     symptoms: '',
     damage: '',
     causes: '',
@@ -33,17 +38,47 @@ export function anomalyToFormState(anomaly: Anomaly): AnomalyFormState {
     ])
   ) as Record<AnomalyTextListField, string>;
 
+  const images = (anomaly.resources ?? [])
+    .filter((r) => r.type === 'image')
+    .map((r) => ({
+      id: crypto.randomUUID(),
+      url: r.url,
+      title: r.title ?? '',
+      source: r.source ?? ''
+    }));
+
+  const videoResources = (anomaly.resources ?? [])
+    .filter((r) => r.type === 'video')
+    .map((r) => ({
+      id: crypto.randomUUID(),
+      url: r.url,
+      title: r.title ?? ''
+    }));
+
+  const articleResources = (anomaly.resources ?? [])
+    .filter((r) => r.type === 'article')
+    .map((r) => ({
+      id: crypto.randomUUID(),
+      url: r.url,
+      title: r.title ?? ''
+    }));
+
   return {
     slug: anomaly.slug,
     name: anomaly.name,
     scientificName: anomaly.scientificName ?? '',
     category: anomaly.category,
     description: anomaly.description ?? '',
+    images,
+    videoResources,
+    articleResources,
+    confusedWithInput: (anomaly.confusedWith ?? []).join('\n'),
     ...listTexts
   };
 }
 
-function nonEmpty(text: string): string | undefined {
+function nonEmpty(text?: string): string | undefined {
+  if (!text) return undefined;
   const trimmed = text.trim();
   return trimmed === '' ? undefined : trimmed;
 }
@@ -62,10 +97,52 @@ function createdLists(state: AnomalyFormState) {
   ) as Partial<Record<AnomalyTextListField, string[]>>;
 }
 
+function buildResourcesFromState(state: AnomalyFormState): SupportResource[] {
+  const images: SupportResource[] = state.images
+    .filter((img) => img.url.trim() !== '')
+    .map((img) => {
+      const title = nonEmpty(img.title);
+      const source = nonEmpty(img.source);
+      return {
+        type: 'image',
+        url: img.url.trim(),
+        ...(title ? { title } : {}),
+        ...(source ? { source } : {})
+      };
+    });
+
+  const videos: SupportResource[] = state.videoResources
+    .filter((v) => v.url.trim() !== '')
+    .map((v) => {
+      const title = nonEmpty(v.title);
+      return {
+        type: 'video',
+        url: v.url.trim(),
+        ...(title ? { title } : {})
+      };
+    });
+
+  const articles: SupportResource[] = state.articleResources
+    .filter((a) => a.url.trim() !== '')
+    .map((a) => {
+      const title = nonEmpty(a.title);
+      return {
+        type: 'article',
+        url: a.url.trim(),
+        ...(title ? { title } : {})
+      };
+    });
+
+  return [...images, ...videos, ...articles];
+}
+
 export function formStateToCreateAnomalyRequest(
   state: AnomalyFormState,
   id?: string
 ): CreateAnomalyRequest {
+  const resources = buildResourcesFromState(state);
+  const confusedWith = uniqueLines(state.confusedWithInput);
+
   return {
     id: id || crypto.randomUUID(),
     slug: state.slug.trim(),
@@ -73,6 +150,8 @@ export function formStateToCreateAnomalyRequest(
     category: state.category as CreateAnomalyRequest['category'],
     scientificName: nonEmpty(state.scientificName),
     description: nonEmpty(state.description),
+    ...(resources.length > 0 ? { resources } : {}),
+    ...(confusedWith.length > 0 ? { confusedWith } : {}),
     ...createdLists(state)
   };
 }
@@ -114,11 +193,52 @@ function changedScalars(
   return patch;
 }
 
+function changedResources(
+  state: AnomalyFormState,
+  initial: AnomalyFormState
+): Pick<UpdateAnomalyRequest, 'resources'> {
+  const current = buildResourcesFromState(state);
+  const initialList = buildResourcesFromState(initial);
+
+  if (JSON.stringify(current) === JSON.stringify(initialList)) {
+    return {};
+  }
+
+  if (current.length === 0) {
+    return initialList.length > 0 ? { resources: null } : {};
+  }
+
+  return { resources: current };
+}
+
+function changedConfusedWith(
+  state: AnomalyFormState,
+  initial: AnomalyFormState
+): Pick<UpdateAnomalyRequest, 'confusedWith'> {
+  const current = uniqueLines(state.confusedWithInput);
+  const initialList = uniqueLines(initial.confusedWithInput);
+
+  if (JSON.stringify(current) === JSON.stringify(initialList)) {
+    return {};
+  }
+
+  if (current.length === 0) {
+    return initialList.length > 0 ? { confusedWith: null } : {};
+  }
+
+  return { confusedWith: current };
+}
+
 export function formStateToUpdateAnomalyRequest(
   state: AnomalyFormState,
   initial: AnomalyFormState
 ): UpdateAnomalyRequest {
-  return { ...changedScalars(state, initial), ...changedLists(state, initial) };
+  return {
+    ...changedScalars(state, initial),
+    ...changedLists(state, initial),
+    ...changedResources(state, initial),
+    ...changedConfusedWith(state, initial)
+  };
 }
 
 export interface NormalizedAnomalyErrors {
@@ -132,6 +252,12 @@ const KNOWN_ANOMALY_FORM_FIELDS: ReadonlySet<string> = new Set([
   'scientificName',
   'category',
   'description',
+  'resources',
+  'confusedWith',
+  'images',
+  'videoResources',
+  'articleResources',
+  'confusedWithInput',
   ...ANOMALY_TEXT_LIST_FIELDS
 ]);
 

@@ -21,7 +21,8 @@ type AnomalyField =
   | 'scientificName'
   | 'category'
   | 'status'
-  | 'deletedAt';
+  | 'deletedAt'
+  | 'resources';
 
 export const ANOMALY_LIST_FIELDS: readonly AnomalyField[] = [
   'slug',
@@ -29,7 +30,8 @@ export const ANOMALY_LIST_FIELDS: readonly AnomalyField[] = [
   'scientificName',
   'category',
   'status',
-  'deletedAt'
+  'deletedAt',
+  'resources'
 ];
 
 export const ANOMALY_SORT_FIELDS = ['name', 'slug'] as const;

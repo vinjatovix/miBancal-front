@@ -177,4 +177,68 @@ describe('AnomalyDetail (lectura pública)', () => {
       screen.queryByRole('button', { name: 'Eliminar' })
     ).not.toBeInTheDocument();
   });
+
+  it('renders carousel in hero, confusedWith chips, and resources when anomaly includes rich media and differential diagnosis', async () => {
+    const anomaly = buildAnomaly({
+      resources: [
+        {
+          type: 'image',
+          url: 'https://images.example.com/pulgon-1.jpg',
+          title: 'Foto 1'
+        },
+        {
+          type: 'image',
+          url: 'https://images.example.com/pulgon-2.jpg',
+          title: 'Foto 2'
+        },
+        {
+          type: 'video',
+          url: 'https://www.youtube.com/watch?v=pulgon123',
+          title: 'Vídeo explicativo'
+        },
+        {
+          type: 'article',
+          url: 'https://extension.example.org/pulgon',
+          title: 'Artículo técnico'
+        }
+      ],
+      confusedWith: ['pulgon-negro', 'mosca-blanca']
+    });
+    mockedGetAnomalyBySlug.mockResolvedValue(anomaly);
+
+    renderDetail();
+
+    expect(
+      await screen.findByRole('region', {
+        name: 'Galería de imágenes de la anomalía'
+      })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Diagnóstico diferencial')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Pulgon Negro/i })).toHaveAttribute(
+      'href',
+      '/anomalies/pulgon-negro'
+    );
+    expect(screen.getByRole('link', { name: /Mosca Blanca/i })).toHaveAttribute(
+      'href',
+      '/anomalies/mosca-blanca'
+    );
+    expect(screen.getByTitle('Vídeo explicativo')).toBeInTheDocument();
+  });
+
+  it('omits confusedWith section and resources section when neither is present in anomaly', async () => {
+    const anomaly = buildAnomaly({
+      resources: [],
+      confusedWith: []
+    });
+    mockedGetAnomalyBySlug.mockResolvedValue(anomaly);
+
+    renderDetail();
+
+    await screen.findByRole('heading', { level: 1, name: 'Pulgón verde' });
+
+    expect(
+      screen.queryByText('Diagnóstico diferencial')
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Recursos')).not.toBeInTheDocument();
+  });
 });

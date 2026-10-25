@@ -2,6 +2,7 @@ import type { Metadata } from '../Metadata';
 import type { Range } from '../Range';
 import type { Seasons } from '../Season';
 import type { PlantFamilyRef } from '../FamilySummary';
+import type { SupportResource } from '../SupportResource';
 import type { PlantEcologicalTraits } from './PlantMutation';
 
 export type PlantStatus = 'ACTIVE' | 'DELETED';
@@ -119,13 +120,7 @@ export interface Plant {
     ecology: {
       strategicBenefits: string[];
     };
-    resources?: Array<{
-      type: 'image' | 'article' | 'video';
-      url: string;
-      title?: string;
-      source?: string;
-      tags?: string[];
-    }>;
+    resources?: SupportResource[];
     notes?: string[];
   };
   image: PlantImage;

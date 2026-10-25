@@ -204,4 +204,46 @@ describe('AnomalyList', () => {
 
     expect(await screen.findByText('Eliminada')).toBeInTheDocument();
   });
+
+  it('renders a cover thumbnail when anomaly includes image resources', async () => {
+    const anomalyWithImage = buildAnomalyListItem({
+      id: 'id-con-foto',
+      slug: 'pulgon-con-foto',
+      name: 'Pulgón con foto',
+      resources: [
+        {
+          type: 'image',
+          url: 'https://images.example.com/pulgon-cover.jpg',
+          title: 'Portada de pulgón'
+        }
+      ]
+    });
+    mockedGetAnomalyList.mockResolvedValue(pageOf([anomalyWithImage]));
+
+    renderList();
+
+    const img = await screen.findByRole('img', { name: 'Portada de pulgón' });
+
+    expect(img).toHaveAttribute(
+      'src',
+      'https://images.example.com/pulgon-cover.jpg'
+    );
+    expect(img).toHaveAttribute('loading', 'lazy');
+  });
+
+  it('renders clean layout without image element when anomaly has no images', async () => {
+    const anomalyWithoutImage = buildAnomalyListItem({
+      id: 'id-sin-foto',
+      slug: 'pulgon-sin-foto',
+      name: 'Pulgón sin foto',
+      resources: []
+    });
+    mockedGetAnomalyList.mockResolvedValue(pageOf([anomalyWithoutImage]));
+
+    renderList();
+
+    await screen.findByRole('link', { name: /Ver ficha de Pulgón sin foto/ });
+
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
 });

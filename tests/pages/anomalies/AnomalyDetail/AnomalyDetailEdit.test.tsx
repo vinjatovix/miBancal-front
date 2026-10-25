@@ -79,6 +79,49 @@ describe('AnomalyDetail edición inline', () => {
     expect(screen.getByText('Rotación de cultivos')).toBeInTheDocument();
   });
 
+  it('modifica recursos y diagnóstico diferencial enviando patch con If-Match', async () => {
+    const updated = buildAnomaly({
+      resources: [
+        {
+          type: 'image',
+          url: 'https://images.example.com/pulgon.jpg',
+          title: 'Detalle'
+        }
+      ],
+      confusedWith: ['pulgon-negro']
+    });
+    mockedUpdateAnomaly.mockResolvedValue({ anomaly: updated, etag: '"v2"' });
+    const user = userEvent.setup();
+    await openEditor(user);
+
+    await user.click(screen.getByRole('button', { name: 'Añadir fotografía' }));
+    await user.type(
+      screen.getByLabelText('URL de la imagen'),
+      'https://images.example.com/pulgon.jpg'
+    );
+    await user.type(screen.getByLabelText('Pie de foto o título'), 'Detalle');
+    await user.type(screen.getByLabelText(/Se confunde con/), 'pulgon-negro');
+    mockedGetAnomalyBySlug.mockResolvedValue(updated);
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+    await waitFor(() =>
+      expect(mockedUpdateAnomaly).toHaveBeenCalledWith(
+        'pulgon-verde',
+        {
+          resources: [
+            {
+              type: 'image',
+              url: 'https://images.example.com/pulgon.jpg',
+              title: 'Detalle'
+            }
+          ],
+          confusedWith: ['pulgon-negro']
+        },
+        ETAG
+      )
+    );
+  });
+
   it('vuelve a lectura sin petición si no hay cambios', async () => {
     const user = userEvent.setup();
     await openEditor(user);

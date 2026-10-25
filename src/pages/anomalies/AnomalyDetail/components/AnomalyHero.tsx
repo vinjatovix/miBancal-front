@@ -9,6 +9,7 @@ import Icon from '../../../../shared/components/Icon/Icon';
 import ScientificName from '../../../../shared/components/ScientificName/ScientificName';
 import { capitalizeFirstLetter } from '../../../../shared/utils/capitalizeFirstLetter';
 import type { Anomaly } from '../../../../types/Anomaly/Anomaly';
+import { AnomalyImageCarousel } from './AnomalyImageCarousel';
 
 import './anomalyHero.css';
 
@@ -26,6 +27,7 @@ export function AnomalyHero({ anomaly, onEdit, onDelete }: Props) {
   const auth = useContext(AuthContext);
   const isEditor = auth?.isEditor ?? false;
   const canDelete = isEditor && onDelete && anomaly.status === 'ACTIVE';
+  const images = (anomaly.resources ?? []).filter((r) => r.type === 'image');
 
   return (
     <header className="anomaly-hero">
@@ -83,6 +85,35 @@ export function AnomalyHero({ anomaly, onEdit, onDelete }: Props) {
             date: formatDeletedAt(anomaly.deletedAt)
           })}
         </p>
+      )}
+
+      {images.length === 1 && (
+        <figure className="anomaly-hero__figure">
+          <img
+            src={images[0].url}
+            alt={images[0].title || anomaly.name}
+            className="anomaly-hero__img"
+            loading="lazy"
+          />
+          {(images[0].title || images[0].source) && (
+            <figcaption className="anomaly-hero__caption">
+              {images[0].title && (
+                <span className="anomaly-hero__caption-title">
+                  {images[0].title}
+                </span>
+              )}
+              {images[0].source && (
+                <span className="anomaly-hero__caption-source">
+                  {t('anomaly.hero.source', { source: images[0].source })}
+                </span>
+              )}
+            </figcaption>
+          )}
+        </figure>
+      )}
+
+      {images.length >= 2 && (
+        <AnomalyImageCarousel images={images} anomalyName={anomaly.name} />
       )}
     </header>
   );
