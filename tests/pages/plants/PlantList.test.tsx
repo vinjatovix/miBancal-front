@@ -69,6 +69,32 @@ describe('PlantList', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
+  it('muestra el botón Nueva planta enlazando a /plants/new para editores', async () => {
+    stubFetchOk(listPlantsResponse);
+
+    renderWithProviders(<PlantList />, {
+      route: '/plants',
+      initialToken: ADMIN_TEST_TOKEN
+    });
+
+    await waitForPlants();
+
+    const createLink = screen.getByRole('link', { name: /nueva planta/i });
+    expect(createLink).toHaveAttribute('href', '/plants/new');
+  });
+
+  it('no muestra el botón Nueva planta para usuarios anónimos', async () => {
+    stubFetchOk(listPlantsResponse);
+
+    renderPlantList();
+
+    await waitForPlants();
+
+    expect(
+      screen.queryByRole('link', { name: /nueva planta/i })
+    ).not.toBeInTheDocument();
+  });
+
   it('sin parámetros pide la página por defecto conforme al contrato y pinta las plantas', async () => {
     const fetchMock = stubFetchOk(listPlantsResponse);
 

@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { anomalyKeys } from './anomalyKeys';
 import { familyKeys } from './familyKeys';
+import { gardenInputKeys } from './gardenInputKeys';
 import { plantKeys } from './plantKeys';
 
 export const catalogEditKeys = {
@@ -8,7 +9,9 @@ export const catalogEditKeys = {
   familyEdit: (idOrSlug: string) =>
     [...familyKeys.all, 'edit', idOrSlug] as const,
   anomalyEdit: (idOrSlug: string) =>
-    [...anomalyKeys.all, 'edit', idOrSlug] as const
+    [...anomalyKeys.all, 'edit', idOrSlug] as const,
+  gardenInputEdit: (idOrSlug: string) =>
+    [...gardenInputKeys.all, 'edit', idOrSlug] as const
 };
 
 export async function invalidatePlantQueries(
@@ -60,6 +63,25 @@ export async function invalidateAnomalyQueries(
     idOrSlug
       ? queryClient.invalidateQueries({
           queryKey: catalogEditKeys.anomalyEdit(idOrSlug)
+        })
+      : Promise.resolve()
+  ]);
+}
+
+export async function invalidateGardenInputQueries(
+  queryClient: QueryClient,
+  idOrSlug?: string
+): Promise<void> {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: gardenInputKeys.all }),
+    idOrSlug
+      ? queryClient.invalidateQueries({
+          queryKey: gardenInputKeys.detail(idOrSlug)
+        })
+      : Promise.resolve(),
+    idOrSlug
+      ? queryClient.invalidateQueries({
+          queryKey: catalogEditKeys.gardenInputEdit(idOrSlug)
         })
       : Promise.resolve()
   ]);

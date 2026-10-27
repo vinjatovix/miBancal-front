@@ -1269,6 +1269,15 @@ const check_circleGlyph = (
   </>
 );
 
+const local_pharmacyGlyph = (
+  <>
+    <path
+      fill="#77B255"
+      d="M14 5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v9h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-9v9a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-9H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h9V5z"
+    />
+  </>
+);
+
 const content_copyGlyph = (
   <>
     <rect
@@ -1431,6 +1440,7 @@ export const ICON_GLYPHS = {
   letter: mailGlyph,
   link: linkGlyph,
   local_florist: local_floristGlyph,
+  local_pharmacy: local_pharmacyGlyph,
   lock: lockGlyph,
   login: loginGlyph,
   mail: mailGlyph,

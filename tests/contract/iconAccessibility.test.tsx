@@ -18,7 +18,8 @@ describe('icon accessibility contract - decorative icons', () => {
     'close',
     'search',
     'thumb_up',
-    'thumb_up_filled'
+    'thumb_up_filled',
+    'local_pharmacy'
   ] as IconName[])(
     'renders decorative %s icon with aria-hidden="true"',
     (name) => {

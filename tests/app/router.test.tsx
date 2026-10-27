@@ -81,6 +81,7 @@ describe('router', () => {
     '/plants',
     '/plants/678efda2-ac3d-4623-81cd-fc1d0ab80315',
     '/families',
+    '/garden-inputs',
     '/login',
     '/register',
     '/activate',

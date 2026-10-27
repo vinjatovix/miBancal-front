@@ -56,4 +56,13 @@ describe('iconGlyphs catalog synchronisation', () => {
 
     expect(aliasGlyph).toEqual(baseGlyph);
   });
+
+  it('provides the custom local_pharmacy glyph', () => {
+    const customMarkup = CUSTOM_GLYPHS.local_pharmacy;
+    const glyph = ICON_GLYPHS.local_pharmacy;
+
+    expect(customMarkup).toBeDefined();
+    expect(customMarkup).toContain('fill="#77B255"');
+    expect(glyph).toBeDefined();
+  });
 });

@@ -112,6 +112,39 @@ export const routes: RouteObject[] = [
             })
           },
           {
+            path: '/garden-inputs',
+            lazy: async () => ({
+              Component: (
+                await import('../pages/gardenInputs/GardenInputsPage')
+              ).default
+            })
+          },
+          {
+            path: '/garden-inputs/new',
+            lazy: async () => {
+              const [{ default: GardenInputCreatePage }, { EditorialRoute }] =
+                await Promise.all([
+                  import('../pages/gardenInputs/GardenInputCreatePage'),
+                  import('../shared/auth/EditorialRoute')
+                ]);
+              return {
+                Component: () => (
+                  <EditorialRoute>
+                    <GardenInputCreatePage />
+                  </EditorialRoute>
+                )
+              };
+            }
+          },
+          {
+            path: '/garden-inputs/:slug',
+            lazy: async () => ({
+              Component: (
+                await import('../pages/gardenInputs/GardenInputDetail/GardenInputDetailPage')
+              ).default
+            })
+          },
+          {
             path: '/login',
             lazy: async () => ({
               Component: (await import('../pages/auth/Login')).default

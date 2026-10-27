@@ -3,16 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { NAVIGATION_ITEMS } from '../../../src/components/layout/navigationItems';
 
 describe('navigationItems', () => {
-  it('contains at least one navigation item and plants, families and anomalies in order', () => {
+  it('contains at least one navigation item and plants, families, anomalies, and gardenInputs in order', () => {
     const ids = NAVIGATION_ITEMS.map((item) => item.id);
 
-    expect(ids).toEqual(['plants', 'families', 'anomalies']);
+    expect(ids).toEqual(['plants', 'families', 'anomalies', 'gardenInputs']);
   });
 
   it.each([
     ['plants', 'app.nav.plants', '/plants', 'eco'],
     ['families', 'app.nav.families', '/families', 'biotech'],
-    ['anomalies', 'app.nav.anomalies', '/anomalies', 'crisis_alert']
+    ['anomalies', 'app.nav.anomalies', '/anomalies', 'crisis_alert'],
+    ['gardenInputs', 'app.nav.gardenInputs', '/garden-inputs', 'local_pharmacy']
   ] as const)(
     'configures %s with correct labelKey, path, and icon',
     (id, expectedLabelKey, expectedPath, expectedIcon) => {
@@ -95,6 +96,29 @@ describe('navigationItems', () => {
         );
 
         expect(anomaliesItem?.isMatch(pathname)).toBe(expectedResult);
+      }
+    );
+
+    it.each([
+      ['/garden-inputs', true],
+      ['/garden-inputs/', true],
+      ['/garden-inputs/purin-ortiga', true],
+      ['/garden-inputs/new', true],
+      ['/', false],
+      ['/plants', false],
+      ['/families', false],
+      ['/anomalies', false],
+      ['/garden-inputs-other', false]
+    ] as const)(
+      'evaluates gardenInputs.isMatch(%s) to %s',
+      (pathname, expectedResult) => {
+        const gardenInputsItem = NAVIGATION_ITEMS.find(
+          (item) => item.id === 'gardenInputs'
+        );
+
+        const result = gardenInputsItem?.isMatch(pathname);
+
+        expect(result).toBe(expectedResult);
       }
     );
   });

@@ -51,7 +51,7 @@ export default function FamilyList() {
   }
 
   return (
-    <div>
+    <div className="family-list">
       <div className="family-list__header">
         <h1>{t('family.families')}</h1>
         {isEditor && (

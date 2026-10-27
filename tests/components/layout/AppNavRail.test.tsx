@@ -115,10 +115,11 @@ describe('AppNavRail', () => {
 
       const tooltips = screen.getAllByRole('tooltip');
 
-      expect(tooltips).toHaveLength(3);
+      expect(tooltips).toHaveLength(4);
       expect(tooltips[0]).toHaveTextContent('Plantas');
       expect(tooltips[1]).toHaveTextContent('Familias');
       expect(tooltips[2]).toHaveTextContent('Anomalías');
+      expect(tooltips[3]).toHaveTextContent('Insumos');
     });
 
     it('does not render tooltip roles in expanded mode', () => {

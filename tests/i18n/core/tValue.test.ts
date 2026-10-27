@@ -57,4 +57,73 @@ describe('tValue', () => {
       'anomaly.categoryValues.virus'
     );
   });
+
+  it.each([
+    ['defense', 'Defensa'],
+    ['fertilizer', 'Fertilizante'],
+    ['biostimulant', 'Bioestimulante'],
+    ['soil_amendment', 'Enmienda de suelo']
+  ] as const)(
+    'translates garden input category %s to %s',
+    (category, expected) => {
+      const result = tValue('gardenInput.categoryValues', category);
+
+      expect(result).toBe(expected);
+      expect(reportMissingTranslation).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    ['fungicide', 'Fungicida'],
+    ['insecticide', 'Insecticida'],
+    ['repellent', 'Repelente'],
+    ['nematicide', 'Nematicida'],
+    ['fertilizer', 'Fertilizante'],
+    ['biostimulant', 'Bioestimulante'],
+    ['rooting', 'Enraizante'],
+    ['compost_activator', 'Activador de compost']
+  ] as const)('translates garden input action %s to %s', (action, expected) => {
+    const result = tValue('gardenInput.actionValues', action);
+
+    expect(result).toBe(expected);
+    expect(reportMissingTranslation).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['foliar', 'Foliar'],
+    ['irrigation', 'Riego'],
+    ['soil', 'Suelo'],
+    ['soaking', 'Remojo'],
+    ['dusting', 'Espolvoreo'],
+    ['other', 'Otro']
+  ] as const)(
+    'translates garden input dosage method %s to %s',
+    (method, expected) => {
+      const result = tValue('gardenInput.dosageMethodValues', method);
+
+      expect(result).toBe(expected);
+      expect(reportMissingTranslation).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    ['active', 'Activo'],
+    ['deleted', 'Eliminado']
+  ] as const)('translates garden input status %s to %s', (status, expected) => {
+    const result = tValue('gardenInput.statusValues', status);
+
+    expect(result).toBe(expected);
+    expect(reportMissingTranslation).not.toHaveBeenCalled();
+  });
+
+  it('returns an unknown garden input category as received and reports it', () => {
+    const unknownCategory = 'unknown_category';
+
+    const result = tValue('gardenInput.categoryValues', unknownCategory);
+
+    expect(result).toBe(unknownCategory);
+    expect(reportMissingTranslation).toHaveBeenCalledExactlyOnceWith(
+      'gardenInput.categoryValues.unknown_category'
+    );
+  });
 });

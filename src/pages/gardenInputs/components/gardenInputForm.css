@@ -1,0 +1,138 @@
+.garden-input-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.garden-input-form__alert {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border-radius: var(--radius-md);
+  font: var(--type-body-sm);
+}
+
+.garden-input-form__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.garden-input-form__label {
+  font: var(--type-label-md);
+  color: var(--color-on-surface);
+}
+
+.garden-input-form__input,
+.garden-input-form__select,
+.garden-input-form__textarea {
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  font: var(--type-body-md);
+  color: var(--color-on-surface);
+  transition: border-color 0.15s ease;
+}
+
+.garden-input-form__input:focus,
+.garden-input-form__select:focus,
+.garden-input-form__textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.garden-input-form__input:disabled {
+  background: var(--color-surface-container-low);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.garden-input-form__textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.garden-input-form__hint {
+  font: var(--type-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.garden-input-form__error {
+  color: var(--color-error);
+  font: var(--type-label-sm);
+}
+
+.garden-input-form__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.garden-input-form-chip {
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  font: var(--type-label-sm);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.garden-input-form-chip:hover {
+  background: var(--color-surface-container-high);
+}
+
+.garden-input-form-chip--active {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  border-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.garden-input-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.garden-input-form__cancel-btn {
+  padding: var(--space-xs) var(--space-md);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  font: var(--type-label-md);
+  cursor: pointer;
+}
+
+.garden-input-form__submit-btn {
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--radius-full);
+  font: var(--type-label-md);
+  cursor: pointer;
+}
+
+.garden-input-form__submit-btn:disabled,
+.garden-input-form__cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

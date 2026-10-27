@@ -1,0 +1,88 @@
+.garden-input-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.garden-input-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.garden-input-list__header h1 {
+  margin: 0;
+  font: var(--type-headline-xl);
+  color: var(--color-on-surface);
+}
+
+.garden-input-list__create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--radius-full);
+  font: var(--type-label-md);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.garden-input-list__create-btn:hover {
+  opacity: 0.9;
+}
+
+.garden-input-list__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+  font: var(--type-body-md);
+}
+
+.garden-input-list__controls select {
+  padding: var(--space-sm);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font: var(--type-body-lg);
+  cursor: pointer;
+}
+
+.garden-input-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+
+.garden-input-list__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) var(--space-md);
+  text-align: center;
+  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--color-outline-variant);
+}
+
+.garden-input-list__empty-message {
+  margin: 0 0 var(--space-md);
+  font: var(--type-body-lg);
+  color: var(--color-on-surface-variant);
+}
+
+.garden-input-list__empty-action {
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--radius-full);
+  font: var(--type-label-md);
+  cursor: pointer;
+}
