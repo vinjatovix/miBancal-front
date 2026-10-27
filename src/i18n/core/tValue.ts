@@ -4,6 +4,10 @@ import { lookup } from './t';
 export type ValueGroup =
   | 'anomaly.categoryValues'
   | 'anomaly.statusValues'
+  | 'gardenInput.categoryValues'
+  | 'gardenInput.actionValues'
+  | 'gardenInput.dosageMethodValues'
+  | 'gardenInput.statusValues'
   | 'plant.calendar.seasonValues'
   | 'plant.safety.flagValues'
   | 'plant.statusValues'

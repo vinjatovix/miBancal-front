@@ -11,7 +11,11 @@ describe('OpenAPI catalog mutations contract', () => {
     ['patch', '/api/v1/families/678efda2-ac3d-4623-81cd-fc1d0ab80315'],
     ['post', '/api/v1/anomalies'],
     ['patch', '/api/v1/anomalies/pulgon-verde'],
-    ['patch', '/api/v1/anomalies/4f0f9a2e-7a0b-4a0e-9d52-2d6a8d1c0a11']
+    ['patch', '/api/v1/anomalies/4f0f9a2e-7a0b-4a0e-9d52-2d6a8d1c0a11'],
+    ['post', '/api/v1/garden-inputs'],
+    ['patch', '/api/v1/garden-inputs/purin-ortiga'],
+    ['patch', '/api/v1/garden-inputs/7b8e5c3e-3242-4f35-9f5b-1c5c163b2f90'],
+    ['delete', '/api/v1/garden-inputs/purin-ortiga']
   ] as const)('validates openapi path for %s %s', (method, path) => {
     const violations = validateRequest(method, path);
 
@@ -360,6 +364,129 @@ describe('OpenAPI catalog mutations contract', () => {
       };
 
       const violations = validateSchema('UpdateAnomaly', payload);
+
+      expect(violations).toEqual([]);
+    });
+  });
+
+  describe('CreateGardenInput schema', () => {
+    it('accepts a valid garden input creation payload with recipe', () => {
+      const payload = {
+        id: '7b8e5c3e-3242-4f35-9f5b-1c5c163b2f90',
+        slug: 'purin-ortiga',
+        name: 'Purín de ortiga',
+        category: 'fertilizer',
+        description: 'Extracto fermentado.',
+        actions: ['fertilizer', 'biostimulant'],
+        activeIngredients: ['Ácido fórmico'],
+        nutrients: ['Nitrógeno orgánico'],
+        targets: ['Pulgón'],
+        recipes: [
+          {
+            name: 'Purín clásico',
+            description: 'Fermentación en agua.',
+            ingredients: [{ item: 'Ortiga', quantity: '1 kg' }],
+            instructions: ['Macerar 10 días'],
+            dosage: {
+              method: 'foliar',
+              dilution: '1:10',
+              frequency: 'Semanal'
+            }
+          }
+        ]
+      };
+
+      const violations = validateSchema('CreateGardenInput', payload);
+
+      expect(violations).toEqual([]);
+    });
+
+    it('rejects a garden input creation payload with invalid category', () => {
+      const payload = {
+        id: '7b8e5c3e-3242-4f35-9f5b-1c5c163b2f90',
+        slug: 'purin-ortiga',
+        name: 'Purín de ortiga',
+        category: 'invalid_category'
+      };
+
+      const violations = validateSchema('CreateGardenInput', payload);
+
+      expect(violations.length).toBeGreaterThan(0);
+    });
+
+    it('rejects a garden input creation payload with invalid slug format', () => {
+      const payload = {
+        id: '7b8e5c3e-3242-4f35-9f5b-1c5c163b2f90',
+        slug: 'Purin Ortiga!',
+        name: 'Purín de ortiga',
+        category: 'fertilizer'
+      };
+
+      const violations = validateSchema('CreateGardenInput', payload);
+
+      expect(violations.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('UpdateGardenInput schema', () => {
+    it('accepts partial garden input update payload', () => {
+      const payload = {
+        name: 'Purín de ortiga concentrado',
+        category: 'biostimulant',
+        actions: ['biostimulant', 'rooting']
+      };
+
+      const violations = validateSchema('UpdateGardenInput', payload);
+
+      expect(violations).toEqual([]);
+    });
+
+    it('accepts clearing optional fields with null in garden input update', () => {
+      const payload = {
+        description: null,
+        actions: null,
+        recipes: null
+      };
+
+      const violations = validateSchema('UpdateGardenInput', payload);
+
+      expect(violations).toEqual([]);
+    });
+  });
+
+  describe('GardenInput schema', () => {
+    it('validates a complete garden input entity model', () => {
+      const payload = {
+        id: '7b8e5c3e-3242-4f35-9f5b-1c5c163b2f90',
+        version: 1,
+        slug: 'purin-ortiga',
+        name: 'Purín de ortiga',
+        category: 'fertilizer',
+        description: 'Fermentado de ortiga.',
+        status: 'active',
+        metadata: {
+          createdAt: '2026-10-01T10:00:00.000Z',
+          createdBy: 'system',
+          updatedAt: '2026-10-01T10:00:00.000Z',
+          updatedBy: 'system'
+        }
+      };
+
+      const violations = validateSchema('GardenInput', payload);
+
+      expect(violations).toEqual([]);
+    });
+  });
+
+  describe('GardenInputListFilter schema', () => {
+    it('accepts valid multicriteria filters with in and eq operators', () => {
+      const payload = {
+        category: { in: 'defense,fertilizer' },
+        action: { in: 'fungicide,insecticide' },
+        status: { eq: 'active' }
+      };
+
+      const violations = validateSchema('GardenInputListFilter', payload);
 
       expect(violations).toEqual([]);
     });

@@ -1,14 +1,16 @@
-import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useContext, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import { t } from '../../i18n/core/t';
 
 import type { PaginatedResponse } from '../../types/api';
 import type { PlantListItem } from '../../types/Plants/Plant';
 import { PLANT_LIST_URL_PARAMS } from '../../shared/constants/plantListUrlParams';
+import { AuthContext } from '../../shared/auth/authContextDef';
 import { useFamilies } from '../../shared/hooks/useFamilies';
 import { buildPaginationPages } from '../../shared/utils/pagination';
 import { getQueryViewState } from '../../shared/reactQuery/queryViewState';
+import Icon from '../../shared/components/Icon/Icon';
 import { Loader } from '../../shared/components/Loader/Loader';
 import PageSizeSelector from '../../shared/components/PageSizeSelector/PageSizeSelector';
 import Pagination from '../../shared/components/Pagination/Pagination';
@@ -136,6 +138,8 @@ export default function PlantList() {
     setSort
   } = usePlants();
 
+  const auth = useContext(AuthContext);
+  const isEditor = auth?.isEditor ?? false;
   const [viewMode, setViewMode] = useState(readStoredMode);
   const [searchParams, setSearchParams] = useSearchParams();
   const favoritesTabActive = request.filters.bookmarked === 'true';
@@ -169,7 +173,19 @@ export default function PlantList() {
 
   return (
     <div>
-      <h1>{t('plant.plants')}</h1>
+      <div className="plant-list__header">
+        <h1>{t('plant.plants')}</h1>
+        {isEditor && (
+          <Link
+            to="/plants/new"
+            className="plant-list__create-btn"
+            aria-label={t('plant.catalog.new_plant')}
+          >
+            <Icon name="potted_plant" decorative />
+            <span>{t('plant.catalog.new_plant')}</span>
+          </Link>
+        )}
+      </div>
 
       <CatalogTabs />
 

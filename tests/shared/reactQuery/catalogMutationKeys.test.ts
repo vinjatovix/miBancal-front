@@ -5,6 +5,7 @@ import {
   catalogEditKeys,
   invalidateAnomalyQueries,
   invalidateFamilyQueries,
+  invalidateGardenInputQueries,
   invalidatePlantQueries
 } from '../../../src/shared/reactQuery/catalogMutationKeys';
 
@@ -111,5 +112,41 @@ describe('invalidateAnomalyQueries', () => {
 
     expect(invalidateSpy).toHaveBeenCalledOnce();
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['anomalies'] });
+  });
+});
+
+describe('catalogEditKeys.gardenInputEdit', () => {
+  it('generates consistent gardenInputEdit query key', () => {
+    const key = catalogEditKeys.gardenInputEdit('purin-ortiga');
+
+    expect(key).toEqual(['gardenInputs', 'edit', 'purin-ortiga']);
+  });
+});
+
+describe('invalidateGardenInputQueries', () => {
+  it('invalidates garden input keys with specific slug', async () => {
+    const queryClient = new QueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await invalidateGardenInputQueries(queryClient, 'purin-ortiga');
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['gardenInputs'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: ['gardenInputs', 'detail', 'purin-ortiga']
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: ['gardenInputs', 'edit', 'purin-ortiga']
+    });
+    expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: ['plants'] });
+  });
+
+  it('invalidates only general garden input keys when slug is omitted', async () => {
+    const queryClient = new QueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await invalidateGardenInputQueries(queryClient);
+
+    expect(invalidateSpy).toHaveBeenCalledOnce();
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['gardenInputs'] });
   });
 });
