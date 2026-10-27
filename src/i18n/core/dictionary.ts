@@ -251,6 +251,10 @@ export const dictionary = {
       'La nueva contraseña debe ser diferente de la anterior'
   },
   common: {
+    resources: {
+      videos: 'Vídeos',
+      articles: 'Artículos'
+    },
     save: 'Guardar',
     cancel: 'Cancelar',
     edit: 'Editar',
@@ -812,6 +816,26 @@ export const dictionary = {
       recipe_storage_spoilage_placeholder: 'Ej. Olor pútrido',
       recipe_safety_notes: 'Notas de seguridad',
       recipe_safety_notes_placeholder: 'Una precaución por línea...',
+      resources_section: 'Recursos y referencias',
+      resources_images: 'Imágenes',
+      resources_videos: 'Vídeos',
+      resources_articles: 'Artículos',
+      resource_image_url: 'URL de la imagen',
+      resource_image_url_placeholder: 'https://ejemplo.com/imagen.jpg',
+      resource_title: 'Título',
+      resource_title_placeholder: 'Título descriptivo del recurso',
+      resource_image_source: 'Fuente',
+      resource_image_source_placeholder: 'Ej. Wikipedia, INIA...',
+      resource_video_url: 'URL del vídeo',
+      resource_video_url_placeholder: 'https://www.youtube.com/watch?v=...',
+      resource_article_url: 'URL del artículo',
+      resource_article_url_placeholder: 'https://ejemplo.com/articulo',
+      resource_add_image: 'Añadir imagen',
+      resource_remove_image: 'Eliminar imagen',
+      resource_add_video: 'Añadir vídeo',
+      resource_remove_video: 'Eliminar vídeo',
+      resource_add_article: 'Añadir artículo',
+      resource_remove_article: 'Eliminar artículo',
       submit_create: 'Crear insumo',
       submit_edit: 'Guardar cambios',
       cancel: 'Cancelar',
@@ -852,7 +876,10 @@ export const dictionary = {
         storage_conditions_required:
           'Las condiciones de conservación son obligatorias.',
         save_error: 'Ha ocurrido un error inesperado al guardar el insumo.',
-        update_error: 'Ha ocurrido un error al actualizar el insumo.'
+        update_error: 'Ha ocurrido un error al actualizar el insumo.',
+        resources_max: 'Se ha superado el número máximo de recursos (200).',
+        invalid_resource_url:
+          'Las URL de los recursos deben empezar por http:// o https:// y no superar los 2048 caracteres.'
       }
     }
   },

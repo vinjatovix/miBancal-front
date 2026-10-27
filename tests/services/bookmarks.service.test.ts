@@ -76,7 +76,7 @@ describe('addPlantBookmark', () => {
 });
 
 describe('removePlantBookmark', () => {
-  it('hace DELETE a la ruta con plantId', async () => {
+  it('makes DELETE to the route with plantId', async () => {
     const fetchMock = stubFetchOk(undefined, { 'content-length': '0' });
 
     await removePlantBookmark('p-1');

@@ -7,11 +7,28 @@ import NotFoundPage from '../pages/NotFoundPage';
 import RouteErrorFallback from '../pages/RouteErrorFallback';
 import { LayoutErrorFallback } from './LayoutErrorFallback';
 
-export const routes: RouteObject[] = [
+function withLazyFallbacks(routeObjects: RouteObject[]): RouteObject[] {
+  return routeObjects.map((route) => {
+    const fallback = route.lazy ? { HydrateFallback: () => null } : {};
+    if ('children' in route && route.children) {
+      return {
+        ...route,
+        ...fallback,
+        children: withLazyFallbacks(route.children)
+      };
+    }
+    return {
+      ...route,
+      ...fallback
+    };
+  });
+}
+
+export const routes: RouteObject[] = withLazyFallbacks([
   {
     element: <MainLayout />,
     errorElement: <LayoutErrorFallback />,
-    hydrateFallbackElement: null,
+    HydrateFallback: () => null,
     children: [
       {
         errorElement: <RouteErrorFallback />,
@@ -217,6 +234,6 @@ export const routes: RouteObject[] = [
       }
     ]
   }
-];
+]);
 
 export const router = createBrowserRouter(routes);

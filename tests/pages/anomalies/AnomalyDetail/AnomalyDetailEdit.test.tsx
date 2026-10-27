@@ -45,7 +45,7 @@ describe('AnomalyDetail edición inline', () => {
     expect(slug).toBeDisabled();
   });
 
-  it('guarda con If-Match, envía solo lo modificado y vuelve a lectura', async () => {
+  it('saves with If-Match, sends only modified fields and returns to reading view', async () => {
     const updated = buildAnomaly({
       description: 'Descripción nueva',
       prevention: ['Fomentar fauna auxiliar', 'Rotación de cultivos']
@@ -122,7 +122,7 @@ describe('AnomalyDetail edición inline', () => {
     );
   });
 
-  it('vuelve a lectura sin petición si no hay cambios', async () => {
+  it('returns to reading view without request if there are no changes', async () => {
     const user = userEvent.setup();
     await openEditor(user);
 
@@ -176,7 +176,7 @@ describe('AnomalyDetail edición inline', () => {
     );
   });
 
-  it('muestra errores 400 por campo conservando lo escrito', async () => {
+  it('shows 400 errors per field keeping what was written', async () => {
     mockedUpdateAnomaly.mockRejectedValue(
       new ApiError('bad', 400, { description: 'Descripción no válida' })
     );
@@ -260,7 +260,7 @@ describe('AnomalyDetail edición inline', () => {
     );
   });
 
-  it('muestra error con reintento si falla la carga para editar', async () => {
+  it('shows error with retry if loading for edit fails', async () => {
     mockedGetAnomalyForEdit.mockRejectedValueOnce(new ApiError('boom', 500));
     const user = userEvent.setup();
     renderEditorialDetail(COLLABORATOR_TEST_TOKEN);

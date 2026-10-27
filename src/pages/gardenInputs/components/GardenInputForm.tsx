@@ -11,10 +11,14 @@ import {
 } from '../../../types/GardenInput/GardenInput';
 import {
   validateGardenInputForm,
+  type ArticleResourceFormItem,
   type GardenInputFormErrors,
-  type GardenInputFormValues
+  type GardenInputFormValues,
+  type ImageResourceFormItem,
+  type VideoResourceFormItem
 } from '../utils/gardenInputValidation';
 import RecipeFormSection from './RecipeFormSection';
+import ResourcesFormSection from './ResourcesFormSection';
 
 import './gardenInputForm.css';
 
@@ -36,7 +40,10 @@ const defaultValues: GardenInputFormValues = {
   activeIngredientsText: '',
   nutrientsText: '',
   targetsText: '',
-  recipes: []
+  recipes: [],
+  images: [],
+  videoResources: [],
+  articleResources: []
 };
 
 export default function GardenInputForm({
@@ -60,6 +67,93 @@ export default function GardenInputForm({
       ? current.filter((a) => a !== action)
       : [...current, action];
     setValues((prev) => ({ ...prev, actions: updated }));
+  }
+
+  function addImage() {
+    setValues((prev) => ({
+      ...prev,
+      images: [
+        ...prev.images,
+        { id: crypto.randomUUID(), url: '', title: '', source: '' }
+      ]
+    }));
+  }
+
+  function updateImage(
+    id: string,
+    patch: Partial<Omit<ImageResourceFormItem, 'id'>>
+  ) {
+    setValues((prev) => ({
+      ...prev,
+      images: prev.images.map((img) =>
+        img.id === id ? { ...img, ...patch } : img
+      )
+    }));
+  }
+
+  function removeImage(id: string) {
+    setValues((prev) => ({
+      ...prev,
+      images: prev.images.filter((img) => img.id !== id)
+    }));
+  }
+
+  function addVideo() {
+    setValues((prev) => ({
+      ...prev,
+      videoResources: [
+        ...prev.videoResources,
+        { id: crypto.randomUUID(), url: '', title: '' }
+      ]
+    }));
+  }
+
+  function updateVideo(
+    id: string,
+    patch: Partial<Omit<VideoResourceFormItem, 'id'>>
+  ) {
+    setValues((prev) => ({
+      ...prev,
+      videoResources: prev.videoResources.map((v) =>
+        v.id === id ? { ...v, ...patch } : v
+      )
+    }));
+  }
+
+  function removeVideo(id: string) {
+    setValues((prev) => ({
+      ...prev,
+      videoResources: prev.videoResources.filter((v) => v.id !== id)
+    }));
+  }
+
+  function addArticle() {
+    setValues((prev) => ({
+      ...prev,
+      articleResources: [
+        ...prev.articleResources,
+        { id: crypto.randomUUID(), url: '', title: '' }
+      ]
+    }));
+  }
+
+  function updateArticle(
+    id: string,
+    patch: Partial<Omit<ArticleResourceFormItem, 'id'>>
+  ) {
+    setValues((prev) => ({
+      ...prev,
+      articleResources: prev.articleResources.map((a) =>
+        a.id === id ? { ...a, ...patch } : a
+      )
+    }));
+  }
+
+  function removeArticle(id: string) {
+    setValues((prev) => ({
+      ...prev,
+      articleResources: prev.articleResources.filter((a) => a.id !== id)
+    }));
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -274,6 +368,22 @@ export default function GardenInputForm({
           }
         />
       </div>
+
+      <ResourcesFormSection
+        images={values.images}
+        videoResources={values.videoResources}
+        articleResources={values.articleResources}
+        onAddImage={addImage}
+        onUpdateImage={updateImage}
+        onRemoveImage={removeImage}
+        onAddVideo={addVideo}
+        onUpdateVideo={updateVideo}
+        onRemoveVideo={removeVideo}
+        onAddArticle={addArticle}
+        onUpdateArticle={updateArticle}
+        onRemoveArticle={removeArticle}
+        error={errors.resources}
+      />
 
       <RecipeFormSection
         recipes={values.recipes}

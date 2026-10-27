@@ -277,7 +277,7 @@ describe('PlantCard', () => {
       }
     );
 
-    it('muestra el contador junto al badge de borrada en plantas DELETED', () => {
+    it('shows the counter next to the deleted badge on DELETED plants', () => {
       renderComponent(
         buildPlantListItem({ status: 'DELETED', likesCount: 42 })
       );

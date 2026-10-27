@@ -2,29 +2,21 @@ import type {
   AnomalyCategory,
   AnomalyTextListField
 } from '../../../../types/Anomaly/Anomaly';
+import type {
+  ArticleResourceFormItem,
+  ImageResourceFormItem,
+  VideoResourceFormItem
+} from '../../../../shared/types/ResourceFormItem';
+
+export type {
+  ArticleResourceFormItem,
+  ImageResourceFormItem,
+  VideoResourceFormItem
+};
 
 type AnomalyFormTextLists = {
   [Field in AnomalyTextListField]: string;
 };
-
-export interface ImageResourceFormItem {
-  id: string;
-  url: string;
-  title: string;
-  source: string;
-}
-
-export interface VideoResourceFormItem {
-  id: string;
-  url: string;
-  title: string;
-}
-
-export interface ArticleResourceFormItem {
-  id: string;
-  url: string;
-  title: string;
-}
 
 export interface AnomalyFormState extends AnomalyFormTextLists {
   slug: string;

@@ -33,7 +33,7 @@ describe('validateRequest', () => {
     ).toEqual([]);
   });
 
-  it('una ruta no declarada es una violación de path', () => {
+  it('an undeclared route is a path violation', () => {
     expect(locations('get', '/api/v1/plantas')).toEqual(['path']);
   });
 

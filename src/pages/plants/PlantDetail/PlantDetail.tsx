@@ -210,7 +210,7 @@ export default function PlantDetail() {
 
       <PlantDeleteConfirmModal
         isOpen={isDeleteModalOpen}
-        plantName={plant.identity.name.primary}
+        plantName={plant?.identity.name.primary ?? ''}
         onConfirm={handleConfirmDelete}
         onCancel={handleCloseDeleteModal}
         isDeleting={deleteMutation.isPending}

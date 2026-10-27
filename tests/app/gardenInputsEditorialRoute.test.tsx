@@ -44,8 +44,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('ruta /garden-inputs/new', () => {
-  it('redirige a un anónimo a /login', async () => {
+describe('route /garden-inputs/new', () => {
+  it('redirects an anonymous user to /login', async () => {
     renderRoute('/garden-inputs/new');
 
     expect(
@@ -79,7 +79,7 @@ describe('ruta /garden-inputs/new', () => {
   });
 });
 
-describe('rutas públicas de insumos del huerto', () => {
+describe('public garden inputs routes', () => {
   it('resuelve /garden-inputs al listado sin autenticación', async () => {
     renderRoute('/garden-inputs');
 
@@ -91,7 +91,7 @@ describe('rutas públicas de insumos del huerto', () => {
     ).toBeInTheDocument();
   });
 
-  it('muestra no encontrado en /garden-inputs/:slug cuando la API responde 404', async () => {
+  it('shows not found on /garden-inputs/:slug when API returns 404', async () => {
     stubFetchOk({});
     vi.stubGlobal(
       'fetch',

@@ -129,7 +129,7 @@ describe('FavoriteButton: clics rápidos repetidos', () => {
 });
 
 describe('FavoriteButton: fallo del toggle', () => {
-  it('revierte el estado y muestra toast de error sin mensaje inline', async () => {
+  it('reverts state and shows error toast without inline message', async () => {
     mockedRemove.mockRejectedValue(new Error('network down'));
     const user = userEvent.setup();
 

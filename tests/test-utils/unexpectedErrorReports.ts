@@ -16,6 +16,10 @@ export function silenceConsoleError() {
   return vi.spyOn(console, 'error').mockImplementation(() => {});
 }
 
+export function silenceConsoleWarn() {
+  return vi.spyOn(console, 'warn').mockImplementation(() => {});
+}
+
 export function ThrowingChild({ message = 'render failed' }): never {
   throw new Error(message);
 }

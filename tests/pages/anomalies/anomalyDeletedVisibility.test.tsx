@@ -58,7 +58,7 @@ beforeEach(() => {
 });
 
 describe('visibilidad de anomalías eliminadas', () => {
-  it('el listado público solo recibe y pinta las activas', async () => {
+  it('public list only receives and renders active ones', async () => {
     mockedGetAnomalyList.mockResolvedValue(pageOf(active));
 
     renderWithProviders(<AnomalyList />, { initialToken: VALID_TEST_TOKEN });
@@ -69,7 +69,7 @@ describe('visibilidad de anomalías eliminadas', () => {
     expect(screen.queryByText('Borrada')).not.toBeInTheDocument();
   });
 
-  it('el listado editorial pinta las eliminadas con badge de estado', async () => {
+  it('editorial list renders deleted ones with status badge', async () => {
     mockedGetAnomalyList.mockResolvedValue(pageOf(active, deleted));
 
     renderWithProviders(<AnomalyList />, {
@@ -99,7 +99,7 @@ describe('visibilidad de anomalías eliminadas', () => {
     ).toBeInTheDocument();
   });
 
-  it('la ficha de una eliminada se muestra con badge a un editor', async () => {
+  it('detail page of a deleted anomaly shows badge to an editor', async () => {
     mockedGetAnomalyBySlug.mockResolvedValue(buildDeletedAnomaly());
 
     renderWithProviders(

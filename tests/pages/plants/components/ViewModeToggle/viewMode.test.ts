@@ -12,11 +12,11 @@ describe('viewMode storage', () => {
     sessionStorage.clear();
   });
 
-  it('por defecto lee cuadrícula sin valor guardado', () => {
+  it('defaults to grid without saved value', () => {
     expect(readStoredMode()).toBe('grid');
   });
 
-  it('restaura la vista lista cuando está guardada', () => {
+  it('restores list view when it is saved', () => {
     sessionStorage.setItem(STORAGE_KEY, 'list');
 
     expect(readStoredMode()).toBe('list');

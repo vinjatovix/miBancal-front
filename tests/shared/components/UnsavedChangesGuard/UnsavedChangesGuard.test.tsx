@@ -33,7 +33,7 @@ function renderInDataRouter(when: boolean) {
 }
 
 describe('UnsavedChangesGuard', () => {
-  it('no bloquea la navegación cuando no hay cambios', async () => {
+  it('does not block navigation when there are no changes', async () => {
     const user = userEvent.setup();
     renderInDataRouter(false);
 
@@ -42,7 +42,7 @@ describe('UnsavedChangesGuard', () => {
     expect(screen.getByText('OTHER')).toBeInTheDocument();
   });
 
-  it('bloquea la navegación con cambios y permite seguir editando', async () => {
+  it('blocks navigation with changes and allows to continue editing', async () => {
     const user = userEvent.setup();
     const router = renderInDataRouter(true);
 

@@ -10,6 +10,14 @@ import {
   buildDeletedAnomaly
 } from '../../../fixtures/anomalies/buildAnomaly';
 import { renderWithProviders } from '../../../test-utils/renderWithProviders';
+import { reportMissingTranslation } from '../../../../src/shared/observability/reportMissingTranslation';
+
+vi.mock(
+  '../../../../src/shared/observability/reportMissingTranslation',
+  () => ({
+    reportMissingTranslation: vi.fn()
+  })
+);
 
 vi.mock('../../../../src/services/anomalies.service', () => ({
   getAnomalyBySlug: vi.fn()
@@ -28,8 +36,8 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('AnomalyDetail (lectura pública)', () => {
-  it('muestra el estado de carga', () => {
+describe('AnomalyDetail (public reading)', () => {
+  it('shows loading state', () => {
     mockedGetAnomalyBySlug.mockReturnValue(new Promise(() => {}));
 
     renderDetail();
@@ -37,7 +45,7 @@ describe('AnomalyDetail (lectura pública)', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
-  it('pinta cabecera y todos los bloques de diagnóstico disponibles', async () => {
+  it('renders header and all available diagnostic blocks', async () => {
     mockedGetAnomalyBySlug.mockResolvedValue(buildAnomaly());
 
     renderDetail();
@@ -65,7 +73,7 @@ describe('AnomalyDetail (lectura pública)', () => {
     });
   });
 
-  it('omite las listas vacías o ausentes sin error', async () => {
+  it('omits empty or missing lists without error', async () => {
     mockedGetAnomalyBySlug.mockResolvedValue(
       buildAnomaly({
         symptoms: [],
@@ -85,7 +93,7 @@ describe('AnomalyDetail (lectura pública)', () => {
     expect(screen.getByTestId('section-tratamiento')).toBeInTheDocument();
   });
 
-  it('avisa de que no hay datos cuando no hay descripción ni listas', async () => {
+  it('notifies that there is no data when description and lists are empty', async () => {
     mockedGetAnomalyBySlug.mockResolvedValue({
       id: 'id-1',
       slug: 'sin-datos',
@@ -102,7 +110,8 @@ describe('AnomalyDetail (lectura pública)', () => {
     expect(screen.queryByText('Myzus persicae')).not.toBeInTheDocument();
   });
 
-  it('traduce la categoría y el estado con tValue y tolera valores desconocidos', async () => {
+  it('translates category and status with tValue and tolerates unknown values', async () => {
+    vi.mocked(reportMissingTranslation).mockClear();
     mockedGetAnomalyBySlug.mockResolvedValue(
       buildAnomaly({
         category: 'virus' as never,
@@ -113,9 +122,10 @@ describe('AnomalyDetail (lectura pública)', () => {
     renderDetail();
 
     expect(await screen.findByText('virus')).toBeInTheDocument();
+    expect(reportMissingTranslation).toHaveBeenCalled();
   });
 
-  it('pinta el texto libre tal cual, sin interpretarlo como HTML', async () => {
+  it('renders free text as-is, without interpreting it as HTML', async () => {
     mockedGetAnomalyBySlug.mockResolvedValue(
       buildAnomaly({ symptoms: ['<b>negrita</b>'] })
     );
@@ -125,7 +135,7 @@ describe('AnomalyDetail (lectura pública)', () => {
     expect(await screen.findByText('<b>negrita</b>')).toBeInTheDocument();
   });
 
-  it('muestra badge y fecha para una anomalía eliminada', async () => {
+  it('shows badge and date for a deleted anomaly', async () => {
     mockedGetAnomalyBySlug.mockResolvedValue(buildDeletedAnomaly());
 
     renderDetail();
@@ -134,7 +144,7 @@ describe('AnomalyDetail (lectura pública)', () => {
     expect(screen.getByText(/Eliminada el/)).toBeInTheDocument();
   });
 
-  it('muestra "no encontrada" ante un 404 sin lanzar en render', async () => {
+  it('shows "not found" on 404 without throwing in render', async () => {
     mockedGetAnomalyBySlug.mockRejectedValue(new ApiError('no', 404));
 
     renderDetail('inexistente');
@@ -147,7 +157,7 @@ describe('AnomalyDetail (lectura pública)', () => {
     ).toHaveAttribute('href', '/anomalies');
   });
 
-  it('muestra error con reintento ante un fallo del servidor', async () => {
+  it('shows error with retry on server failure', async () => {
     mockedGetAnomalyBySlug.mockRejectedValueOnce(new ApiError('boom', 500));
     mockedGetAnomalyBySlug.mockResolvedValue(buildAnomaly());
     const user = userEvent.setup();
@@ -163,7 +173,7 @@ describe('AnomalyDetail (lectura pública)', () => {
     ).toBeInTheDocument();
   });
 
-  it('no muestra controles editoriales a un anónimo', async () => {
+  it('hides editorial controls for an anonymous user', async () => {
     mockedGetAnomalyBySlug.mockResolvedValue(buildAnomaly());
 
     renderDetail();

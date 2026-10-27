@@ -458,6 +458,14 @@ describe('Register Page - SSO Error Handling & Placement', () => {
     sessionStorage.clear();
     clearStoredToken();
     vi.restoreAllMocks();
+    Object.defineProperty(window, 'location', {
+      value: {
+        origin: 'http://localhost:3000',
+        pathname: '/register',
+        href: ''
+      },
+      writable: true
+    });
   });
 
   it('renders error toast instead of inline alert when arriving with ssoError', async () => {
