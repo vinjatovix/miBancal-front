@@ -21,6 +21,9 @@ const isAnomaliesMatch = (pathname: string): boolean =>
 const isGardenInputsMatch = (pathname: string): boolean =>
   pathname === '/garden-inputs' || pathname.startsWith('/garden-inputs/');
 
+const isPlantRelationsMatch = (pathname: string): boolean =>
+  pathname === '/plant-relations' || pathname.startsWith('/plant-relations/');
+
 export const NAVIGATION_ITEMS: readonly NavigationItem[] = [
   {
     id: 'plants',
@@ -49,5 +52,12 @@ export const NAVIGATION_ITEMS: readonly NavigationItem[] = [
     path: '/garden-inputs',
     icon: 'local_pharmacy',
     isMatch: isGardenInputsMatch
+  },
+  {
+    id: 'plantRelations',
+    labelKey: 'app.nav.plantRelations',
+    path: '/plant-relations',
+    icon: 'plant_relations',
+    isMatch: isPlantRelationsMatch
   }
 ] as const;

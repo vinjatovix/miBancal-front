@@ -120,14 +120,17 @@ function splitKey(key: string): { name: string; segments: string[] } | null {
   return { name: match[1], segments };
 }
 
-function parseQuery(search: URLSearchParams): {
+function parseQuery(
+  search: URLSearchParams,
+  declared: Map<string, ResolvedParameter>
+): {
   trees: Map<string, QueryTree>;
   flat: Map<string, QueryValue>;
 } {
   const trees = new Map<string, QueryTree>();
   const flat = new Map<string, QueryValue>();
   for (const [key, value] of search) {
-    const deep = splitKey(key);
+    const deep = declared.has(key) ? null : splitKey(key);
     if (deep) {
       const tree = trees.get(deep.name) ?? {};
       setDeep(tree, deep.segments, value);
@@ -247,7 +250,7 @@ export function validateRequest(
     ];
   }
   const declared = queryParameters(path, method);
-  const { trees, flat } = parseQuery(parsed.searchParams);
+  const { trees, flat } = parseQuery(parsed.searchParams, declared);
   return [
     ...validateDeepObjects(trees, declared),
     ...validateFlat(flat, declared)

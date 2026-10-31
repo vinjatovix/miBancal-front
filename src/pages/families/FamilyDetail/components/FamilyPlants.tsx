@@ -69,7 +69,7 @@ function FamilyPlantsContent({ family, plants, total }: ContentProps) {
         {plants.map((plant) => (
           <Link
             key={plant.id}
-            to={`/plants/${plant.id}`}
+            to={`/plants/${plant.slug ?? plant.id}`}
             className="family-plants__grid-item"
             data-testid="family-plants-link"
           >

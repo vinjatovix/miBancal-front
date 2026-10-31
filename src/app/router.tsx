@@ -58,10 +58,18 @@ export const routes: RouteObject[] = withLazyFallbacks([
             }
           },
           {
-            path: '/plants/:id',
+            path: '/plants/:slug',
             lazy: async () => ({
               Component: (
                 await import('../pages/plants/PlantDetail/PlantDetail')
+              ).default
+            })
+          },
+          {
+            path: '/plant-relations',
+            lazy: async () => ({
+              Component: (
+                await import('../pages/plantRelations/PlantRelationsPage')
               ).default
             })
           },

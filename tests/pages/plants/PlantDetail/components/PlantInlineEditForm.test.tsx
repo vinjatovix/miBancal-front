@@ -333,7 +333,7 @@ describe('PlantInlineEditForm', () => {
     renderWithProviders(
       <Routes>
         <Route
-          path="/plants/:id"
+          path="/plants/:slug"
           element={
             <PlantInlineEditForm
               plant={plant}

@@ -73,12 +73,18 @@ function parseFamily(value: string | null): string | undefined {
   return trimmed && isUuid(trimmed) ? trimmed : undefined;
 }
 
+function parseGenus(value: string | null): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed || undefined;
+}
+
 function parseTextFilters(read: Read): PlantFilterParams {
   return {
     identity: parseFilterText(
       read(PLANT_LIST_URL_PARAMS.identity),
       FILTER_TEXT_MAX_LENGTH
     ),
+    genus: parseGenus(read(PLANT_LIST_URL_PARAMS.genus)),
     family: parseFamily(read(PLANT_LIST_URL_PARAMS.family)),
     lifeCycle: pickOne(read(PLANT_LIST_URL_PARAMS.lifeCycle), LIFE_CYCLES),
     sowingMethod: pickOne(

@@ -120,6 +120,15 @@ export function buildActiveFilters(
 
   return [
     ...textChip(filters.identity),
+    ...(filters.genus
+      ? [
+          {
+            id: 'genus',
+            param: PLANT_LIST_URL_PARAMS.genus,
+            label: `${t('plant.filters.genus')}: ${filters.genus}`
+          }
+        ]
+      : []),
     ...familyChip(filters.family, familyName),
     ...selectChip(
       'lifeCycle',

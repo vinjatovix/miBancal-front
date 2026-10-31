@@ -9,8 +9,11 @@
   position: fixed;
   top: 0;
   height: 100vh;
+  height: 100dvh;
+  box-sizing: border-box;
 
   width: var(--drawer-width);
+  max-width: 100vw;
 
   background: var(--color-surface-container-lowest);
   box-shadow: var(--elevation-2);
@@ -18,6 +21,9 @@
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   padding: var(--space-md);
+  padding-bottom: calc(
+    var(--space-xl) + 3rem + env(safe-area-inset-bottom, 0px)
+  );
 
   transition: transform 0.25s ease;
   z-index: 1210;

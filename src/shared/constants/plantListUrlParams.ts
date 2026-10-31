@@ -4,6 +4,7 @@ export const PLANT_LIST_URL_PARAMS = {
   sortField: 'sortField',
   sortDirection: 'sortDirection',
   identity: 'identity',
+  genus: 'genus',
   family: 'family',
   lifeCycle: 'lifeCycle',
   sowingMethod: 'sowingMethod',

@@ -1,0 +1,229 @@
+.plant-companion-group-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-outline-variant);
+  background-color: var(--color-surface-container-low);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.plant-companion-group-card:hover {
+  border-color: var(--color-outline);
+}
+
+.plant-companion-group-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-outline-variant);
+  width: 100%;
+  min-width: 0;
+}
+
+.plant-companion-group-card__companion-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  color: var(--color-on-surface);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.plant-companion-group-card__companion-link:hover
+  .plant-companion-group-card__name {
+  text-decoration: underline;
+}
+
+.plant-companion-group-card__avatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 1px solid var(--color-outline-variant);
+}
+
+.plant-companion-group-card__avatar-fallback {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+}
+
+.plant-companion-group-card__identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.plant-companion-group-card__name {
+  font: var(--type-title-md);
+  color: var(--color-on-surface);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plant-companion-group-card__unavailable {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.plant-companion-group-card__unavailable-text {
+  font: var(--type-title-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.plant-companion-group-card__interactions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  width: 100%;
+  min-width: 0;
+}
+
+.plant-companion-group-card__interaction {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-xs) 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.plant-companion-group-card__interaction:not(:last-child) {
+  padding-bottom: var(--space-md);
+  border-bottom: 1px dashed var(--color-outline-variant);
+}
+
+.plant-companion-group-card__interaction--detrimental {
+  border-left: 3px solid var(--color-error);
+  padding-left: var(--space-sm);
+}
+
+.plant-companion-group-card__interaction--beneficial {
+  border-left: 3px solid var(--color-primary);
+  padding-left: var(--space-sm);
+}
+
+.plant-companion-group-card__interaction-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+}
+
+.plant-companion-group-card__curator-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+}
+
+.plant-companion-group-card__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xs);
+  background: transparent;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.plant-companion-group-card__action-btn:hover {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.plant-companion-group-card__action-btn--delete:hover {
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+}
+
+.plant-companion-group-card__chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  font: var(--type-body-sm);
+  color: var(--color-on-surface-variant);
+  width: 100%;
+  min-width: 0;
+}
+
+.plant-companion-group-card__strength {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 0 var(--space-xs);
+}
+
+.plant-companion-group-card__strength-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-container-highest);
+}
+
+.plant-companion-group-card__strength-dot--active {
+  background-color: var(--color-primary);
+}
+
+.plant-companion-group-card__interaction--detrimental
+  .plant-companion-group-card__strength-dot--active {
+  background-color: var(--color-error);
+}
+
+.plant-companion-group-card__proximity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font: var(--type-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.plant-companion-group-card__reason {
+  margin: 0;
+  font: var(--type-body-md);
+  color: var(--color-on-surface-variant);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+@media (max-width: 600px) {
+  .plant-companion-group-card {
+    padding: var(--space-sm);
+  }
+
+  .plant-companion-group-card__interaction-header {
+    justify-content: space-between;
+  }
+}

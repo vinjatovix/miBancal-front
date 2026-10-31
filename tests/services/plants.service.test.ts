@@ -5,6 +5,7 @@ import {
   getPlantById,
   getPlantForEdit,
   getPlantList,
+  searchPlants,
   updatePlant
 } from '../../src/services/plants.service';
 import { ApiError } from '../../src/shared/errors/ApiError';
@@ -41,7 +42,8 @@ afterEach(() => {
 
 const FAMILY_ID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
 
-const LIST_FIELDS = 'fields[plants]=identity,traits,image,status,likesCount';
+const LIST_FIELDS =
+  'fields[plants]=slug,identity,traits,image,status,likesCount';
 
 const DEFAULT_LIST_REQUEST: PlantListRequest = {
   filters: {},
@@ -159,6 +161,7 @@ describe('getPlantList: query completa', () => {
 
 const VALID_FILTER_VALUES: Required<PlantFilterParams> = {
   identity: 'tomate',
+  genus: 'Ocimum',
   family: '3f2504e0-4f89-41d3-9a0c-0305e82c3301',
   lifeCycle: 'annual',
   sowingMethod: 'direct',
@@ -318,7 +321,7 @@ describe('getFamilyPlants', () => {
 
     const { url, init } = lastRequest(fetchMock);
     expect(url).toBe(
-      `${API_URL}/api/v1/plants?filter[family][eq]=${FAMILY_ID}&sort[name]=asc&fields[plants]=identity,status`
+      `${API_URL}/api/v1/plants?filter[family][eq]=${FAMILY_ID}&sort[name]=asc&fields[plants]=slug,identity,status`
     );
     expect(init).toEqual({ headers: JSON_HEADERS });
     expect(validateRequest('get', url)).toEqual([]);
@@ -546,5 +549,39 @@ describe('createPlant', () => {
       'Content-Type': 'application/json'
     });
     expect(result).toEqual({ plant: created, etag: '"1"' });
+  });
+});
+
+describe('searchPlants', () => {
+  it('requests GET /api/v1/plants with identity contains, sparse fields and default limit 5', async () => {
+    const fetchMock = stubFetchOk(listPlantsResponse);
+
+    const result = await searchPlants('tomate');
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(
+      `${API_URL}/api/v1/plants?filter[identity][contains]=tomate&fields[plants]=identity,image&pagination[limit]=5`
+    );
+    expect(init?.method ?? 'GET').toBe('GET');
+    expect(validateRequest('get', url)).toEqual([]);
+    expect(result).toEqual(listPlantsResponse);
+  });
+
+  it('clamps custom limit to maximum 5', async () => {
+    const fetchMock = stubFetchOk(listPlantsResponse);
+
+    await searchPlants('albahaca', 10);
+
+    const { url } = lastRequest(fetchMock);
+    expect(url).toContain('pagination[limit]=5');
+  });
+
+  it('trims leading and trailing whitespace from query', async () => {
+    const fetchMock = stubFetchOk(listPlantsResponse);
+
+    await searchPlants('   menta   ');
+
+    const { url } = lastRequest(fetchMock);
+    expect(url).toContain('filter[identity][contains]=menta');
   });
 });

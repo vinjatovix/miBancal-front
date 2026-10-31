@@ -16,7 +16,8 @@ vi.mock('../../src/services/families.service', () => ({
 const UUID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
 const LONG_TEXT = 'a'.repeat(201);
 const DEFAULT_TAIL = 'pagination[page]=1&pagination[limit]=25&sort[name]=asc';
-const LIST_FIELDS = 'fields[plants]=identity,traits,image,status,likesCount';
+const LIST_FIELDS =
+  'fields[plants]=slug,identity,traits,image,status,likesCount';
 const firstPlantName = listPlantsResponse.data[0].identity.name.primary;
 
 async function requestFor(pageUrl: string): Promise<string> {
@@ -178,7 +179,7 @@ describe('las URL inválidas producen peticiones corregidas y conformes', () => 
 
 describe('petición de las plantas de la ficha de familia', () => {
   it('cumple el contrato', () => {
-    const url = `${API_URL}/api/v1/plants?filter[family][eq]=${UUID}&sort[name]=asc&fields[plants]=identity,status`;
+    const url = `${API_URL}/api/v1/plants?filter[family][eq]=${UUID}&sort[name]=asc&fields[plants]=slug,identity,status`;
 
     expect(validateRequest('get', url)).toEqual([]);
   });

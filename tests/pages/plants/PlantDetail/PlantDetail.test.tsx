@@ -46,6 +46,14 @@ vi.mock('../../../../src/services/plantLikes.service', () => ({
   likePlant: vi.fn(),
   unlikePlant: vi.fn()
 }));
+vi.mock('../../../../src/services/plantRelations.service', () => ({
+  getPlantRelations: vi.fn(() =>
+    Promise.resolve({
+      data: [],
+      pagination: { page: 1, limit: 100, totalPages: 1, totalItems: 0 }
+    })
+  )
+}));
 
 const mockedDeletePlant = vi.mocked(deletePlant);
 const mockedGetPlantById = vi.mocked(getPlantById);
@@ -57,8 +65,8 @@ const mockPlantWithVideos = listPlantsResponse.data[1];
 
 function renderPlantDetail() {
   return renderWithProviders(<PlantDetail />, {
-    route: `/plants/${mockPlant.id}`,
-    path: '/plants/:id'
+    route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
+    path: '/plants/:slug'
   });
 }
 
@@ -111,10 +119,27 @@ describe('PlantDetail', () => {
     expect(screen.getByTestId('section-datos rápidos')).toBeInTheDocument();
     expect(screen.getByTestId('section-cultivo')).toBeInTheDocument();
     expect(screen.getByTestId('section-ecología')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('section-relaciones ecológicas')
+    ).toBeInTheDocument();
     expect(screen.getByTestId('section-notas')).toBeInTheDocument();
     expect(
       screen.queryByText('No se ha podido mostrar esta sección.')
     ).not.toBeInTheDocument();
+  });
+
+  it('renders PlantRelationsSection within the plant detail view', async () => {
+    mockedGetPlantById.mockResolvedValue(mockPlant);
+
+    renderPlantDetail();
+
+    await screen.findByRole('heading', {
+      name: new RegExp(mockPlant.identity.name.primary, 'i')
+    });
+
+    expect(
+      await screen.findByRole('heading', { name: /Relaciones ecológicas/ })
+    ).toBeInTheDocument();
   });
 
   it('should change hemisphere', async () => {
@@ -321,10 +346,10 @@ describe('PlantDetail', () => {
 
     renderWithProviders(
       <Routes>
-        <Route path="/plants/:id" element={<PlantDetail />} />
+        <Route path="/plants/:slug" element={<PlantDetail />} />
         <Route path="/families/:slug" element={<div>FAMILY PAGE</div>} />
       </Routes>,
-      { route: `/plants/${plant.id}` }
+      { route: `/plants/${plant.slug ?? plant.id}` }
     );
 
     const familyLink = await screen.findByRole('link', {
@@ -346,10 +371,10 @@ describe('PlantDetail', () => {
 
     renderWithProviders(
       <Routes>
-        <Route path="/plants/:id" element={<PlantDetail />} />
+        <Route path="/plants/:slug" element={<PlantDetail />} />
         <Route path="/families/:slug" element={<div>FAMILY PAGE</div>} />
       </Routes>,
-      { route: `/plants/${plant.id}` }
+      { route: `/plants/${plant.slug ?? plant.id}` }
     );
 
     await screen.findByRole('link', { name: 'Solanáceas' });
@@ -365,8 +390,8 @@ describe('PlantDetail', () => {
     mockedGetPlantById.mockResolvedValue(plant);
 
     renderWithProviders(<PlantDetail />, {
-      route: `/plants/${plant.id}`,
-      path: '/plants/:id'
+      route: `/plants/${plant.slug ?? plant.id}`,
+      path: '/plants/:slug'
     });
 
     expect(
@@ -380,8 +405,8 @@ describe('PlantDetail', () => {
     mockedGetPlantById.mockResolvedValue(plant);
 
     renderWithProviders(<PlantDetail />, {
-      route: `/plants/${plant.id}`,
-      path: '/plants/:id'
+      route: `/plants/${plant.slug ?? plant.id}`,
+      path: '/plants/:slug'
     });
 
     await screen.findByRole('heading', {
@@ -399,8 +424,8 @@ describe('PlantDetail', () => {
     mockedGetPlantById.mockResolvedValue(plant);
 
     renderWithProviders(<PlantDetail />, {
-      route: `/plants/${plant.id}`,
-      path: '/plants/:id'
+      route: `/plants/${plant.slug ?? plant.id}`,
+      path: '/plants/:slug'
     });
 
     await screen.findByRole('heading', {
@@ -418,8 +443,8 @@ describe('PlantDetail', () => {
     mockedGetPlantById.mockResolvedValue(plant);
 
     renderWithProviders(<PlantDetail />, {
-      route: `/plants/${plant.id}`,
-      path: '/plants/:id'
+      route: `/plants/${plant.slug ?? plant.id}`,
+      path: '/plants/:slug'
     });
 
     expect(
@@ -480,8 +505,8 @@ describe('PlantDetail', () => {
       mockedGetPlantById.mockResolvedValue(mockPlant);
 
       renderWithProviders(<PlantDetail />, {
-        route: `/plants/${mockPlant.id}`,
-        path: '/plants/:id'
+        route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
+        path: '/plants/:slug'
       });
 
       await screen.findByRole('heading', {
@@ -496,8 +521,8 @@ describe('PlantDetail', () => {
       mockedGetPlantById.mockResolvedValue(mockPlant);
 
       renderWithProviders(<PlantDetail />, {
-        route: `/plants/${mockPlant.id}`,
-        path: '/plants/:id',
+        route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
+        path: '/plants/:slug',
         initialToken: VALID_TEST_TOKEN
       });
 
@@ -516,8 +541,8 @@ describe('PlantDetail', () => {
       mockedGetPlantById.mockResolvedValue(mockPlant);
 
       renderWithProviders(<PlantDetail />, {
-        route: `/plants/${mockPlant.id}`,
-        path: '/plants/:id',
+        route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
+        path: '/plants/:slug',
         initialToken: token
       });
 
@@ -534,8 +559,8 @@ describe('PlantDetail', () => {
       });
 
       renderWithProviders(<PlantDetail />, {
-        route: `/plants/${mockPlant.id}`,
-        path: '/plants/:id',
+        route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
+        path: '/plants/:slug',
         initialToken: ADMIN_TEST_TOKEN
       });
       const editBtn = await screen.findByRole('button', { name: 'Editar' });
@@ -556,8 +581,8 @@ describe('PlantDetail', () => {
       });
 
       renderWithProviders(<PlantDetail />, {
-        route: `/plants/${mockPlant.id}`,
-        path: '/plants/:id',
+        route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
+        path: '/plants/:slug',
         initialToken: ADMIN_TEST_TOKEN
       });
       const editBtn = await screen.findByRole('button', { name: 'Editar' });
@@ -587,8 +612,8 @@ describe('PlantDetail', () => {
       });
 
       renderWithProviders(<PlantDetail />, {
-        route: `/plants/${mockPlant.id}`,
-        path: '/plants/:id',
+        route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
+        path: '/plants/:slug',
         initialToken: ADMIN_TEST_TOKEN
       });
 
@@ -616,11 +641,11 @@ describe('PlantDetail', () => {
 
       renderWithProviders(
         <Routes>
-          <Route path="/plants/:id" element={<PlantDetail />} />
+          <Route path="/plants/:slug" element={<PlantDetail />} />
           <Route path="/plants" element={<div>PLANTS CATALOG</div>} />
         </Routes>,
         {
-          route: `/plants/${mockPlant.id}`,
+          route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
           initialToken: ADMIN_TEST_TOKEN
         }
       );
@@ -659,11 +684,11 @@ describe('PlantDetail', () => {
         <>
           <Link to={`/plants/${secondPlant.id}`}>Go to second plant</Link>
           <Routes>
-            <Route path="/plants/:id" element={<PlantDetail />} />
+            <Route path="/plants/:slug" element={<PlantDetail />} />
           </Routes>
         </>,
         {
-          route: `/plants/${mockPlant.id}`,
+          route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
           initialToken: ADMIN_TEST_TOKEN
         }
       );
@@ -702,11 +727,11 @@ describe('PlantDetail', () => {
         <>
           <Link to={`/plants/${secondPlant.id}`}>Go to second plant</Link>
           <Routes>
-            <Route path="/plants/:id" element={<PlantDetail />} />
+            <Route path="/plants/:slug" element={<PlantDetail />} />
           </Routes>
         </>,
         {
-          route: `/plants/${mockPlant.id}`,
+          route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
           initialToken: ADMIN_TEST_TOKEN
         }
       );
@@ -732,10 +757,10 @@ describe('PlantDetail', () => {
 
       renderWithProviders(
         <Routes>
-          <Route path="/plants/:id" element={<PlantDetail />} />
+          <Route path="/plants/:slug" element={<PlantDetail />} />
         </Routes>,
         {
-          route: `/plants/${mockPlant.id}`,
+          route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
           initialToken: ADMIN_TEST_TOKEN
         }
       );
@@ -771,10 +796,10 @@ describe('PlantDetail', () => {
 
       renderWithProviders(
         <Routes>
-          <Route path="/plants/:id" element={<PlantDetail />} />
+          <Route path="/plants/:slug" element={<PlantDetail />} />
         </Routes>,
         {
-          route: `/plants/${mockPlant.id}`,
+          route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
           initialToken: ADMIN_TEST_TOKEN
         }
       );
@@ -823,8 +848,8 @@ describe('PlantDetail: botón de favorito en el hero', () => {
     vi.mocked(getBookmarkedPlantIds).mockResolvedValue(new Set([mockPlant.id]));
 
     renderWithProviders(<PlantDetail />, {
-      route: `/plants/${mockPlant.id}`,
-      path: '/plants/:id',
+      route: `/plants/${mockPlant.slug ?? mockPlant.id}`,
+      path: '/plants/:slug',
       initialToken: VALID_TEST_TOKEN
     });
 

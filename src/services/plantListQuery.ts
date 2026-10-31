@@ -8,6 +8,7 @@ export type BooleanFilterValue = (typeof BOOLEAN_FILTER_VALUES)[number];
 
 export type PlantFilterParams = {
   identity?: string;
+  genus?: string;
   family?: string;
   lifeCycle?: 'annual' | 'biennial' | 'perennial';
   spacingCm?: string;
@@ -58,6 +59,7 @@ export const DEFAULT_PLANT_SORT: PlantSort = {
 export const PLANT_FILTER_QUERY_KEYS: Record<keyof PlantFilterParams, string> =
   {
     identity: 'filter[identity][contains]',
+    genus: 'filter[genus][eq]',
     family: 'filter[family][eq]',
     lifeCycle: 'filter[lifeCycle][eq]',
     edible: 'filter[edible][eq]',
@@ -77,6 +79,7 @@ export const PLANT_FIELDS_QUERY_KEY = 'fields[plants]';
 
 export const PLANT_FIELDS = [
   'id',
+  'slug',
   'identity',
   'traits',
   'phenology',
@@ -92,6 +95,7 @@ export const PLANT_FIELDS = [
 export type PlantField = (typeof PLANT_FIELDS)[number];
 
 export const PLANT_LIST_FIELDS: readonly PlantField[] = [
+  'slug',
   'identity',
   'traits',
   'image',
@@ -100,6 +104,7 @@ export const PLANT_LIST_FIELDS: readonly PlantField[] = [
 ];
 
 export const FAMILY_PLANTS_FIELDS: readonly PlantField[] = [
+  'slug',
   'identity',
   'status'
 ];

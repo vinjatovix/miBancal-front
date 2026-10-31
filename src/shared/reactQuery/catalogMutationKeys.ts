@@ -3,6 +3,7 @@ import { anomalyKeys } from './anomalyKeys';
 import { familyKeys } from './familyKeys';
 import { gardenInputKeys } from './gardenInputKeys';
 import { plantKeys } from './plantKeys';
+import { plantRelationKeys } from './plantRelationKeys';
 
 export const catalogEditKeys = {
   plantEdit: (id: string) => [...plantKeys.all, 'edit', id] as const,
@@ -82,6 +83,20 @@ export async function invalidateGardenInputQueries(
     idOrSlug
       ? queryClient.invalidateQueries({
           queryKey: catalogEditKeys.gardenInputEdit(idOrSlug)
+        })
+      : Promise.resolve()
+  ]);
+}
+
+export async function invalidatePlantRelationQueries(
+  queryClient: QueryClient,
+  plantId?: string
+): Promise<void> {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: plantRelationKeys.all }),
+    plantId
+      ? queryClient.invalidateQueries({
+          queryKey: plantRelationKeys.byPlant(plantId)
         })
       : Promise.resolve()
   ]);

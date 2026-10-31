@@ -15,6 +15,7 @@ export type PlantImage = {
 
 export interface Plant {
   id: string;
+  slug?: string;
   version?: number;
   likesCount: number;
 
@@ -24,6 +25,7 @@ export interface Plant {
       aliases: string[];
     };
     scientificName?: string;
+    genus?: string;
     family: PlantFamilyRef;
   };
 
@@ -129,7 +131,7 @@ export interface Plant {
   deletedAt: Date | null;
 }
 
-export type FamilyPlantItem = Pick<Plant, 'id' | 'identity'> & {
+export type FamilyPlantItem = Pick<Plant, 'id' | 'identity' | 'slug'> & {
   status?: PlantStatus;
 };
 

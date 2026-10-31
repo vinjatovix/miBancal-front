@@ -35,7 +35,10 @@ export default function PlantCard({ plant }: PlantCardProps) {
         isFavorite={bookmarks.data?.has(plant.id) ?? false}
         isReady={bookmarks.data !== undefined}
       />
-      <Link to={`/plants/${plant.id}`} className="plant-card__link">
+      <Link
+        to={`/plants/${plant.slug ?? plant.id}`}
+        className="plant-card__link"
+      >
         <div className="plant-card__heading">
           <h3>{capitalizeFirstLetter(plant.identity.name.primary)}</h3>
           <PlantSafetyIndicators safety={readPlantSafety(plant)} />
