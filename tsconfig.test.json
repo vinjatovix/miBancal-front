@@ -2,7 +2,12 @@
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo",
-    "types": ["vite/client", "vitest/globals"]
+    "types": [
+      "vite/client",
+      "vitest/globals",
+      "vite-plugin-pwa/client",
+      "vite-plugin-pwa/react"
+    ]
   },
   "include": ["tests", "src/types"]
 }

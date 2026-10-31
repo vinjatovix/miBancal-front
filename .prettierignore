@@ -3,6 +3,7 @@
 !.specify/memory/
 
 dist
+dev-dist
 coverage
 node_modules/
 dist/

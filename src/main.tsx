@@ -8,6 +8,7 @@ import { queryClient } from './app/queryClient';
 import { AppErrorBoundary } from './app/AppErrorBoundary';
 import { AuthProvider } from './shared/auth/AuthContext';
 import { ToastProvider } from './shared/toast/ToastContext';
+import UpdatePrompt from './components/UpdatePrompt/UpdatePrompt';
 
 import './index.css';
 
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <ToastProvider>
             <RouterProvider router={router} />
+            <UpdatePrompt />
           </ToastProvider>
         </AuthProvider>
       </QueryClientProvider>

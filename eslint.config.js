@@ -7,7 +7,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import localRules from './.eslint/plugins/local-rules.js';
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage']),
+  globalIgnores(['dist', 'coverage', 'dev-dist']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

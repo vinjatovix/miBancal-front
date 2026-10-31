@@ -4,13 +4,15 @@ import type { familyMessages } from '../messages/family';
 import type { gardenInputMessages } from '../messages/gardenInput';
 import type { plantMessages } from '../messages/plant';
 import type { plantRelationsMessages } from '../messages/plantRelations';
+import type { pwaMessages } from '../messages/pwa';
 
 export type Dictionary = typeof coreMessages &
   typeof familyMessages &
   typeof anomalyMessages &
   typeof gardenInputMessages &
   typeof plantMessages &
-  typeof plantRelationsMessages;
+  typeof plantRelationsMessages &
+  typeof pwaMessages;
 
 type Join<K, P> = K extends string
   ? P extends string
