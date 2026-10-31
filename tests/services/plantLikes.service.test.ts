@@ -42,7 +42,7 @@ describe('likePlant', () => {
 });
 
 describe('unlikePlant', () => {
-  it('hace DELETE a la ruta con plantId', async () => {
+  it('makes DELETE to the route with plantId', async () => {
     const fetchMock = stubFetchOk(undefined, { 'content-length': '0' });
 
     await unlikePlant('p-1');
@@ -60,7 +60,7 @@ describe('unlikePlant', () => {
 });
 
 describe('checkPlantLike', () => {
-  it('hace GET a la ruta con plantId', async () => {
+  it('makes GET to the route with plantId', async () => {
     const fetchMock = stubFetchOk(buildCheckPlantLikeResponse({ liked: true }));
 
     const result = await checkPlantLike('p-1');

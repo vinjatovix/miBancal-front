@@ -110,7 +110,7 @@ describe('FamilySelect', () => {
     expect(handleChange).toHaveBeenCalledWith(family.id);
   });
 
-  it('muestra el recuento de familias registradas', async () => {
+  it('shows the count of registered families', async () => {
     renderFamilySelect();
 
     expect(

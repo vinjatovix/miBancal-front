@@ -1,14 +1,10 @@
-export interface VideoResourceItem {
-  id: string;
-  url: string;
-  title: string;
-}
+import type {
+  ArticleResourceFormItem,
+  VideoResourceFormItem
+} from '../../../../shared/types/ResourceFormItem';
 
-export interface ArticleResourceItem {
-  id: string;
-  url: string;
-  title: string;
-}
+export type VideoResourceItem = VideoResourceFormItem;
+export type ArticleResourceItem = ArticleResourceFormItem;
 
 export interface PlantFormState {
   primaryName: string;

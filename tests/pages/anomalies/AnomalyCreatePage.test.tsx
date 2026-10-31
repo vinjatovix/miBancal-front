@@ -39,7 +39,7 @@ beforeEach(() => {
 });
 
 describe('AnomalyCreatePage', () => {
-  it('muestra cabecera y todos los campos del contrato', () => {
+  it('shows header and all contract fields', () => {
     renderCreatePage();
 
     expect(
@@ -64,7 +64,7 @@ describe('AnomalyCreatePage', () => {
     expect(screen.getByLabelText(/^Slug para URL/)).toBeEnabled();
   });
 
-  it('bloquea el envío con obligatorios vacíos y señala los campos', async () => {
+  it('blocks submission with empty mandatory fields and marks them', async () => {
     const user = userEvent.setup();
     renderCreatePage();
 
@@ -88,7 +88,7 @@ describe('AnomalyCreatePage', () => {
     ).toBeInTheDocument();
   });
 
-  it('bloquea el envío con un slug inválido', async () => {
+  it('blocks submission with an invalid slug', async () => {
     const user = userEvent.setup();
     renderCreatePage();
 
@@ -103,7 +103,7 @@ describe('AnomalyCreatePage', () => {
     ).toBeInTheDocument();
   });
 
-  it('crea la anomalía y redirige a su ficha por slug', async () => {
+  it('creates the anomaly and redirects to its detail page by slug', async () => {
     mockedCreateAnomaly.mockResolvedValue({
       anomaly: buildAnomaly(),
       etag: '"v1"'
@@ -254,7 +254,7 @@ describe('AnomalyCreatePage', () => {
     );
   });
 
-  it('borra el borrador al guardar con éxito', async () => {
+  it('clears the draft on successful save', async () => {
     mockedCreateAnomaly
       .mockRejectedValueOnce(new ApiError('expired', 401))
       .mockResolvedValueOnce({ anomaly: buildAnomaly(), etag: '"v1"' });

@@ -3,7 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import GardenInputDetailPage from '../../../src/pages/gardenInputs/GardenInputDetail/GardenInputDetailPage';
-import { getGardenInput } from '../../../src/services/gardenInputs.service';
+import {
+  getGardenInput,
+  getGardenInputWithMeta
+} from '../../../src/services/gardenInputs.service';
 import { ApiError } from '../../../src/shared/errors/ApiError';
 import { ADMIN_TEST_TOKEN } from '../../fixtures/auth/authFixtures';
 import {
@@ -18,10 +21,15 @@ vi.mock('../../../src/services/gardenInputs.service', () => ({
 }));
 
 const mockedGetGardenInput = vi.mocked(getGardenInput);
+const mockedGetGardenInputWithMeta = vi.mocked(getGardenInputWithMeta);
 
 describe('GardenInputDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedGetGardenInputWithMeta.mockResolvedValue({
+      gardenInput: buildGardenInput(),
+      etag: 'W/"test-etag"'
+    });
   });
 
   it('renders garden input hero information with name and category', async () => {
@@ -130,5 +138,72 @@ describe('GardenInputDetailPage', () => {
     expect(
       screen.getByRole('heading', { name: '¿Eliminar insumo?' })
     ).toBeInTheDocument();
+  });
+
+  it('renders ErrorResponse and allows retry when api returns an error', async () => {
+    const user = userEvent.setup();
+    mockedGetGardenInput.mockRejectedValue(
+      new ApiError('Error de servidor', 500)
+    );
+
+    renderWithProviders(<GardenInputDetailPage />, {
+      route: '/garden-inputs/purin-ortiga',
+      path: '/garden-inputs/:slug'
+    });
+
+    const retryButton = await screen.findByRole('button', {
+      name: 'Reintentar'
+    });
+    expect(retryButton).toBeInTheDocument();
+
+    await user.click(retryButton);
+
+    expect(mockedGetGardenInput).toHaveBeenCalledTimes(2);
+  });
+
+  it('closes edit modal when clicking cancel inside modal', async () => {
+    const user = userEvent.setup();
+    const input = buildGardenInput();
+    mockedGetGardenInput.mockResolvedValue(input);
+
+    renderWithProviders(<GardenInputDetailPage />, {
+      route: '/garden-inputs/purin-ortiga',
+      path: '/garden-inputs/:slug',
+      initialToken: ADMIN_TEST_TOKEN
+    });
+
+    const editButton = await screen.findByRole('button', { name: 'Editar' });
+    await user.click(editButton);
+
+    const cancelButton = screen.getByRole('button', { name: 'Cancelar' });
+    await user.click(cancelButton);
+
+    expect(
+      screen.queryByRole('heading', { level: 2, name: 'Editar insumo' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('closes delete dialog when clicking cancel inside dialog', async () => {
+    const user = userEvent.setup();
+    const input = buildGardenInput();
+    mockedGetGardenInput.mockResolvedValue(input);
+
+    renderWithProviders(<GardenInputDetailPage />, {
+      route: '/garden-inputs/purin-ortiga',
+      path: '/garden-inputs/:slug',
+      initialToken: ADMIN_TEST_TOKEN
+    });
+
+    const deleteButton = await screen.findByRole('button', {
+      name: 'Eliminar'
+    });
+    await user.click(deleteButton);
+
+    const cancelButton = screen.getByRole('button', { name: 'Cancelar' });
+    await user.click(cancelButton);
+
+    expect(
+      screen.queryByRole('heading', { name: '¿Eliminar insumo?' })
+    ).not.toBeInTheDocument();
   });
 });

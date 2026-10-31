@@ -5,7 +5,8 @@ import GardenInputDetailPage from '../../../src/pages/gardenInputs/GardenInputDe
 import GardenInputsPage from '../../../src/pages/gardenInputs/GardenInputsPage';
 import {
   getGardenInput,
-  getGardenInputList
+  getGardenInputList,
+  getGardenInputWithMeta
 } from '../../../src/services/gardenInputs.service';
 import {
   clearStoredToken,
@@ -30,6 +31,7 @@ vi.mock('../../../src/services/gardenInputs.service', () => ({
 
 const mockedGetGardenInputList = vi.mocked(getGardenInputList);
 const mockedGetGardenInput = vi.mocked(getGardenInput);
+const mockedGetGardenInputWithMeta = vi.mocked(getGardenInputWithMeta);
 
 describe('Garden Inputs Editorial Permissions', () => {
   beforeEach(() => {
@@ -42,6 +44,10 @@ describe('Garden Inputs Editorial Permissions', () => {
       pagination: { page: 1, limit: 25, totalPages: 1, totalItems: 1 }
     });
     mockedGetGardenInput.mockResolvedValue(buildGardenInput());
+    mockedGetGardenInputWithMeta.mockResolvedValue({
+      gardenInput: buildGardenInput(),
+      etag: 'W/"test-etag"'
+    });
   });
 
   it('hides create button on catalog page for anonymous user', async () => {

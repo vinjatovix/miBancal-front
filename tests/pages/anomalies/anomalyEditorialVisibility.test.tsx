@@ -51,7 +51,7 @@ const ROLES = [
 describe.each(ROLES)(
   'controles editoriales para %s',
   (_role, token, isEditor) => {
-    it('en el listado muestra "Nueva anomalía" solo a editores', async () => {
+    it('shows "New anomaly" in the list only for editors', async () => {
       renderWithProviders(<AnomalyList />, { initialToken: token });
 
       await screen.findByRole('link', { name: /Ver ficha de/ });
@@ -61,7 +61,7 @@ describe.each(ROLES)(
       ).toBe(isEditor);
     });
 
-    it('en el detalle muestra Editar y Eliminar solo a editores', async () => {
+    it('shows Edit and Delete in detail only for editors', async () => {
       renderWithProviders(
         <Routes>
           <Route path="/anomalies/:slug" element={<AnomalyDetail />} />

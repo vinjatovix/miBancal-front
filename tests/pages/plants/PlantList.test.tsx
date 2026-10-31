@@ -61,7 +61,7 @@ afterEach(() => {
 });
 
 describe('PlantList', () => {
-  it('pinta el estado de carga mientras llega la respuesta', () => {
+  it('renders loading state while response arrives', () => {
     stubFetchOk(listPlantsResponse);
 
     renderPlantList();
@@ -69,7 +69,7 @@ describe('PlantList', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
-  it('muestra el botón Nueva planta enlazando a /plants/new para editores', async () => {
+  it('shows New plant button linking to /plants/new for editors', async () => {
     stubFetchOk(listPlantsResponse);
 
     renderWithProviders(<PlantList />, {
@@ -83,7 +83,7 @@ describe('PlantList', () => {
     expect(createLink).toHaveAttribute('href', '/plants/new');
   });
 
-  it('no muestra el botón Nueva planta para usuarios anónimos', async () => {
+  it('does not show New plant button for anonymous users', async () => {
     stubFetchOk(listPlantsResponse);
 
     renderPlantList();
@@ -95,7 +95,7 @@ describe('PlantList', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('sin parámetros pide la página por defecto conforme al contrato y pinta las plantas', async () => {
+  it('without parameters requests default page according to contract and renders plants', async () => {
     const fetchMock = stubFetchOk(listPlantsResponse);
 
     renderPlantList();
@@ -119,7 +119,7 @@ describe('PlantList', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('un 400 de la API pinta el estado de error sin el texto del back', async () => {
+  it('a 400 from the API renders error state without backend text', async () => {
     stubFetchError(400, { message: 'Invalid sort key', errors: {} });
 
     renderPlantList();
@@ -129,7 +129,7 @@ describe('PlantList', () => {
     expect(alert).not.toHaveTextContent(/invalid sort key/i);
   });
 
-  it('un fallo de red explica que no hay conexión y no muestra texto técnico', async () => {
+  it('a network failure explains there is no connection and does not show technical text', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(() => Promise.reject(new TypeError('Failed to fetch')))
@@ -235,7 +235,7 @@ describe('PlantList', () => {
     });
   });
 
-  it('muestra el orden combinado con el valor de la URL', async () => {
+  it('shows sort combined with URL value', async () => {
     const fetchMock = stubFetchOk(listPlantsResponse);
 
     renderPlantList('/plants?sortField=scientificName&sortDirection=desc');
@@ -372,7 +372,7 @@ describe('PlantList', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('un filtro booleano sin resultados muestra el estado vacío', async () => {
+  it('a boolean filter without results shows empty state', async () => {
     const fetchMock = stubFetchOk({
       data: [],
       pagination: { page: 1, limit: 25, totalPages: 1, totalItems: 0 }
@@ -387,7 +387,7 @@ describe('PlantList', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('con filtros activos muestra la barra de chips con un chip por filtro', async () => {
+  it('with active filters shows the chips bar with one chip per filter', async () => {
     stubFetchOk(listPlantsResponse);
 
     renderPlantList('/plants?lifeCycle=annual&lightType=full_sun');
@@ -446,7 +446,7 @@ describe('PlantList', () => {
     expect(grid).not.toHaveClass('plant-grid--list');
   });
 
-  it('sin filtros activos no muestra la barra de chips', async () => {
+  it('without active filters does not show the chips bar', async () => {
     stubFetchOk(listPlantsResponse);
 
     renderPlantList();
@@ -579,7 +579,7 @@ describe('PlantList: pestaña Mis Favoritas', () => {
     });
   });
 
-  it('sin favoritas muestra el estado vacío propio y un botón para volver a "Todas"', async () => {
+  it('without favorites shows custom empty state and a button to return to "All"', async () => {
     stubFetchOk({
       data: [],
       pagination: { page: 1, limit: 25, totalPages: 0, totalItems: 0 }
@@ -596,7 +596,7 @@ describe('PlantList: pestaña Mis Favoritas', () => {
     ).toBeInTheDocument();
   });
 
-  it('favoritas con filtros que no casan muestra "sin coincidencias" y permite quitar filtros', async () => {
+  it('favorites with unmatched filters shows "no matches" and allows removing filters', async () => {
     stubFetchOk({
       data: [],
       pagination: { page: 1, limit: 25, totalPages: 0, totalItems: 0 }

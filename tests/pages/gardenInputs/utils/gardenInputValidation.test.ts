@@ -41,7 +41,10 @@ const validValues: GardenInputFormValues = {
       storageSpoilageSigns: 'Olor pútrido',
       safetyNotesText: 'Usar guantes'
     }
-  ]
+  ],
+  images: [],
+  videoResources: [],
+  articleResources: []
 };
 
 describe('validateGardenInputForm', () => {
@@ -267,6 +270,50 @@ describe('validateGardenInputForm', () => {
       'La duración de conservación es obligatoria.'
     );
   });
+
+  it('fails validation when resources exceed max limit', () => {
+    const images = Array.from({ length: 201 }, (_, i) => ({
+      id: `img-${i}`,
+      url: `https://example.com/img-${i}.jpg`,
+      title: '',
+      source: ''
+    }));
+    const values: GardenInputFormValues = {
+      ...validValues,
+      images
+    };
+
+    const errors = validateGardenInputForm(values, { isCreate: true });
+
+    expect(errors.resources).toBe(
+      'Se ha superado el número máximo de recursos (200).'
+    );
+  });
+
+  it.each([
+    'ftp://example.com/file.jpg',
+    'javascript:alert(1)',
+    'not-a-url',
+    `https://example.com/${'a'.repeat(2048)}`
+  ])('fails validation when resource url is invalid: %s', (invalidUrl) => {
+    const values: GardenInputFormValues = {
+      ...validValues,
+      images: [
+        {
+          id: 'img-1',
+          url: invalidUrl,
+          title: 'Foto',
+          source: 'Fuente'
+        }
+      ]
+    };
+
+    const errors = validateGardenInputForm(values, { isCreate: true });
+
+    expect(errors.resources).toBe(
+      'Las URL de los recursos deben empezar por http:// o https:// y no superar los 2048 caracteres.'
+    );
+  });
 });
 
 describe('toCreateRequest', () => {
@@ -323,7 +370,10 @@ describe('toCreateRequest', () => {
       name: 'Macerado de ajo',
       category: 'defense',
       actions: [],
-      recipes: []
+      recipes: [],
+      images: [],
+      videoResources: [],
+      articleResources: []
     };
 
     const result = toCreateRequest(values);
@@ -335,6 +385,55 @@ describe('toCreateRequest', () => {
     expect(result.targets).toBeUndefined();
     expect(result.recipes).toBeUndefined();
   });
+
+  it('maps resources (images, videos, articles) to CreateGardenInputRequest', () => {
+    const values: GardenInputFormValues = {
+      ...validValues,
+      images: [
+        {
+          id: 'img-1',
+          url: 'https://example.com/foto.jpg',
+          title: 'Foto de ortiga',
+          source: 'Jardín'
+        }
+      ],
+      videoResources: [
+        {
+          id: 'vid-1',
+          url: 'https://youtube.com/watch?v=123',
+          title: 'Vídeo tutorial'
+        }
+      ],
+      articleResources: [
+        {
+          id: 'art-1',
+          url: 'https://example.com/guia',
+          title: 'Guía de uso'
+        }
+      ]
+    };
+
+    const result = toCreateRequest(values);
+
+    expect(result.resources).toEqual([
+      {
+        type: 'image',
+        url: 'https://example.com/foto.jpg',
+        title: 'Foto de ortiga',
+        source: 'Jardín'
+      },
+      {
+        type: 'video',
+        url: 'https://youtube.com/watch?v=123',
+        title: 'Vídeo tutorial'
+      },
+      {
+        type: 'article',
+        url: 'https://example.com/guia',
+        title: 'Guía de uso'
+      }
+    ]);
+  });
 });
 
 describe('toUpdateRequest', () => {
@@ -345,7 +444,10 @@ describe('toUpdateRequest', () => {
       name: 'Purín de ortiga concentrado',
       category: 'biostimulant',
       actions: [],
-      recipes: []
+      recipes: [],
+      images: [],
+      videoResources: [],
+      articleResources: []
     };
 
     const result = toUpdateRequest(values);
@@ -358,7 +460,8 @@ describe('toUpdateRequest', () => {
       activeIngredients: null,
       nutrients: null,
       targets: null,
-      recipes: null
+      recipes: null,
+      resources: null
     });
   });
 
@@ -373,6 +476,55 @@ describe('toUpdateRequest', () => {
     expect(result.nutrients).toEqual(['Nitrógeno', 'Hierro']);
     expect(result.targets).toEqual(['Pulgón', 'Clorosis']);
     expect(result.recipes).toHaveLength(1);
+  });
+
+  it('maps resources (images, videos, articles) to UpdateGardenInputRequest', () => {
+    const values: GardenInputFormValues = {
+      ...validValues,
+      images: [
+        {
+          id: 'img-1',
+          url: 'https://example.com/foto.jpg',
+          title: 'Foto',
+          source: 'Fuente'
+        }
+      ],
+      videoResources: [
+        {
+          id: 'vid-1',
+          url: 'https://youtube.com/watch?v=123',
+          title: 'Vídeo'
+        }
+      ],
+      articleResources: [
+        {
+          id: 'art-1',
+          url: 'https://example.com/doc',
+          title: 'Documento'
+        }
+      ]
+    };
+
+    const result = toUpdateRequest(values);
+
+    expect(result.resources).toEqual([
+      {
+        type: 'image',
+        url: 'https://example.com/foto.jpg',
+        title: 'Foto',
+        source: 'Fuente'
+      },
+      {
+        type: 'video',
+        url: 'https://youtube.com/watch?v=123',
+        title: 'Vídeo'
+      },
+      {
+        type: 'article',
+        url: 'https://example.com/doc',
+        title: 'Documento'
+      }
+    ]);
   });
 });
 
@@ -422,6 +574,9 @@ describe('fromGardenInputEntity', () => {
       activeIngredientsText: 'Ácido fórmico',
       nutrientsText: 'Nitrógeno',
       targetsText: 'Pulgón',
+      images: [],
+      videoResources: [],
+      articleResources: [],
       recipes: [
         {
           name: 'Purín clásico',
@@ -441,6 +596,51 @@ describe('fromGardenInputEntity', () => {
     });
   });
 
+  it('converts entity resources (images, videos, articles) to form item arrays', () => {
+    const entity = buildGardenInput({
+      resources: [
+        {
+          type: 'image',
+          url: 'https://example.com/foto.jpg',
+          title: 'Foto',
+          source: 'Fuente'
+        },
+        {
+          type: 'video',
+          url: 'https://youtube.com/watch?v=123',
+          title: 'Vídeo'
+        },
+        {
+          type: 'article',
+          url: 'https://example.com/articulo',
+          title: 'Artículo'
+        }
+      ]
+    });
+
+    const result = fromGardenInputEntity(entity);
+
+    expect(result.images).toEqual([
+      expect.objectContaining({
+        url: 'https://example.com/foto.jpg',
+        title: 'Foto',
+        source: 'Fuente'
+      })
+    ]);
+    expect(result.videoResources).toEqual([
+      expect.objectContaining({
+        url: 'https://youtube.com/watch?v=123',
+        title: 'Vídeo'
+      })
+    ]);
+    expect(result.articleResources).toEqual([
+      expect.objectContaining({
+        url: 'https://example.com/articulo',
+        title: 'Artículo'
+      })
+    ]);
+  });
+
   it('handles empty optional entity fields with default fallback values', () => {
     const entity = buildGardenInput({
       description: undefined,
@@ -458,6 +658,9 @@ describe('fromGardenInputEntity', () => {
     expect(result.activeIngredientsText).toBe('');
     expect(result.nutrientsText).toBe('');
     expect(result.targetsText).toBe('');
+    expect(result.images).toEqual([]);
+    expect(result.videoResources).toEqual([]);
+    expect(result.articleResources).toEqual([]);
     expect(result.recipes).toEqual([]);
   });
 });

@@ -82,7 +82,7 @@ describe('AnomalyDetail eliminación', () => {
     expect(mockedDeleteAnomaly).toHaveBeenCalledOnce();
   });
 
-  it('muestra el error de la API en un toast sin cerrar el diálogo ni mostrar alerta estática', async () => {
+  it('shows API error in a toast without closing the dialog or showing static alert', async () => {
     mockedDeleteAnomaly.mockRejectedValue(new ApiError('Fallo al borrar', 500));
     const user = userEvent.setup();
     const dialog = await openDeleteDialog(user);

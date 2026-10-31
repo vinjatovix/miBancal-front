@@ -293,21 +293,21 @@ describe('PlantDetail', () => {
     const section = await screen.findByTestId('section-recursos');
     expect(section).toBeInTheDocument();
 
-    const articlesTab = document.getElementById('tab-articles');
-    expect(articlesTab).toHaveAttribute('aria-selected', 'true');
+    const videosTab = document.getElementById('tab-videos');
+    expect(videosTab).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('should switch to videos tab and render videos', async () => {
+  it('should switch to articles tab and render articles', async () => {
     const user = userEvent.setup();
     mockedGetPlantById.mockResolvedValue(mockPlantWithVideos);
 
     renderPlantDetail();
     await screen.findByTestId('section-recursos');
 
-    const videosTab = await screen.getByTestId('tab-videos');
-    await user.click(videosTab);
+    const articlesTab = await screen.getByTestId('tab-articles');
+    await user.click(articlesTab);
 
-    expect(videosTab).toHaveAttribute('aria-selected', 'true');
+    expect(articlesTab).toHaveAttribute('aria-selected', 'true');
   });
 
   it('navigates to family page when clicking family link', async () => {
@@ -817,7 +817,7 @@ describe('PlantDetail: botón de favorito en el hero', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('con sesión muestra el estado correcto y permite alternarlo', async () => {
+  it('with session shows correct state and allows toggling it', async () => {
     const { getBookmarkedPlantIds } =
       await import('../../../../src/services/bookmarks.service');
     vi.mocked(getBookmarkedPlantIds).mockResolvedValue(new Set([mockPlant.id]));

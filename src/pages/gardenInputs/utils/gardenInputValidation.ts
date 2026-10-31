@@ -1,4 +1,5 @@
 import { t } from '../../../i18n/core/t';
+import type { SupportResource } from '../../../types/SupportResource';
 import {
   GARDEN_INPUT_CATEGORIES,
   type CreateGardenInputRequest,
@@ -10,7 +11,22 @@ import {
   type UpdateGardenInputRequest
 } from '../../../types/GardenInput/GardenInput';
 
+import {
+  MAX_RESOURCES,
+  RESOURCE_URL_MAX_LENGTH,
+  type ArticleResourceFormItem,
+  type ImageResourceFormItem,
+  type VideoResourceFormItem
+} from '../../../shared/types/ResourceFormItem';
+
+export type {
+  ArticleResourceFormItem,
+  ImageResourceFormItem,
+  VideoResourceFormItem
+};
+
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const RESOURCE_URL_REGEX = /^https?:\/\//;
 
 export interface RecipeFormValue {
   name: string;
@@ -38,6 +54,9 @@ export interface GardenInputFormValues {
   nutrientsText?: string;
   targetsText?: string;
   recipes: RecipeFormValue[];
+  images: ImageResourceFormItem[];
+  videoResources: VideoResourceFormItem[];
+  articleResources: ArticleResourceFormItem[];
 }
 
 export type GardenInputFormErrors = Record<string, string>;
@@ -152,7 +171,34 @@ export function validateGardenInputForm(
     }
   });
 
+  validateResources(values, errors);
+
   return errors;
+}
+
+function isValidResourceUrl(url: string): boolean {
+  return url.length <= RESOURCE_URL_MAX_LENGTH && RESOURCE_URL_REGEX.test(url);
+}
+
+function validateResources(
+  values: GardenInputFormValues,
+  errors: GardenInputFormErrors
+) {
+  const images = values.images.filter((img) => img.url.trim() !== '');
+  const videos = values.videoResources.filter((v) => v.url.trim() !== '');
+  const articles = values.articleResources.filter((a) => a.url.trim() !== '');
+
+  const totalCount = images.length + videos.length + articles.length;
+  if (totalCount > MAX_RESOURCES) {
+    errors.resources = t('gardenInput.form.errors.resources_max');
+    return;
+  }
+
+  const allUrls = [...images, ...videos, ...articles].map((r) => r.url.trim());
+  const hasInvalidUrl = allUrls.some((url) => !isValidResourceUrl(url));
+  if (hasInvalidUrl) {
+    errors.resources = t('gardenInput.form.errors.invalid_resource_url');
+  }
 }
 
 function parseTextLines(text?: string): string[] | undefined {
@@ -191,9 +237,57 @@ export function toRecipeModels(recipes: RecipeFormValue[]): Recipe[] {
   }));
 }
 
+function nonEmpty(text?: string): string | undefined {
+  if (!text) return undefined;
+  const trimmed = text.trim();
+  return trimmed === '' ? undefined : trimmed;
+}
+
+function buildResourcesFromState(
+  values: GardenInputFormValues
+): SupportResource[] {
+  const images: SupportResource[] = values.images
+    .filter((img) => img.url.trim() !== '')
+    .map((img) => {
+      const title = nonEmpty(img.title);
+      const source = nonEmpty(img.source);
+      return {
+        type: 'image',
+        url: img.url.trim(),
+        ...(title ? { title } : {}),
+        ...(source ? { source } : {})
+      };
+    });
+
+  const videos: SupportResource[] = values.videoResources
+    .filter((v) => v.url.trim() !== '')
+    .map((v) => {
+      const title = nonEmpty(v.title);
+      return {
+        type: 'video',
+        url: v.url.trim(),
+        ...(title ? { title } : {})
+      };
+    });
+
+  const articles: SupportResource[] = values.articleResources
+    .filter((a) => a.url.trim() !== '')
+    .map((a) => {
+      const title = nonEmpty(a.title);
+      return {
+        type: 'article',
+        url: a.url.trim(),
+        ...(title ? { title } : {})
+      };
+    });
+
+  return [...images, ...videos, ...articles];
+}
+
 export function toCreateRequest(
   values: GardenInputFormValues
 ): CreateGardenInputRequest {
+  const resources = buildResourcesFromState(values);
   return {
     id: values.id || crypto.randomUUID(),
     slug: values.slug.trim(),
@@ -205,13 +299,15 @@ export function toCreateRequest(
     nutrients: parseTextLines(values.nutrientsText),
     targets: parseTextLines(values.targetsText),
     recipes:
-      values.recipes.length > 0 ? toRecipeModels(values.recipes) : undefined
+      values.recipes.length > 0 ? toRecipeModels(values.recipes) : undefined,
+    ...(resources.length > 0 ? { resources } : {})
   };
 }
 
 export function toUpdateRequest(
   values: GardenInputFormValues
 ): UpdateGardenInputRequest {
+  const resources = buildResourcesFromState(values);
   return {
     name: values.name.trim(),
     category: values.category,
@@ -220,13 +316,39 @@ export function toUpdateRequest(
     activeIngredients: parseTextLines(values.activeIngredientsText) ?? null,
     nutrients: parseTextLines(values.nutrientsText) ?? null,
     targets: parseTextLines(values.targetsText) ?? null,
-    recipes: values.recipes.length > 0 ? toRecipeModels(values.recipes) : null
+    recipes: values.recipes.length > 0 ? toRecipeModels(values.recipes) : null,
+    resources: resources.length > 0 ? resources : null
   };
 }
 
 export function fromGardenInputEntity(
   entity: GardenInput
 ): GardenInputFormValues {
+  const images = (entity.resources ?? [])
+    .filter((r) => r.type === 'image')
+    .map((r) => ({
+      id: crypto.randomUUID(),
+      url: r.url,
+      title: r.title ?? '',
+      source: r.source ?? ''
+    }));
+
+  const videoResources = (entity.resources ?? [])
+    .filter((r) => r.type === 'video')
+    .map((r) => ({
+      id: crypto.randomUUID(),
+      url: r.url,
+      title: r.title ?? ''
+    }));
+
+  const articleResources = (entity.resources ?? [])
+    .filter((r) => r.type === 'article')
+    .map((r) => ({
+      id: crypto.randomUUID(),
+      url: r.url,
+      title: r.title ?? ''
+    }));
+
   return {
     id: entity.id,
     slug: entity.slug,
@@ -237,6 +359,9 @@ export function fromGardenInputEntity(
     activeIngredientsText: entity.activeIngredients?.join(', ') ?? '',
     nutrientsText: entity.nutrients?.join(', ') ?? '',
     targetsText: entity.targets?.join(', ') ?? '',
+    images,
+    videoResources,
+    articleResources,
     recipes: (entity.recipes ?? []).map((r) => ({
       name: r.name,
       description: r.description ?? '',

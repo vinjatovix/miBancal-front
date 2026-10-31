@@ -87,7 +87,7 @@ describe('PlantFilters', () => {
     expect(screen.getByTestId('text-filter-identity')).toBeInTheDocument();
   });
 
-  it('muestra la búsqueda rápida destacada al principio del panel', () => {
+  it('shows quick search highlighted at the top of the panel', () => {
     renderComponent();
 
     const quick = screen.getByTestId('quick-search');
@@ -135,13 +135,13 @@ describe('PlantFilters', () => {
     ).toBeInTheDocument();
   });
 
-  it('muestra el indicador de filtros activos cuando hay al menos uno', () => {
+  it('shows active filters indicator when there is at least one', () => {
     renderComponent(3);
 
     expect(screen.getByText('3 activos')).toBeInTheDocument();
   });
 
-  it('no muestra el indicador de filtros activos sin filtros', () => {
+  it('does not show active filters indicator without filters', () => {
     renderComponent(0);
 
     expect(screen.queryByText(/activos/)).not.toBeInTheDocument();

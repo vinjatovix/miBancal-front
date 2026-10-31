@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import GardenInputCreatePage from '../../../src/pages/gardenInputs/GardenInputCreatePage';
@@ -57,10 +58,18 @@ describe('GardenInputCreatePage', () => {
       etag: '"v1"'
     });
 
-    renderWithProviders(<GardenInputCreatePage />, {
-      route: '/garden-inputs/new',
-      path: '/garden-inputs/new'
-    });
+    renderWithProviders(
+      <Routes>
+        <Route path="/garden-inputs/new" element={<GardenInputCreatePage />} />
+        <Route
+          path="/garden-inputs/:slug"
+          element={<div>Detalle del insumo</div>}
+        />
+      </Routes>,
+      {
+        route: '/garden-inputs/new'
+      }
+    );
 
     const nameInput = screen.getByLabelText(/Nombre \*/i);
     const slugInput = screen.getByLabelText(/Identificador \(slug\) \*/i);
@@ -80,6 +89,7 @@ describe('GardenInputCreatePage', () => {
         })
       );
     });
+    expect(await screen.findByText('Detalle del insumo')).toBeInTheDocument();
   });
 
   it('displays duplicate slug server error when api responds with 409', async () => {

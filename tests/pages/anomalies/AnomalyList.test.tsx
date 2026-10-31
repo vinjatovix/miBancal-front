@@ -54,7 +54,7 @@ beforeEach(() => {
 });
 
 describe('AnomalyList', () => {
-  it('muestra el estado de carga', () => {
+  it('shows loading state', () => {
     mockedGetAnomalyList.mockReturnValue(new Promise(() => {}));
 
     renderList();
@@ -62,7 +62,7 @@ describe('AnomalyList', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
-  it('pinta nombre, nombre científico y categoría traducida de cada anomalía', async () => {
+  it('renders name, scientific name and translated category for each anomaly', async () => {
     renderList();
 
     const links = await screen.findAllByRole('link', { name: /Ver ficha de/ });
@@ -78,7 +78,7 @@ describe('AnomalyList', () => {
     ).toBeInTheDocument();
   });
 
-  it('no muestra badge de estado para anomalías activas', async () => {
+  it('does not show status badge for active anomalies', async () => {
     renderList();
 
     await screen.findAllByRole('link', { name: /Ver ficha de/ });
@@ -86,7 +86,7 @@ describe('AnomalyList', () => {
     expect(screen.queryByText('Eliminada')).not.toBeInTheDocument();
   });
 
-  it('muestra el estado de error con reintento', async () => {
+  it('shows error state with retry', async () => {
     mockedGetAnomalyList.mockRejectedValueOnce(new ApiError('boom', 500));
     const user = userEvent.setup();
 
@@ -101,7 +101,7 @@ describe('AnomalyList', () => {
     expect(mockedGetAnomalyList).toHaveBeenCalledTimes(2);
   });
 
-  it('muestra el estado vacío sin acción cuando no hay filtros ni paginación', async () => {
+  it('shows empty state without action when there are no filters or pagination', async () => {
     mockedGetAnomalyList.mockResolvedValue(pageOf([], { totalPages: 0 }));
 
     renderList();
@@ -195,7 +195,7 @@ describe('AnomalyList', () => {
     );
   });
 
-  it('no filtra por estado en cliente: pinta lo que devuelve la API', async () => {
+  it('does not filter by status in client: renders what the API returns', async () => {
     mockedGetAnomalyList.mockResolvedValue(
       pageOf([buildDeletedAnomalyListItem()])
     );

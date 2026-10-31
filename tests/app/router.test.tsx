@@ -5,7 +5,7 @@ import {
   RouterProvider,
   type RouteObject
 } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { routes } from '../../src/app/router';
 import { t } from '../../src/i18n/core/t';
@@ -25,6 +25,7 @@ import {
   silenceConsoleError,
   ThrowingChild
 } from '../test-utils/unexpectedErrorReports';
+import { buildPlant } from '../fixtures/plants/buildPlant';
 
 function renderRoute(path: string, routeObjects: RouteObject[] = routes) {
   const router = createMemoryRouter(routeObjects, { initialEntries: [path] });
@@ -37,6 +38,10 @@ function renderRoute(path: string, routeObjects: RouteObject[] = routes) {
   );
   return router;
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('router', () => {
   it('shows the not found page on an unknown route keeping the layout and the URL', () => {
@@ -90,10 +95,25 @@ describe('router', () => {
   ])(
     'mantiene la estructura uniforme de layout en la ruta %s',
     async (path) => {
-      stubFetchOk({
+      const listBody = {
         data: [],
         pagination: { page: 1, limit: 25, totalPages: 0, totalItems: 0 }
-      });
+      };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn((url: string) =>
+          Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: '',
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: () =>
+              Promise.resolve(
+                /\/plants\/[0-9a-f-]{36}/.test(url) ? buildPlant() : listBody
+              )
+          })
+        )
+      );
 
       renderRoute(path);
 

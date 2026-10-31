@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 
@@ -45,8 +45,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('ruta /anomalies/new', () => {
-  it('redirige a un anónimo a /login', async () => {
+describe('route /anomalies/new', () => {
+  it('redirects an anonymous user to /login', async () => {
     renderRoute('/anomalies/new');
 
     expect(
@@ -85,7 +85,7 @@ describe('ruta /anomalies/new', () => {
   });
 });
 
-describe('rutas públicas de anomalías', () => {
+describe('public anomalies routes', () => {
   it('resuelve /anomalies al listado sin autenticación', async () => {
     renderRoute('/anomalies');
 
@@ -94,7 +94,7 @@ describe('rutas públicas de anomalías', () => {
     ).toBeInTheDocument();
   });
 
-  it('muestra no encontrada en /anomalies/:slug cuando la API responde 404', async () => {
+  it('shows not found on /anomalies/:slug when API returns 404', async () => {
     stubFetchOk({});
     vi.stubGlobal(
       'fetch',
@@ -117,7 +117,7 @@ describe('rutas públicas de anomalías', () => {
   });
 });
 
-describe('guarda de cambios sin guardar en /anomalies/new', () => {
+describe('unsaved changes guard in /anomalies/new', () => {
   function stubCreateFlow() {
     const anomaly = buildAnomaly();
     const fetchMock = vi.fn((url: string, init?: RequestInit) => {
@@ -155,7 +155,7 @@ describe('guarda de cambios sin guardar en /anomalies/new', () => {
     await user.selectOptions(screen.getByLabelText(/^Categoría/), 'pest');
   }
 
-  it('no bloquea la navegación tras guardar con éxito', async () => {
+  it('does not block navigation after a successful save', async () => {
     stubCreateFlow();
     setStoredToken(COLLABORATOR_TEST_TOKEN);
     const user = userEvent.setup();
@@ -172,7 +172,7 @@ describe('guarda de cambios sin guardar en /anomalies/new', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
-  it('bloquea abandonar el formulario con cambios desde la navegación', async () => {
+  it('blocks leaving the form with changes via navigation', async () => {
     stubCreateFlow();
     setStoredToken(COLLABORATOR_TEST_TOKEN);
     const user = userEvent.setup();
@@ -180,7 +180,13 @@ describe('guarda de cambios sin guardar en /anomalies/new', () => {
 
     await screen.findByRole('heading', { name: 'Nueva anomalía' });
     await user.type(screen.getByLabelText(/^Nombre común/), 'Pulgón');
-    await router.navigate('/anomalies');
+
+    const nav = screen.getByRole('navigation', {
+      name: t('app.nav.rail_title')
+    });
+    await user.click(
+      within(nav).getByRole('link', { name: t('app.nav.anomalies') })
+    );
 
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/anomalies/new');

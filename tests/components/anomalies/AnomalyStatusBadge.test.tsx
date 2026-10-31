@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import AnomalyStatusBadge from '../../../src/components/anomalies/AnomalyStatusBadge/AnomalyStatusBadge';
 
 describe('AnomalyStatusBadge', () => {
-  it('muestra el badge para una anomalía eliminada', () => {
+  it('shows the badge for a deleted anomaly', () => {
     render(<AnomalyStatusBadge status="DELETED" />);
 
     expect(screen.getByText('Eliminada')).toHaveClass('badge--deleted');
