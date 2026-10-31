@@ -1,0 +1,93 @@
+.plant-relations-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.plant-relations-section__header-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.plant-relations-section__add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font: var(--type-label-md);
+  color: var(--color-on-primary);
+  background-color: var(--color-primary);
+  text-decoration: none;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-primary);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.plant-relations-section__add-btn:hover {
+  background-color: var(--color-primary-container);
+}
+
+.plant-relations-section__explorer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font: var(--type-label-md);
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-outline-variant);
+  background-color: var(--color-surface);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.plant-relations-section__explorer-link:hover {
+  background-color: var(--color-surface-container-high);
+  border-color: var(--color-primary);
+}
+
+.plant-relations-section__loader {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-lg);
+}
+
+.plant-relations-section__empty {
+  margin: 0;
+  font: var(--type-body-md);
+  color: var(--color-on-surface-variant);
+  text-align: center;
+  padding: var(--space-md) 0;
+}
+
+.plant-relations-section__blocks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.plant-relations-section__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.plant-relations-section__block-title {
+  margin: 0;
+  font: var(--type-title-sm);
+  color: var(--color-on-surface);
+}
+
+.plant-relations-section__cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}

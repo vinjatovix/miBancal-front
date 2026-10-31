@@ -1203,6 +1203,23 @@ const yardGlyph = (
   </>
 );
 
+const plant_relationsGlyph = (
+  <>
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M18 6.5v11.5M18 18l-10.5 8M18 18l10.5 8M7.5 26h21"
+    />
+    <circle cx="18" cy="6.5" r="4" fill="currentColor" />
+    <circle cx="18" cy="18" r="4.5" fill="currentColor" />
+    <circle cx="7.5" cy="26" r="4" fill="currentColor" />
+    <circle cx="28.5" cy="26" r="4" fill="currentColor" />
+  </>
+);
+
 const chevron_leftGlyph = (
   <>
     <path
@@ -1451,6 +1468,7 @@ export const ICON_GLYPHS = {
   pending_actions: hourglass_topGlyph,
   person: personGlyph,
   person_add: person_addGlyph,
+  plant_relations: plant_relationsGlyph,
   potted_plant: potted_plantGlyph,
   psychiatry: psychiatryGlyph,
   public: publicGlyph,

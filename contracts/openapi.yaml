@@ -33,6 +33,8 @@ tags:
     description: Administrator endpoints for managing accounts and their roles.
   - name: Bookmarks
     description: Personal user bookmarks collection for favorite catalog items.
+  - name: PlantRelations
+    description: Endpoints for querying and managing directed companion plant relations.
 
 paths:
   /api/v1/health:
@@ -1053,6 +1055,7 @@ paths:
           required: true
           schema:
             type: string
+          description: A UUID is looked up by id; anything else by slug. Trimmed.
         - $ref: '#/components/parameters/PlantFields'
         - $ref: '#/components/parameters/PlantInclude'
       responses:
@@ -1859,6 +1862,291 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/plant-relations:
+    get:
+      tags: [PlantRelations]
+      summary: List plant relations
+      description: >
+        Public. Retrieve a paginated list of plant companion relations with Query DSL filtering.
+      parameters:
+        - name: filter[sourcePlantId][eq]
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filter relations where source plant equals this UUID.
+        - name: filter[targetPlantId][eq]
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filter relations where target plant equals this UUID.
+        - name: filter[plantId][eq]
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filter relations where source plant OR target plant equals this UUID.
+        - name: filter[sourceScope][eq]
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [plant, genus, family]
+          description: Filter relations by source taxonomic scope.
+        - name: filter[targetScope][eq]
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [plant, genus, family, all]
+          description: Filter relations by target taxonomic scope.
+        - name: filter[genus][eq]
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter relations where source or target genus equals this name.
+        - name: filter[familyId][eq]
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filter relations where source or target family equals this UUID.
+        - name: filter[appliesToPlantId][eq]
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: >
+            Resolve the plant's genus (from its scientific name) and family, then
+            return, in one paginated query, every relation where the plant
+            participates as source OR target through any tier — plant, genus,
+            family — plus broadcast relations (`target.scope = all`). Each item
+            then carries `appliesVia` and `role`. Combinable with `type` and
+            `mechanism`.
+        - name: filter[type][eq]
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PlantRelationType'
+          description: Filter relations by polarity (beneficial or detrimental).
+        - name: filter[mechanism][eq]
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PlantRelationMechanism'
+          description: Filter relations by biological mechanism.
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Sort expression (e.g. `createdAt:desc`, `strength:asc`, `type:asc`). Defaults to `createdAt:desc`.
+        - name: pagination[page]
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pagination[limit]
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - name: include
+          in: query
+          required: false
+          schema:
+            type: string
+            example: sourcePlant,targetPlant,sourceFamily,targetFamily
+          description: >
+            Comma-separated relations to embed. `sourcePlant`/`targetPlant`
+            embed the companion plant summary for plant-scope sides;
+            `sourceFamily`/`targetFamily` embed the family summary (`id`, `name`,
+            `slug`) for family-scope sides. Genus-scope sides carry their label
+            in `value`.
+      responses:
+        '200':
+          description: Paginated collection of plant relations.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlantRelationsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [PlantRelations]
+      summary: Create a plant relation
+      description: >
+        Curators only (Admin or Collaborator). Creates a new directed companion relation between two catalog plants.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlantRelation'
+      responses:
+        '201':
+          description: Plant relation created successfully.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlantRelation'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/plant-relations/{id}:
+    get:
+      tags: [PlantRelations]
+      summary: Get plant relation by ID
+      description: >
+        Public. Retrieve the full representation of a single plant relation by its UUID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Plant relation UUID.
+        - name: include
+          in: query
+          required: false
+          schema:
+            type: string
+            example: sourcePlant,targetPlant,sourceFamily,targetFamily
+          description: >
+            Comma-separated relations to embed. `sourcePlant`/`targetPlant`
+            embed the companion plant summary for plant-scope sides;
+            `sourceFamily`/`targetFamily` embed the family summary (`id`, `name`,
+            `slug`) for family-scope sides. Genus-scope sides carry their label
+            in `value`.
+      responses:
+        '200':
+          description: Plant relation found.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ReadETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlantRelation'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags: [PlantRelations]
+      summary: Partial update of a plant relation
+      description: >
+        Curators only (Admin or Collaborator). Updates relationship parameters under Optimistic Concurrency Control.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Plant relation UUID.
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlantRelation'
+      responses:
+        '200':
+          description: Plant relation updated successfully.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlantRelation'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '412':
+          $ref: '#/components/responses/PreconditionFailedError'
+        '428':
+          $ref: '#/components/responses/PreconditionRequiredError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [PlantRelations]
+      summary: Delete a plant relation
+      description: >
+        Curators only (Admin or Collaborator). Physically deletes the relation under Optimistic Concurrency Control.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Plant relation UUID.
+        - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204':
+          description: Plant relation deleted successfully.
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '412':
+          $ref: '#/components/responses/PreconditionFailedError'
+        '428':
+          $ref: '#/components/responses/PreconditionRequiredError'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -2964,6 +3252,21 @@ components:
             Matches name, aliases or scientific name (any of them).
           allOf:
             - $ref: '#/components/schemas/TextFieldFilter'
+        genus:
+          description: >
+            Exact botanical genus (the `identity.genus` projection). Matching
+            is case-insensitive (collation locale "es", strength 2). Use `eq`
+            for one genus or `in` for several (union). Exactly one operator.
+            Plants with no derivable genus never match.
+          type: object
+          additionalProperties: false
+          minProperties: 1
+          maxProperties: 1
+          properties:
+            eq:
+              type: string
+              example: Allium
+            in: { $ref: '#/components/schemas/FilterTextList' }
         family:
           description: Family id.
           type: object
@@ -3401,6 +3704,13 @@ components:
       properties:
         id:
           type: string
+
+        slug:
+          type: string
+          readOnly: true
+          description: >
+            URL-friendly identifier derived from the scientific name; absent on
+            legacy documents.
 
         version:
           type: integer
@@ -3862,6 +4172,15 @@ components:
               $ref: '#/components/schemas/ShortTextList'
         scientificName:
           $ref: '#/components/schemas/RequiredShortText'
+        genus:
+          description: >
+            Botanical genus: the capitalized first word of `scientificName`,
+            derived server-side with the shared rule. Read-only and never
+            accepted on write. Absent when no valid genus can be derived
+            (e.g. a leading hybrid "×"). This is the same value the
+            `filter[genus]` option matches on.
+          allOf:
+            - $ref: '#/components/schemas/RequiredShortText'
         family:
           description: >
             The family id; with `include=family`, the family summary (or the
@@ -4512,6 +4831,299 @@ components:
           format: date-time
           description: ISO timestamp of when the item was bookmarked (if present).
           example: '2026-10-22T14:30:00.000Z'
+
+    PlantRelationType:
+      type: string
+      enum:
+        - beneficial
+        - detrimental
+
+    PlantRelationMechanism:
+      type: string
+      enum:
+        - pest_repellent
+        - pollinator_attractor
+        - nitrogen_fixer
+        - nutrient_accumulator
+        - growth_stimulator
+        - trap_crop
+        - physical_support
+        - shade_provider
+        - allelopathy
+        - pest_host
+        - disease_vector
+        - resource_competition
+
+    ProximityDistance:
+      type: object
+      additionalProperties: false
+      required:
+        - minDistanceCm
+        - maxDistanceCm
+      properties:
+        minDistanceCm:
+          type: integer
+          minimum: 0
+          example: 0
+          description: Minimum distance in centimeters for interaction to occur.
+        maxDistanceCm:
+          type: integer
+          minimum: 0
+          nullable: true
+          example: 50
+          description: Maximum distance in centimeters, or null for unbounded bed-wide effect.
+
+    PlantSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - slug
+        - name
+        - scientificName
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+          readOnly: true
+        name:
+          type: object
+          required:
+            - primary
+          properties:
+            primary:
+              type: string
+            aliases:
+              type: array
+              items:
+                type: string
+        scientificName:
+          type: string
+        image:
+          type: object
+          nullable: true
+          required:
+            - url
+          properties:
+            url:
+              type: string
+              format: uri
+            title:
+              type: string
+            source:
+              type: string
+
+    TaxonomicScopeType:
+      type: string
+      enum: [plant, genus, family, all]
+
+    TaxonomicSourceScope:
+      type: object
+      additionalProperties: false
+      required:
+        - scope
+        - value
+      properties:
+        scope:
+          type: string
+          enum: [plant, genus, family]
+        value:
+          type: string
+          description: UUID for plant and family, botanical genus name for genus.
+          example: 'Solanum'
+
+    TaxonomicTargetScope:
+      type: object
+      additionalProperties: false
+      required:
+        - scope
+      properties:
+        scope:
+          type: string
+          enum: [plant, genus, family, all]
+        value:
+          type: string
+          description: UUID for plant and family, genus name for genus. Strictly omitted when scope is 'all'.
+          example: 'Solanum'
+
+    PlantRelation:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - source
+        - target
+        - type
+        - mechanism
+        - strength
+        - proximity
+        - reason
+        - metadata
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        source:
+          $ref: '#/components/schemas/TaxonomicSourceScope'
+        target:
+          $ref: '#/components/schemas/TaxonomicTargetScope'
+        sourcePlantId:
+          type: string
+          format: uuid
+          description: Legacy projection. Present when source.scope is 'plant'.
+        targetPlantId:
+          type: string
+          format: uuid
+          description: Legacy projection. Present when target.scope is 'plant'.
+        type:
+          $ref: '#/components/schemas/PlantRelationType'
+        mechanism:
+          $ref: '#/components/schemas/PlantRelationMechanism'
+        strength:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+        proximity:
+          $ref: '#/components/schemas/ProximityDistance'
+        reason:
+          type: string
+          example: 'Basil aroma masks tomato volatile compounds, deterring hornworms and thrips.'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        version:
+          type: integer
+          minimum: 0
+          example: 0
+        sourcePlant:
+          $ref: '#/components/schemas/PlantSummary'
+        targetPlant:
+          $ref: '#/components/schemas/PlantSummary'
+        sourceFamily:
+          $ref: '#/components/schemas/FamilySummary'
+        targetFamily:
+          $ref: '#/components/schemas/FamilySummary'
+        appliesVia:
+          type: string
+          enum: [plant, genus, family, all]
+          description: >
+            Only present on an `appliesToPlantId` query: the most specific tier
+            (plant > genus > family > all) through which the queried plant matched.
+        role:
+          type: string
+          enum: [source, target]
+          description: >
+            Only present on an `appliesToPlantId` query: the side the queried
+            plant sits on. `source` aports to the companion, `target` receives.
+
+    CreatePlantRelation:
+      type: object
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required:
+            - id
+            - source
+            - target
+            - type
+            - mechanism
+            - strength
+            - proximity
+            - reason
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: 0192e201-0000-7000-8000-000000000001
+              description: Client-assigned plant relation UUID.
+            source:
+              $ref: '#/components/schemas/TaxonomicSourceScope'
+            target:
+              $ref: '#/components/schemas/TaxonomicTargetScope'
+            type:
+              $ref: '#/components/schemas/PlantRelationType'
+            mechanism:
+              $ref: '#/components/schemas/PlantRelationMechanism'
+            strength:
+              type: integer
+              minimum: 1
+              maximum: 5
+            proximity:
+              $ref: '#/components/schemas/ProximityDistance'
+            reason:
+              type: string
+              minLength: 1
+        - type: object
+          additionalProperties: false
+          required:
+            - id
+            - sourcePlantId
+            - targetPlantId
+            - type
+            - mechanism
+            - strength
+            - proximity
+            - reason
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: 0192e201-0000-7000-8000-000000000001
+              description: Client-assigned plant relation UUID.
+            sourcePlantId:
+              type: string
+              format: uuid
+            targetPlantId:
+              type: string
+              format: uuid
+            type:
+              $ref: '#/components/schemas/PlantRelationType'
+            mechanism:
+              $ref: '#/components/schemas/PlantRelationMechanism'
+            strength:
+              type: integer
+              minimum: 1
+              maximum: 5
+            proximity:
+              $ref: '#/components/schemas/ProximityDistance'
+            reason:
+              type: string
+              minLength: 1
+
+    UpdatePlantRelation:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/PlantRelationType'
+        mechanism:
+          $ref: '#/components/schemas/PlantRelationMechanism'
+        strength:
+          type: integer
+          minimum: 1
+          maximum: 5
+        proximity:
+          $ref: '#/components/schemas/ProximityDistance'
+        reason:
+          type: string
+          minLength: 1
+
+    PaginatedPlantRelationsResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlantRelation'
+        pagination:
+          $ref: '#/components/schemas/PaginationResponse'
 
   responses:
     UnprocessableEntityError:

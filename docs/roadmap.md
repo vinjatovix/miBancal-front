@@ -557,3 +557,26 @@ catálogo) y 016 (pantallas de acceso y barra de navegación MiBancal).
   castellano; las pestañas de recursos se navegan con las flechas; y el CI falla ante nuevas
   infracciones de accesibilidad detectables estáticamente.
   ```
+
+## Futura Iteración (Bancales): Motor Espacial - Drag & Drop en el Bancal
+
+- **Estado**: planificada en Roadmap (fuera del alcance de la spec de catálogo y explorador de relaciones).
+- **Objetivo**: al arrastrar una planta sobre el bancal interactivo, resaltar visualmente las plantas vecinas según la distancia calculada en tiempo real:
+  - **Verde**: Interacción beneficiosa dentro de la distancia de influencia.
+  - **Rojo**: Interacción perjudicial / incompatible.
+  - **Gris / Neutro**: Sin interacción o fuera de la distancia de influencia biológica.
+- **Patrón de rendimiento óptimo (sin saturar la API)**:
+  - _Regla de oro_: Cero peticiones HTTP en los eventos `drag` o `pointermove`.
+  - **1. Pre-carga al tomar la planta (`dragStart`)**: Cuando el usuario agarra una planta de la paleta (`draggedPlantId`), el frontend consulta sus relaciones una sola vez (`GET /api/v1/plant-relations?filter[plantId][eq]=<draggedPlantId>&pagination[limit]=100`) y se indexan en un `Map` en memoria local por el ID de la planta compañera.
+  - **2. Cálculo de Distancia Euclidiana en el cliente (durante el movimiento)**: Con las coordenadas en centímetros $(x_1, y_1)$ de la planta arrastrada y $(x_2, y_2)$ de cada planta fija $V$ ya sembrada en el bancal:
+    $$d = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$$
+  - **3. Evaluación de Estado en caliente**: Para cada planta vecina $V$ en el bancal:
+    - Comprobar si existe relación en el `Map` entre `draggedPlantId` y `V.plantId`. Si no existe: estado neutro (sin borde / gris).
+    - Si existe relación, verificar umbral de distancia:
+      `const inRange = d >= rel.proximity.minDistanceCm && (rel.proximity.maxDistanceCm === null || d <= rel.proximity.maxDistanceCm);`
+    - Si `!inRange`: estado neutro (están en el mismo bancal, pero a mayor distancia del alcance del efecto biológico).
+    - Si `inRange`:
+      - Si `rel.type === 'beneficial'`: Verde (halo verde + tooltip con `rel.reason`).
+      - Si `rel.type === 'detrimental'`: Rojo (halo de advertencia rojo + alerta de incompatibilidad).
+  - **4. Consulta masiva para un bancal completo (resumen ecológico del bancal)**: Cálculo del informe ecológico global de un bancal con varias plantas sembradas mediante consulta batch:
+    `GET /api/v1/plant-relations?filter[plantId][in]=id1,id2,id3,id4&pagination[limit]=100` para obtener todas las aristas que conectan a cualquiera de las plantas del bancal en una única petición HTTP.

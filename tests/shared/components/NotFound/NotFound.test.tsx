@@ -9,7 +9,7 @@ function renderNotFound() {
   const router = createMemoryRouter(
     [
       {
-        path: '/plants/:id',
+        path: '/plants/:slug',
         element: (
           <NotFound
             titleKey="notFound.plant.title"

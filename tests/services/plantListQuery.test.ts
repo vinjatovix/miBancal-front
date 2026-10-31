@@ -36,6 +36,7 @@ describe('plantListQuery', () => {
     expect([...PLANT_FIELDS].sort()).toEqual(
       [
         'id',
+        'slug',
         'identity',
         'traits',
         'phenology',
@@ -52,13 +53,14 @@ describe('plantListQuery', () => {
 
   it('declara la selección de cada listado en orden y sin id', () => {
     expect(PLANT_LIST_FIELDS).toEqual([
+      'slug',
       'identity',
       'traits',
       'image',
       'status',
       'likesCount'
     ]);
-    expect(FAMILY_PLANTS_FIELDS).toEqual(['identity', 'status']);
+    expect(FAMILY_PLANTS_FIELDS).toEqual(['slug', 'identity', 'status']);
     expect(PLANT_LIST_FIELDS).not.toContain('id');
     expect(FAMILY_PLANTS_FIELDS).not.toContain('id');
   });

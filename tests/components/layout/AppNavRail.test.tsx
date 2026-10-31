@@ -21,9 +21,11 @@ describe('AppNavRail', () => {
 
     const plantsLink = screen.getByRole('link', { name: /Plantas/i });
     const familiesLink = screen.getByRole('link', { name: /Familias/i });
+    const relationsLink = screen.getByRole('link', { name: /Relaciones/i });
 
     expect(plantsLink).toHaveAttribute('href', '/plants');
     expect(familiesLink).toHaveAttribute('href', '/families');
+    expect(relationsLink).toHaveAttribute('href', '/plant-relations');
   });
 
   it('does not render home link in rail', () => {
@@ -115,11 +117,12 @@ describe('AppNavRail', () => {
 
       const tooltips = screen.getAllByRole('tooltip');
 
-      expect(tooltips).toHaveLength(4);
+      expect(tooltips).toHaveLength(5);
       expect(tooltips[0]).toHaveTextContent('Plantas');
       expect(tooltips[1]).toHaveTextContent('Familias');
       expect(tooltips[2]).toHaveTextContent('Anomalías');
       expect(tooltips[3]).toHaveTextContent('Insumos');
+      expect(tooltips[4]).toHaveTextContent('Relaciones');
     });
 
     it('does not render tooltip roles in expanded mode', () => {

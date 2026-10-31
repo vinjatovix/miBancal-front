@@ -159,3 +159,17 @@ export async function deletePlant(id: string, etag: string): Promise<void> {
     }
   });
 }
+
+export async function searchPlants(
+  searchQuery: string,
+  limit = 5
+): Promise<PaginatedResponse<PlantListItem>> {
+  const boundedLimit = Math.min(Math.max(1, limit), 5);
+  const query = QueryBuilder.create()
+    .add('filter[identity][contains]', searchQuery.trim())
+    .add(PLANT_FIELDS_QUERY_KEY, 'identity,image')
+    .add(PAGINATION_QUERY_KEYS.limit, boundedLimit)
+    .build();
+
+  return apiFetch<PaginatedResponse<PlantListItem>>(`/api/v1/plants?${query}`);
+}

@@ -18,7 +18,10 @@ export type ValueGroup =
   | 'plant.filters.rootSystemValues'
   | 'plant.cultivation.propagation.methodValues'
   | 'plant.cultivation.pruning.pruningTypeValues'
-  | 'plant.cultivation.pruning.pruningIntensityValues';
+  | 'plant.cultivation.pruning.pruningIntensityValues'
+  | 'plantRelation.mechanismValues'
+  | 'plantRelation.scopeValues'
+  | 'plantRelation.appliesViaValues';
 
 export function tValue(group: ValueGroup, value: string): string {
   const path = `${group}.${value}`;

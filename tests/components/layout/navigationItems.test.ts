@@ -3,17 +3,34 @@ import { describe, expect, it } from 'vitest';
 import { NAVIGATION_ITEMS } from '../../../src/components/layout/navigationItems';
 
 describe('navigationItems', () => {
-  it('contains at least one navigation item and plants, families, anomalies, and gardenInputs in order', () => {
+  it('contains at least one navigation item and plants, families, anomalies, gardenInputs, and plantRelations in order', () => {
     const ids = NAVIGATION_ITEMS.map((item) => item.id);
 
-    expect(ids).toEqual(['plants', 'families', 'anomalies', 'gardenInputs']);
+    expect(ids).toEqual([
+      'plants',
+      'families',
+      'anomalies',
+      'gardenInputs',
+      'plantRelations'
+    ]);
   });
 
   it.each([
     ['plants', 'app.nav.plants', '/plants', 'eco'],
     ['families', 'app.nav.families', '/families', 'biotech'],
     ['anomalies', 'app.nav.anomalies', '/anomalies', 'crisis_alert'],
-    ['gardenInputs', 'app.nav.gardenInputs', '/garden-inputs', 'local_pharmacy']
+    [
+      'gardenInputs',
+      'app.nav.gardenInputs',
+      '/garden-inputs',
+      'local_pharmacy'
+    ],
+    [
+      'plantRelations',
+      'app.nav.plantRelations',
+      '/plant-relations',
+      'plant_relations'
+    ]
   ] as const)(
     'configures %s with correct labelKey, path, and icon',
     (id, expectedLabelKey, expectedPath, expectedIcon) => {
@@ -117,6 +134,29 @@ describe('navigationItems', () => {
         );
 
         const result = gardenInputsItem?.isMatch(pathname);
+
+        expect(result).toBe(expectedResult);
+      }
+    );
+
+    it.each([
+      ['/plant-relations', true],
+      ['/plant-relations/', true],
+      ['/plant-relations/explorer', true],
+      ['/', false],
+      ['/plants', false],
+      ['/families', false],
+      ['/anomalies', false],
+      ['/garden-inputs', false],
+      ['/plant-relations-other', false]
+    ] as const)(
+      'evaluates plantRelations.isMatch(%s) to %s',
+      (pathname, expectedResult) => {
+        const plantRelationsItem = NAVIGATION_ITEMS.find(
+          (item) => item.id === 'plantRelations'
+        );
+
+        const result = plantRelationsItem?.isMatch(pathname);
 
         expect(result).toBe(expectedResult);
       }

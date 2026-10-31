@@ -23,6 +23,7 @@ import PlantCultivation from './components/PlantCultivation';
 import PlantEcology from './components/PlantEcology';
 import PlantHero from './components/PlantHero';
 import PlantNotes from './components/PlantNotes';
+import PlantRelationsSection from '../../../components/plants/PlantRelationsSection/PlantRelationsSection';
 import PlantResources from './components/PlantResources/PlantResources';
 import PlantSafety from './components/PlantSafety';
 import QuickFacts from './components/QuickFacts';
@@ -36,7 +37,7 @@ const PlantInlineEditForm = lazy(() =>
 );
 
 export default function PlantDetail() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const auth = useContext(AuthContext);
   const isEditor = auth?.isEditor ?? false;
@@ -45,20 +46,20 @@ export default function PlantDetail() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isDeleteConflict, setIsDeleteConflict] = useState<boolean>(false);
-  const [prevId, setPrevId] = useState<string | undefined>(id);
+  const [prevSlug, setPrevSlug] = useState<string | undefined>(slug);
   const { dismissAll, showErrorToast } = useToast();
 
-  if (prevId !== id) {
-    setPrevId(id);
+  if (prevSlug !== slug) {
+    setPrevSlug(slug);
     setIsEditing(false);
     setIsDeleteModalOpen(false);
     setIsDeleteConflict(false);
   }
 
-  const plantQuery = usePlant(id);
-  const plantForEditQuery = usePlantForEdit(id, isEditing || isEditor);
+  const plantQuery = usePlant(slug);
+  const plantForEditQuery = usePlantForEdit(slug, isEditing || isEditor);
   const deleteMutation = useDeletePlant();
-  const viewState = getDetailViewState(id, plantQuery);
+  const viewState = getDetailViewState(slug, plantQuery);
   const plant = plantQuery.data;
 
   const handleOpenDeleteModal = () => {
@@ -200,6 +201,12 @@ export default function PlantDetail() {
       </SectionErrorBoundary>
       <SectionErrorBoundary section="plant.ecology">
         <PlantEcology plant={plant} />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary section="plant.relations">
+        <PlantRelationsSection
+          plantId={plant.id}
+          currentPlantName={plant.identity.name.primary}
+        />
       </SectionErrorBoundary>
       <SectionErrorBoundary section="plant.notes">
         <PlantNotes plant={plant} />

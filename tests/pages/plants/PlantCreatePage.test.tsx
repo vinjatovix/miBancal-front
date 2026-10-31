@@ -116,7 +116,7 @@ describe('PlantCreatePage', () => {
     renderWithProviders(
       <Routes>
         <Route path="/plants/new" element={<PlantCreatePage />} />
-        <Route path="/plants/:id" element={<div>PLANT CREATED DETAIL</div>} />
+        <Route path="/plants/:slug" element={<div>PLANT CREATED DETAIL</div>} />
       </Routes>,
       { route: '/plants/new' }
     );

@@ -85,6 +85,7 @@ describe('router', () => {
     '/',
     '/plants',
     '/plants/678efda2-ac3d-4623-81cd-fc1d0ab80315',
+    '/plant-relations',
     '/families',
     '/garden-inputs',
     '/login',
@@ -124,6 +125,16 @@ describe('router', () => {
       expect(await screen.findByRole('main')).toBeInTheDocument();
     }
   );
+
+  it('lazy-resolves /plant-relations to the PlantRelationsPage', async () => {
+    renderRoute('/plant-relations');
+
+    expect(
+      await screen.findByRole('heading', {
+        name: t('plantRelations.title')
+      })
+    ).toBeInTheDocument();
+  });
 
   it('lazy-resolves /forgot-password to the ForgotPassword page', async () => {
     renderRoute('/forgot-password');
