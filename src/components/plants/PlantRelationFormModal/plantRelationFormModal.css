@@ -1,0 +1,167 @@
+.plant-relation-form-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.plant-relation-form-modal__error {
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border-radius: var(--radius-sm);
+  font: var(--type-body-sm);
+  word-break: break-word;
+}
+
+.plant-relation-form-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.plant-relation-form-modal__label {
+  font: var(--type-label-md);
+  color: var(--color-on-surface);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.plant-relation-form-modal__radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+  min-width: 0;
+}
+
+.plant-relation-form-modal__radio-label,
+.plant-relation-form-modal__checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  font: var(--type-body-md);
+  color: var(--color-on-surface);
+  cursor: pointer;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.plant-relation-form-modal__radio-label input,
+.plant-relation-form-modal__checkbox-label input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.plant-relation-form-modal__select,
+.plant-relation-form-modal__input,
+.plant-relation-form-modal__textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  font: var(--type-body-md);
+  color: var(--color-on-surface);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  box-sizing: border-box;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.plant-relation-form-modal__select:focus,
+.plant-relation-form-modal__input:focus,
+.plant-relation-form-modal__textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-fixed);
+}
+
+.plant-relation-form-modal__range {
+  width: 100%;
+  accent-color: var(--color-primary);
+}
+
+.plant-relation-form-modal__proximity-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.plant-relation-form-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.plant-relation-form-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xs) var(--space-md);
+  font: var(--type-label-lg);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.plant-relation-form-modal__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.plant-relation-form-modal__btn--secondary {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.plant-relation-form-modal__btn--secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-container-high);
+}
+
+.plant-relation-form-modal__btn--primary {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.plant-relation-form-modal__btn--primary:hover:not(:disabled) {
+  background-color: var(--color-primary-container);
+}
+
+@media (max-width: 480px) {
+  .plant-relation-form-modal__proximity-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  .plant-relation-form-modal__actions {
+    flex-direction: column-reverse;
+    gap: var(--space-xs);
+  }
+
+  .plant-relation-form-modal__btn {
+    width: 100%;
+    padding: var(--space-sm);
+  }
+}
+
+.plant-relation-form-modal__hint {
+  margin: 0;
+  font: var(--type-body-sm);
+  color: var(--color-on-surface-variant);
+}

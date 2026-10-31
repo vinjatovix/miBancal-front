@@ -1,0 +1,43 @@
+.anomaly-filters {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.anomaly-filters__header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.anomaly-filters__group {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.anomaly-filters__group label {
+  font: var(--type-label-lg);
+  color: var(--color-on-surface-variant);
+}
+
+.anomaly-filters__input {
+  width: 100%;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font: var(--type-body-lg);
+}
+
+.anomaly-filters__clear {
+  padding: var(--space-sm);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-outline);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font: var(--type-label-lg);
+  cursor: pointer;
+}
+
+.anomaly-filters__clear:hover {
+  background: var(--color-surface-container-high);
+}

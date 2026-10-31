@@ -1,0 +1,5 @@
+.plant-list--ecology li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+}

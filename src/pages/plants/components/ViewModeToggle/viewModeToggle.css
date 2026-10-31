@@ -1,0 +1,35 @@
+.view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.view-toggle__label {
+  font: var(--type-label-lg);
+  color: var(--color-on-surface-variant);
+}
+
+.view-toggle__segments {
+  display: inline-flex;
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.view-toggle__segment {
+  padding: var(--space-xs) var(--space-md);
+  border: none;
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font: var(--type-label-lg);
+  cursor: pointer;
+}
+
+.view-toggle__segment:not(:last-child) {
+  border-right: 1px solid var(--color-outline);
+}
+
+.view-toggle__segment--active {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}

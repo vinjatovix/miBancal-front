@@ -1,0 +1,311 @@
+.plant-relations-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.plant-relations-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.plant-relations-page__title {
+  margin: 0;
+  font: var(--type-headline-xl);
+  color: var(--color-on-surface);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.plant-relations-page__subtitle {
+  margin: 0;
+  font: var(--type-body-lg);
+  color: var(--color-on-surface-variant);
+  word-break: break-word;
+}
+
+.plant-relations-page__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.plant-relations-page__sort {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  font: var(--type-body-md);
+  color: var(--color-on-surface);
+}
+
+.plant-relations-page__sort label {
+  font: var(--type-label-md);
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+}
+
+.plant-relations-page__sort select {
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font: var(--type-body-md);
+  cursor: pointer;
+}
+
+.plant-relations-page__search-section {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-bottom: calc(-1 * var(--space-md));
+}
+
+.plant-relations-page__focal-bar {
+  position: sticky;
+  top: var(--app-header-height, 56px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.plant-relations-page__focal-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.plant-relations-page__focal-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--color-outline-variant);
+}
+
+.plant-relations-page__focal-avatar-fallback {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.plant-relations-page__focal-names {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.plant-relations-page__focal-name {
+  font: var(--type-headline-sm);
+  color: var(--color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plant-relations-page__focal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-outline-variant);
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-primary);
+  font: var(--type-label-md);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.plant-relations-page__focal-link:hover {
+  background-color: var(--color-surface-container);
+  border-color: var(--color-primary);
+}
+
+.plant-relations-page__empty-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-2xl) var(--space-lg);
+  text-align: center;
+  background-color: var(--color-surface-container-low);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.plant-relations-page__empty-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-container-high);
+  color: var(--color-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.plant-relations-page__empty-icon {
+  font-size: 32px;
+}
+
+.plant-relations-page__empty-title {
+  margin: 0;
+  font: var(--type-title-md);
+  color: var(--color-on-surface);
+}
+
+.plant-relations-page__empty-text {
+  margin: 0;
+  max-width: 440px;
+  font: var(--type-body-md);
+  color: var(--color-on-surface-variant);
+  line-height: 1.5;
+}
+
+.plant-relations-page__results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.plant-relations-page__tabs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.plant-relations-page__loader {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2xl);
+}
+
+.plant-relations-page__no-relations,
+.plant-relations-page__empty-filter {
+  margin: 0;
+  padding: var(--space-xl);
+  text-align: center;
+  font: var(--type-body-lg);
+  color: var(--color-on-surface-variant);
+  background-color: var(--color-surface-container-low);
+  border-radius: var(--radius-md);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.plant-relations-page__cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .plant-relations-page {
+    gap: var(--space-md);
+  }
+
+  .plant-relations-page__subtitle {
+    font: var(--type-body-md);
+  }
+
+  .plant-relations-page__focal-bar {
+    padding: var(--space-xs) var(--space-sm);
+    gap: var(--space-xs);
+  }
+
+  .plant-relations-page__focal-avatar,
+  .plant-relations-page__focal-avatar-fallback {
+    width: 36px;
+    height: 36px;
+  }
+
+  .plant-relations-page__focal-link span {
+    display: none;
+  }
+
+  .plant-relations-page__controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+
+  .plant-relations-page__sort {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .plant-relations-page__sort select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .plant-relations-page__tabs-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+
+  .plant-relations-page__controls .app-button {
+    width: 100%;
+  }
+}

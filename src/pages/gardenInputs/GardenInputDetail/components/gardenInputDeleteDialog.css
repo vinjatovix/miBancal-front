@@ -1,0 +1,23 @@
+.garden-input-delete-dialog__conflict {
+  margin-top: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border-radius: var(--radius-sm);
+}
+
+.garden-input-delete-dialog__conflict p {
+  margin: 0;
+  font: var(--type-body-sm);
+}
+
+.garden-input-delete-dialog__reload-btn {
+  margin-top: var(--space-xs);
+  padding: var(--space-2xs) var(--space-sm);
+  background: var(--color-error);
+  color: var(--color-on-error);
+  border: none;
+  border-radius: var(--radius-full);
+  font: var(--type-label-md);
+  cursor: pointer;
+}

@@ -1,0 +1,29 @@
+.favorite-button-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+.favorite-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface-variant);
+  box-shadow: var(--elevation-1);
+  cursor: pointer;
+}
+
+.favorite-button[aria-pressed='true'] {
+  color: var(--color-error);
+}
+
+.favorite-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

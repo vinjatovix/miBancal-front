@@ -1,0 +1,70 @@
+.app-shell {
+  --app-header-height: 56px;
+  --app-nav-rail-width: 72px;
+  --app-nav-rail-expanded-width: 240px;
+  --bottom-nav-height: 56px;
+}
+
+.app-shell--dev {
+  --dev-banner-height: 22px;
+  padding-bottom: var(--dev-banner-height);
+  box-sizing: border-box;
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+}
+
+@media (max-width: 767px) {
+  .app-nav-rail {
+    display: none;
+  }
+
+  .app-bottom-nav {
+    display: block;
+  }
+
+  .app-body > .app-content {
+    padding-bottom: calc(var(--bottom-nav-height, 56px) + var(--space-md));
+  }
+}
+
+@media (min-width: 768px) {
+  .app-nav-rail {
+    display: flex;
+  }
+
+  .app-bottom-nav {
+    display: none;
+  }
+}
+
+.app-menu-toggle {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.app-menu-toggle:hover {
+  background-color: var(--color-surface-container-high);
+}
+
+.app-menu-bar {
+  display: block;
+  width: 1.25rem;
+  height: 2px;
+  background-color: var(--color-on-surface);
+  border-radius: 1px;
+}

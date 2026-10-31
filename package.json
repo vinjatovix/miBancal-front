@@ -1,0 +1,86 @@
+{
+  "name": "agro-front",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24.22.1",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "typecheck": "tsc -b",
+    "check:static": "npm run check:audit && npm run check:ui-text-bypass && npm run check:colors && npm run check:emoji && npm run check:env && npm run check:test-focus && npm run check-circular",
+    "check": "npm run check:static && npm run typecheck && npm run lint && npm run format:check",
+    "check:colors": "node scripts/checkColorLiterals.ts",
+    "check:emoji": "node scripts/checkEmoji.ts",
+    "check:ui-text-bypass": "node scripts/checkUiTextRuleBypass.ts",
+    "check:env": "node scripts/checkEnvExample.ts",
+    "check:audit": "node scripts/checkAudit.ts",
+    "check:bundle": "node scripts/checkBundle.ts",
+    "check:test-focus": "node scripts/checkTestFocus.ts",
+    "icons:generate": "node scripts/generateIconPaths.ts",
+    "check-circular": "skott --displayMode=raw --showCircularDependencies --tsconfig ./tsconfig.json",
+    "commitlint": "commitlint",
+    "prepare": "husky",
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@fontsource/manrope": "5.3.0",
+    "@fontsource/newsreader": "5.3.0",
+    "@tanstack/react-query": "^5.100.11",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
+    "@eslint/js": "^10.0.1",
+    "@tanstack/react-query-devtools": "^5.100.11",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@twemoji/svg": "15.0.0",
+    "@types/node": "^24.12.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@typescript-eslint/utils": "^8.59.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.6",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "commitlint": "^21.0.1",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
+    "skott": "^0.35.11",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.59.2",
+    "vite": "^8.0.12",
+    "vitest": "^4.1.6",
+    "yaml": "^2.9.1"
+  }
+}

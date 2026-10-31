@@ -1,0 +1,37 @@
+.garden-input-edit-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.garden-input-edit-modal__conflict-banner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-error);
+}
+
+.garden-input-edit-modal__conflict-banner strong {
+  font: var(--type-title-sm);
+}
+
+.garden-input-edit-modal__conflict-banner p {
+  margin: 0;
+  font: var(--type-body-sm);
+}
+
+.garden-input-edit-modal__reload-btn {
+  align-self: flex-start;
+  margin-top: var(--space-xs);
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-error);
+  color: var(--color-on-error);
+  border: none;
+  border-radius: var(--radius-full);
+  font: var(--type-label-md);
+  cursor: pointer;
+}

@@ -1,0 +1,26 @@
+.catalog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.catalog-header__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.catalog-header__count {
+  margin: 0;
+  font: var(--type-title-md);
+  color: var(--color-on-surface);
+}
+
+.catalog-header__summary {
+  margin: 0;
+  font: var(--type-body-md);
+  color: var(--color-on-surface-variant);
+}

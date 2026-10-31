@@ -1,0 +1,34 @@
+.plant-like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+  font-weight: 500;
+}
+
+.plant-like-button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.plant-like-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.plant-like-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.plant-like-button__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}

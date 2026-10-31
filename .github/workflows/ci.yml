@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: ['^24.22.1']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          check-latest: true
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Audit
+        run: npm run check:audit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: UI text rule bypass
+        run: npm run check:ui-text-bypass
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Color literals
+        run: npm run check:colors
+
+      - name: Emoji characters
+        run: npm run check:emoji
+
+      - name: Env example
+        run: npm run check:env
+
+      - name: Test focus
+        run: npm run check:test-focus
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Circular deps
+        run: npm run check-circular
+
+      - name: Test
+        run: npm run test:coverage
+
+      - name: Build
+        run: npm run build
+
+      - name: Bundle budget
+        run: npm run check:bundle

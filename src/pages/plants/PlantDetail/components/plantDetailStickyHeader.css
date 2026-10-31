@@ -1,0 +1,110 @@
+.plant-detail__sticky-header {
+  position: sticky;
+  top: var(--app-header-height, 64px);
+  z-index: 200;
+
+  background: var(--color-surface-translucent);
+  backdrop-filter: blur(8px);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.plant-detail__sticky-title {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font: var(--type-headline-lg);
+}
+
+.plant-detail__sticky-aliases {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin-top: var(--space-xs);
+}
+
+.plant-detail__sticky-heading {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.plant-detail__sticky-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs, 0.5rem);
+  margin-left: auto;
+}
+
+.plant-detail__sticky-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs, 0.25rem);
+  padding: 0.375rem 0.75rem;
+  font-family: var(--font-ui, 'Manrope', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-fixed);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+}
+
+.plant-detail__sticky-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs, 0.25rem);
+  padding: 0.375rem 0.75rem;
+  font-family: var(--font-ui, 'Manrope', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-error);
+  background: transparent;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+}
+
+.plant-detail__sticky-delete-btn:hover {
+  background-color: var(--color-error-container);
+}
+
+.plant-detail__sticky-delete-btn:disabled,
+.plant-detail__sticky-edit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .plant-detail__sticky-header {
+    padding-bottom: var(--space-xs);
+    gap: var(--space-xs);
+  }
+
+  .plant-detail__sticky-heading {
+    gap: var(--space-xs);
+  }
+
+  .plant-detail__sticky-title {
+    font: var(--type-headline-md);
+  }
+
+  .plant-detail__sticky-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .plant-detail__sticky-edit-btn,
+  .plant-detail__sticky-delete-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+}
