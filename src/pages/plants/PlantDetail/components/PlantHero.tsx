@@ -24,18 +24,34 @@ export default function PlantHero({ plant }: Props) {
 
   return (
     <header className="plant-hero">
-      <div className="plant-hero__image-wrapper">
-        <img
-          className="plant-hero__image"
-          src={plant.image.url}
-          alt={plant.identity.name.primary}
-        />
-        <FavoriteButton
-          plantId={plant.id}
-          isFavorite={bookmarks.data?.has(plant.id) ?? false}
-          isReady={bookmarks.data !== undefined}
-        />
-      </div>
+      <figure className="plant-hero__figure">
+        <div className="plant-hero__image-wrapper">
+          <img
+            className="plant-hero__image"
+            src={plant.image.url}
+            alt={plant.identity.name.primary}
+          />
+          <FavoriteButton
+            plantId={plant.id}
+            isFavorite={bookmarks.data?.has(plant.id) ?? false}
+            isReady={bookmarks.data !== undefined}
+          />
+        </div>
+        {(plant.image.title || plant.image.source) && (
+          <figcaption className="plant-hero__caption">
+            {plant.image.title && (
+              <span className="plant-hero__caption-title">
+                {plant.image.title}
+              </span>
+            )}
+            {plant.image.source && (
+              <span className="plant-hero__caption-source">
+                {t('plant.hero.source', { source: plant.image.source })}
+              </span>
+            )}
+          </figcaption>
+        )}
+      </figure>
 
       {familyView?.kind === 'linked' && (
         <Link

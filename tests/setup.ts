@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom';
 import { beforeEach, vi } from 'vitest';
 
+import '../src/i18n/messages/features';
+
 window.scrollTo = vi.fn();
 
 Object.defineProperty(window, 'matchMedia', {

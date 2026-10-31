@@ -127,3 +127,59 @@ describe('PlantHero: image', () => {
     ).toHaveAttribute('src', 'https://example.org/plants/primary.jpg');
   });
 });
+
+describe('PlantHero: figcaption with title and source', () => {
+  it('renders figcaption with both title and source when both present', () => {
+    const plant = buildPlant({
+      image: {
+        url: 'https://example.org/plants/primary.jpg',
+        title: 'Seedling stage',
+        source: 'Wikimedia Commons'
+      }
+    });
+
+    renderWithProviders(<PlantHero plant={plant} />);
+
+    const figcaption = screen.getByText('Seedling stage');
+    expect(figcaption).toBeInTheDocument();
+    expect(figcaption).toHaveClass('plant-hero__caption-title');
+    expect(screen.getByText(/Fuente: Wikimedia Commons/)).toBeInTheDocument();
+  });
+});
+
+describe('PlantHero: figcaption with title only', () => {
+  it('renders figcaption with title only when source is missing', () => {
+    const plant = buildPlant({
+      image: {
+        url: 'https://example.org/plants/primary.jpg',
+        title: 'Leaf detail'
+      }
+    });
+
+    renderWithProviders(<PlantHero plant={plant} />);
+
+    expect(
+      screen.getByText('Leaf detail', {
+        selector: '.plant-hero__caption-title'
+      })
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Fuente:/)).not.toBeInTheDocument();
+  });
+});
+
+describe('PlantHero: no figcaption', () => {
+  it('does not render figcaption when title and source are both missing', () => {
+    const plant = buildPlant({
+      image: {
+        url: 'https://example.org/plants/primary.jpg'
+      }
+    });
+
+    renderWithProviders(<PlantHero plant={plant} />);
+
+    const figure = screen.getByRole('figure');
+    expect(figure).toBeInTheDocument();
+    const figcaption = figure.querySelector('figcaption');
+    expect(figcaption).not.toBeInTheDocument();
+  });
+});

@@ -5,15 +5,53 @@
   border-bottom: 1px solid var(--color-outline-variant);
 }
 
-.plant-hero__image-wrapper {
-  position: relative;
+.plant-hero__figure {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--color-surface-container-low);
 }
 
 .plant-hero__image {
   width: 100%;
   max-height: 320px;
   object-fit: cover;
+  object-position: center;
+  display: block;
   border-radius: var(--radius-lg);
+}
+
+.plant-hero__figure .plant-hero__image {
+  border-radius: 0;
+}
+
+.plant-hero__image-wrapper {
+  position: relative;
+}
+
+.plant-hero__caption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  align-items: baseline;
+  justify-content: center;
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  font: var(--type-body-sm);
+  text-align: center;
+}
+
+.plant-hero__caption-title {
+  font-weight: 500;
+  color: var(--color-on-surface);
+}
+
+.plant-hero__caption-source {
+  opacity: 0.8;
 }
 
 .plant-hero__image-wrapper .favorite-button-wrapper {
