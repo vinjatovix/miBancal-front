@@ -60,4 +60,22 @@ describe('SectionErrorBoundary', () => {
       }
     ]);
   });
+
+  it('does not render error message when child component returns null', () => {
+    function NullReturningComponent() {
+      return null;
+    }
+
+    const { container } = render(
+      <SectionErrorBoundary section="plant.ecology">
+        <NullReturningComponent />
+      </SectionErrorBoundary>
+    );
+
+    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(t('errors.section.message'))
+    ).not.toBeInTheDocument();
+  });
 });

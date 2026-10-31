@@ -1,8 +1,9 @@
-import { dictionary } from './dictionary';
+import '../messages/core';
+import { getMessages } from './registry';
 import type { I18nKey } from './types';
 
 export function lookup(path: string): string | undefined {
-  let value: unknown = dictionary;
+  let value: unknown = getMessages();
 
   for (const part of path.split('.')) {
     if (typeof value !== 'object' || value === null || !(part in value)) {

@@ -36,9 +36,13 @@ export const routes: RouteObject[] = withLazyFallbacks([
           { path: '/', element: <Home /> },
           {
             path: '/plants',
-            lazy: async () => ({
-              Component: (await import('../pages/plants/PlantsPage')).default
-            })
+            lazy: async () => {
+              const [{ default: Component }] = await Promise.all([
+                import('../pages/plants/PlantsPage'),
+                import('../i18n/messages/features')
+              ]);
+              return { Component };
+            }
           },
           {
             path: '/plants/new',
@@ -46,7 +50,8 @@ export const routes: RouteObject[] = withLazyFallbacks([
               const [{ default: PlantCreatePage }, { EditorialRoute }] =
                 await Promise.all([
                   import('../pages/plants/PlantCreatePage'),
-                  import('../shared/auth/EditorialRoute')
+                  import('../shared/auth/EditorialRoute'),
+                  import('../i18n/messages/features')
                 ]);
               return {
                 Component: () => (
@@ -59,25 +64,33 @@ export const routes: RouteObject[] = withLazyFallbacks([
           },
           {
             path: '/plants/:slug',
-            lazy: async () => ({
-              Component: (
-                await import('../pages/plants/PlantDetail/PlantDetail')
-              ).default
-            })
+            lazy: async () => {
+              const [{ default: Component }] = await Promise.all([
+                import('../pages/plants/PlantDetail/PlantDetail'),
+                import('../i18n/messages/features')
+              ]);
+              return { Component };
+            }
           },
           {
             path: '/plant-relations',
-            lazy: async () => ({
-              Component: (
-                await import('../pages/plantRelations/PlantRelationsPage')
-              ).default
-            })
+            lazy: async () => {
+              const [{ default: Component }] = await Promise.all([
+                import('../pages/plantRelations/PlantRelationsPage'),
+                import('../i18n/messages/features')
+              ]);
+              return { Component };
+            }
           },
           {
             path: '/families',
-            lazy: async () => ({
-              Component: (await import('../pages/families/FamilyList')).default
-            })
+            lazy: async () => {
+              const [{ default: Component }] = await Promise.all([
+                import('../pages/families/FamilyList'),
+                import('../i18n/messages/features')
+              ]);
+              return { Component };
+            }
           },
           {
             path: '/families/new',
@@ -85,7 +98,8 @@ export const routes: RouteObject[] = withLazyFallbacks([
               const [{ default: FamilyCreatePage }, { EditorialRoute }] =
                 await Promise.all([
                   import('../pages/families/FamilyCreatePage'),
-                  import('../shared/auth/EditorialRoute')
+                  import('../shared/auth/EditorialRoute'),
+                  import('../i18n/messages/features')
                 ]);
               return {
                 Component: () => (
@@ -98,18 +112,23 @@ export const routes: RouteObject[] = withLazyFallbacks([
           },
           {
             path: '/families/:id',
-            lazy: async () => ({
-              Component: (
-                await import('../pages/families/FamilyDetail/FamilyDetail')
-              ).default
-            })
+            lazy: async () => {
+              const [{ default: Component }] = await Promise.all([
+                import('../pages/families/FamilyDetail/FamilyDetail'),
+                import('../i18n/messages/features')
+              ]);
+              return { Component };
+            }
           },
           {
             path: '/anomalies',
-            lazy: async () => ({
-              Component: (await import('../pages/anomalies/AnomaliesPage'))
-                .default
-            })
+            lazy: async () => {
+              const [{ default: Component }] = await Promise.all([
+                import('../pages/anomalies/AnomaliesPage'),
+                import('../i18n/messages/features')
+              ]);
+              return { Component };
+            }
           },
           {
             path: '/anomalies/new',
@@ -117,7 +136,8 @@ export const routes: RouteObject[] = withLazyFallbacks([
               const [{ default: AnomalyCreatePage }, { EditorialRoute }] =
                 await Promise.all([
                   import('../pages/anomalies/AnomalyCreatePage'),
-                  import('../shared/auth/EditorialRoute')
+                  import('../shared/auth/EditorialRoute'),
+                  import('../i18n/messages/features')
                 ]);
               return {
                 Component: () => (
@@ -130,19 +150,23 @@ export const routes: RouteObject[] = withLazyFallbacks([
           },
           {
             path: '/anomalies/:slug',
-            lazy: async () => ({
-              Component: (
-                await import('../pages/anomalies/AnomalyDetail/AnomalyDetail')
-              ).default
-            })
+            lazy: async () => {
+              const [{ default: Component }] = await Promise.all([
+                import('../pages/anomalies/AnomalyDetail/AnomalyDetail'),
+                import('../i18n/messages/features')
+              ]);
+              return { Component };
+            }
           },
           {
             path: '/garden-inputs',
-            lazy: async () => ({
-              Component: (
-                await import('../pages/gardenInputs/GardenInputsPage')
-              ).default
-            })
+            lazy: async () => {
+              const [{ default: Component }] = await Promise.all([
+                import('../pages/gardenInputs/GardenInputsPage'),
+                import('../i18n/messages/features')
+              ]);
+              return { Component };
+            }
           },
           {
             path: '/garden-inputs/new',
@@ -150,7 +174,8 @@ export const routes: RouteObject[] = withLazyFallbacks([
               const [{ default: GardenInputCreatePage }, { EditorialRoute }] =
                 await Promise.all([
                   import('../pages/gardenInputs/GardenInputCreatePage'),
-                  import('../shared/auth/EditorialRoute')
+                  import('../shared/auth/EditorialRoute'),
+                  import('../i18n/messages/features')
                 ]);
               return {
                 Component: () => (
@@ -163,11 +188,13 @@ export const routes: RouteObject[] = withLazyFallbacks([
           },
           {
             path: '/garden-inputs/:slug',
-            lazy: async () => ({
-              Component: (
-                await import('../pages/gardenInputs/GardenInputDetail/GardenInputDetailPage')
-              ).default
-            })
+            lazy: async () => {
+              const [{ default: Component }] = await Promise.all([
+                import('../pages/gardenInputs/GardenInputDetail/GardenInputDetailPage'),
+                import('../i18n/messages/features')
+              ]);
+              return { Component };
+            }
           },
           {
             path: '/login',

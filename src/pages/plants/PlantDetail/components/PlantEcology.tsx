@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function PlantEcology({ plant }: Props) {
-  const benefits = plant.knowledge.ecology.strategicBenefits;
+  const benefits = plant.knowledge.ecology?.strategicBenefits ?? [];
 
   if (!benefits.length) {
     return null;
