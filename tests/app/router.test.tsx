@@ -58,6 +58,20 @@ describe('router', () => {
     expect(router.state.historyAction).toBe('POP');
   });
 
+  it('shows the offline page heading on the offline route', () => {
+    renderRoute('/offline');
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: t('offline.title') })
+    ).toBeInTheDocument();
+  });
+
+  it('preserves the offline pathname in router state', () => {
+    const router = renderRoute('/offline');
+
+    expect(router.state.location.pathname).toBe('/offline');
+  });
+
   it('shows the app error screen when a layout throws', async () => {
     const errorSpy = silenceConsoleError();
     const [mainRoute] = routes;

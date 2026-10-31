@@ -4,6 +4,7 @@ import ProtectedRoute from '../components/auth/ProtectedRoute';
 import MainLayout from '../components/layout/MainLayout';
 import Home from '../pages/Home';
 import NotFoundPage from '../pages/NotFoundPage';
+import OfflinePage from '../pages/OfflinePage';
 import RouteErrorFallback from '../pages/RouteErrorFallback';
 import { LayoutErrorFallback } from './LayoutErrorFallback';
 
@@ -264,6 +265,7 @@ export const routes: RouteObject[] = withLazyFallbacks([
               };
             }
           },
+          { path: '/offline', element: <OfflinePage /> },
           { path: '*', element: <NotFoundPage /> }
         ]
       }
