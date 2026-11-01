@@ -83,9 +83,7 @@ describe('AnomalyCreatePage', () => {
       'aria-invalid',
       'true'
     );
-    expect(
-      screen.getByText(/El formulario contiene errores/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Revisa el formulario/)).toBeInTheDocument();
   });
 
   it('blocks submission with an invalid slug', async () => {
@@ -98,9 +96,7 @@ describe('AnomalyCreatePage', () => {
     await user.click(screen.getByRole('button', { name: 'Guardar' }));
 
     expect(mockedCreateAnomaly).not.toHaveBeenCalled();
-    expect(
-      screen.getByText(/El slug solo puede contener letras minúsculas/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Usa solo letras minúsculas/)).toBeInTheDocument();
   });
 
   it('creates the anomaly and redirects to its detail page by slug', async () => {

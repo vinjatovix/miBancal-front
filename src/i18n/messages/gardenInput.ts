@@ -68,7 +68,7 @@ export const gardenInputMessages = {
       deleting: 'Eliminando...',
       delete_confirm_title: '¿Eliminar insumo?',
       delete_confirm_message:
-        'El insumo pasará al estado eliminado y solo será visible para editores. ¿Deseas continuar?',
+        'El insumo quedará borrado. Solo lo verán los editores. ¿Quieres seguir?',
       delete_confirm_action: 'Eliminar insumo',
       delete_cancel_action: 'Cancelar',
       active_ingredients: 'Principios activos',
@@ -115,7 +115,7 @@ export const gardenInputMessages = {
       slug: 'Identificador (slug)',
       slug_placeholder: 'ej-purin-ortiga',
       slug_hint:
-        'Identificador en minúsculas y separado por guiones (kebab-case). Inmutable tras la creación.',
+        'Usa minúsculas y separa las palabras con guiones. No se puede cambiar después.',
       slug_locked_hint: 'El identificador no se puede modificar.',
       category: 'Categoría',
       category_placeholder: 'Selecciona una categoría',
@@ -198,7 +198,7 @@ export const gardenInputMessages = {
       errors: {
         slug_required: 'El identificador es obligatorio.',
         slug_invalid:
-          'El slug solo admite letras minúsculas, números y guiones sencillos (1-200 caracteres).',
+          'Usa solo letras minúsculas, números y guiones. Entre 1 y 200 caracteres.',
         name_required: 'El nombre es obligatorio.',
         name_too_long: 'El nombre no puede superar los 200 caracteres.',
         category_required: 'Debes seleccionar una categoría.',

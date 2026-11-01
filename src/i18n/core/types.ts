@@ -3,6 +3,7 @@ import type { coreMessages } from '../messages/core';
 import type { designSystemMessages } from '../messages/designSystem';
 import type { familyMessages } from '../messages/family';
 import type { gardenInputMessages } from '../messages/gardenInput';
+import type { glossaryMessages } from '../messages/glossary';
 import type { plantMessages } from '../messages/plant';
 import type { plantRelationsMessages } from '../messages/plantRelations';
 import type { pwaMessages } from '../messages/pwa';
@@ -16,6 +17,7 @@ export type Dictionary = typeof coreMessages &
   typeof plantRelationsMessages &
   typeof pwaMessages &
   typeof themeMessages &
+  typeof glossaryMessages &
   typeof designSystemMessages;
 
 type Join<K, P> = K extends string

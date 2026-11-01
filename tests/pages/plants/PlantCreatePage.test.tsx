@@ -249,7 +249,7 @@ describe('PlantCreatePage', () => {
 
     expect(
       screen.getByText(
-        'El formulario contiene errores o campos obligatorios pendientes de completar.'
+        'Revisa el formulario: hay errores o faltan datos obligatorios.'
       )
     ).toBeInTheDocument();
   });

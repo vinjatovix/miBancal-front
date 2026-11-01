@@ -5,8 +5,7 @@ export const plantMessages = {
     form: {
       title_create: 'Nueva planta',
       title_edit: 'Editar planta',
-      subtitle_create:
-        'Introduce los datos botánicos y agronómicos para incorporar una nueva especie al catálogo.',
+      subtitle_create: 'Añade los datos de la planta para sumarla al catálogo.',
       subtitle_edit:
         'Modifica los atributos botánicos y agronómicos de la planta.',
       sections: {
@@ -133,12 +132,12 @@ export const plantMessages = {
         sowing_months_required: 'Debes seleccionar al menos un mes de siembra.',
         family_required: 'Debes seleccionar una familia botánica.',
         summary:
-          'El formulario contiene errores o campos obligatorios pendientes de completar.'
+          'Revisa el formulario: hay errores o faltan datos obligatorios.'
       },
       conflict: {
-        title: 'Conflicto de concurrencia (412)',
+        title: 'Conflicto de edición',
         message:
-          'Esta planta fue modificada por otro usuario mientras la editabas. Para evitar sobrescribir información, debes recargar los datos actualizados.',
+          'Otra persona cambió esta planta mientras la editabas. Recarga la página para no perder esos cambios.',
         reload_button: 'Recargar datos actuales'
       },
       duplicate_error: 'Ya existe una planta con este nombre o identificador.',
@@ -263,8 +262,7 @@ export const plantMessages = {
       loading: 'Cargando planta...',
       edit_plant: 'Editar',
       delete_plant: 'Eliminar',
-      delete_confirm:
-        '¿Estás seguro de que deseas eliminar esta planta del catálogo?',
+      delete_confirm: '¿Seguro que quieres borrar esta planta del catálogo?',
       delete_modal_title: 'Eliminar planta',
       delete_modal_subtitle: 'Catálogo botánico',
       delete_modal_prompt:

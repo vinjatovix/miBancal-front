@@ -168,9 +168,7 @@ describe('FamilyInlineEditForm', () => {
 
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
-    expect(
-      await screen.findByText('Conflicto de edición (412)')
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Conflicto de edición')).toBeInTheDocument();
 
     const toastRegion = await screen.findByRole('region', {
       name: t('toast.region_label')

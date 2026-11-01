@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { monthNames } from '../../../../i18n/core/monthNames';
 import { t } from '../../../../i18n/core/t';
+import { TermHelp } from '../../../../shared/components/TermHelp';
 import type { PlantFormState } from './types';
 
 interface Props {
@@ -43,6 +44,7 @@ export function PlantPhenologySection({ values, errors, onChange }: Props) {
     <fieldset className="plant-form__section">
       <legend className="plant-form__section-title">
         {t('plant.form.sections.phenology')}
+        <TermHelp termKey="phenology" />
       </legend>
 
       <div className="plant-form__field">
@@ -229,6 +231,7 @@ export function PlantPhenologySection({ values, errors, onChange }: Props) {
         <label htmlFor="pollination-type-select" className="plant-form__label">
           {t('plant.form.fields.pollination_type')}
         </label>
+        <TermHelp termKey="pollination" />
         <select
           id="pollination-type-select"
           className="plant-form__select"

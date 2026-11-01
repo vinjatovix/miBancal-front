@@ -92,7 +92,7 @@ describe('validateGardenInputForm', () => {
     const errors = validateGardenInputForm(values, { isCreate: true });
 
     expect(errors.slug).toBe(
-      'El slug solo admite letras minúsculas, números y guiones sencillos (1-200 caracteres).'
+      'Usa solo letras minúsculas, números y guiones. Entre 1 y 200 caracteres.'
     );
   });
 

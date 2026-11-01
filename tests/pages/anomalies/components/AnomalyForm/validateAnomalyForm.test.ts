@@ -35,7 +35,7 @@ describe('validateAnomalyForm', () => {
       const errors = validateAnomalyForm(validState({ slug }), 'create');
 
       expect(errors.slug).toBe(
-        'El slug solo puede contener letras minúsculas, números y guiones sencillos (máximo 120).'
+        'Usa solo letras minúsculas, números y guiones. Máximo 120 caracteres.'
       );
     }
   );
@@ -177,7 +177,7 @@ describe('validateAnomalyForm', () => {
     const errors = validateAnomalyForm(state, 'edit');
 
     expect(errors.confusedWith).toBe(
-      'Cada identificador debe ser un slug válido (minúsculas, números y guiones, máx. 120 caracteres).'
+      'Cada identificador usa minúsculas, números y guiones. Máximo 120 caracteres.'
     );
   });
 
