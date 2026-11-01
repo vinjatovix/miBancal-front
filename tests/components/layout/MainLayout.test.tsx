@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import MainLayout from '../../../src/components/layout/MainLayout';
 import { AuthProvider } from '../../../src/shared/auth/AuthContext';
+import { ThemeProvider } from '../../../src/shared/theme';
 
 const mockScrollRestoration = vi.fn();
 
@@ -28,7 +29,9 @@ function renderMainLayout() {
       path: '/',
       element: (
         <AuthProvider>
-          <MainLayout />
+          <ThemeProvider>
+            <MainLayout />
+          </ThemeProvider>
         </AuthProvider>
       ),
       children: [
@@ -148,5 +151,15 @@ describe('MainLayout', () => {
     renderMainLayout();
 
     expect(mockScrollRestoration).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders theme toggle button in header with accessibility attributes', () => {
+    renderMainLayout();
+
+    const themeToggle = screen.getByRole('button', {
+      name: /tema/i
+    });
+    expect(themeToggle).toBeInTheDocument();
+    expect(themeToggle).toHaveClass('theme-toggle');
   });
 });

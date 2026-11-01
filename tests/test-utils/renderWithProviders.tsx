@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from './createTestQueryClient';
 import { AuthProvider } from '../../src/shared/auth/AuthContext';
 import { setStoredToken } from '../../src/shared/auth/session';
+import { ThemeProvider } from '../../src/shared/theme';
 import { ToastProvider } from '../../src/shared/toast/ToastContext';
 import { toastStore } from '../../src/shared/toast/toastStore';
 
@@ -34,13 +35,15 @@ export function renderWithProviders(
     ...render(
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <ToastProvider>
-            <MemoryRouter initialEntries={[options?.route ?? '/']}>
-              <Routes>
-                <Route path={options?.path ?? '*'} element={ui} />
-              </Routes>
-            </MemoryRouter>
-          </ToastProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              <MemoryRouter initialEntries={[options?.route ?? '/']}>
+                <Routes>
+                  <Route path={options?.path ?? '*'} element={ui} />
+                </Routes>
+              </MemoryRouter>
+            </ToastProvider>
+          </ThemeProvider>
         </AuthProvider>
       </QueryClientProvider>
     )

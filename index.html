@@ -7,8 +7,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="MiBancal" />
+    <meta name="theme-color" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>MiBancal</title>
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem('agro_theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch (_) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
