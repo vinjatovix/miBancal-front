@@ -42,7 +42,7 @@ export const anomalyMessages = {
       deleting: 'Eliminando...',
       delete_confirm_title: 'Eliminar anomalía',
       delete_confirm_message:
-        'La anomalía dejará de ser visible para el público. ¿Deseas eliminarla?',
+        'La gente ya no verá esta anomalía. ¿Quieres borrarla?',
       delete_confirm_action: 'Eliminar anomalía',
       delete_error: 'No se ha podido eliminar la anomalía.',
       delete_conflict:
@@ -146,7 +146,7 @@ export const anomalyMessages = {
       validation: {
         required_field: 'Este campo es obligatorio.',
         invalid_slug:
-          'El slug solo puede contener letras minúsculas, números y guiones sencillos (máximo 120).',
+          'Usa solo letras minúsculas, números y guiones. Máximo 120 caracteres.',
         name_too_long: 'Máximo 200 caracteres.',
         text_too_long: 'Máximo 2000 caracteres.',
         invalid_category: 'Selecciona una categoría válida.',
@@ -154,12 +154,12 @@ export const anomalyMessages = {
         invalid_resource_url:
           'La URL del recurso debe comenzar por http:// o https:// y tener como máximo 2048 caracteres.',
         invalid_confused_slug:
-          'Cada identificador debe ser un slug válido (minúsculas, números y guiones, máx. 120 caracteres).',
+          'Cada identificador usa minúsculas, números y guiones. Máximo 120 caracteres.',
         confused_slug_self: 'La anomalía no puede confundirse consigo misma.',
         confused_slug_max: 'No se pueden añadir más de 200 identificadores.',
         resources_max: 'No se pueden añadir más de 200 recursos en total.',
         summary:
-          'El formulario contiene errores o campos obligatorios pendientes de completar.'
+          'Revisa el formulario: hay errores o faltan datos obligatorios.'
       },
       conflict: {
         title: 'Conflicto de edición',

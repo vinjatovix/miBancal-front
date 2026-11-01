@@ -63,8 +63,7 @@ export const plantRelationsMessages = {
       saving: 'Guardando...',
       cancel: 'Cancelar',
       deleteConfirmTitle: '¿Eliminar relación botánica?',
-      deleteConfirmText:
-        'Esta acción eliminará de forma permanente esta asociación del catálogo.',
+      deleteConfirmText: 'Se borrará esta relación del catálogo para siempre.',
       deleteConfirmButton: 'Eliminar',
       deleting: 'Eliminando...',
       errorSave:
@@ -96,7 +95,7 @@ export const plantRelationsMessages = {
     explorer: {
       emptyTitle: 'Explora asociaciones en el huerto',
       initialPrompt:
-        'Selecciona o busca una planta para explorar sus relaciones y asociaciones ecológicas',
+        'Elige o busca una planta para ver con cuáles se lleva bien o mal.',
       emptyFilter: 'No hay relaciones que coincidan con el filtro seleccionado'
     }
   }

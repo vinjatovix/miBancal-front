@@ -79,7 +79,7 @@ describe('PlantRelationsPage', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Selecciona o busca una planta para explorar sus relaciones y asociaciones ecológicas'
+        'Elige o busca una planta para ver con cuáles se lleva bien o mal.'
       )
     ).toBeInTheDocument();
   });

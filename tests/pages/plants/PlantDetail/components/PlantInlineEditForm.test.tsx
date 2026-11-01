@@ -269,9 +269,7 @@ describe('PlantInlineEditForm', () => {
 
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
-    const conflictTitle = await screen.findByText(
-      'Conflicto de concurrencia (412)'
-    );
+    const conflictTitle = await screen.findByText('Conflicto de edición');
     expect(conflictTitle).toBeInTheDocument();
 
     const toastRegion = await screen.findByRole('region', {

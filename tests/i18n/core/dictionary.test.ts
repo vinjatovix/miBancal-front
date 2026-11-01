@@ -249,7 +249,7 @@ describe('catalog edit and creation dictionary keys', () => {
     ['plant.detail.delete_plant', 'Eliminar'],
     [
       'plant.detail.delete_confirm',
-      '¿Estás seguro de que deseas eliminar esta planta del catálogo?'
+      '¿Seguro que quieres borrar esta planta del catálogo?'
     ],
     ['plant.detail.delete_modal_title', 'Eliminar planta'],
     ['plant.detail.delete_modal_subtitle', 'Catálogo botánico'],
@@ -284,15 +284,15 @@ describe('catalog edit and creation dictionary keys', () => {
       'auth.insufficient_permissions.back_to_families',
       'Volver al catálogo de familias'
     ],
-    ['plant.form.conflict.title', 'Conflicto de concurrencia (412)'],
-    ['family.form.conflict.title', 'Conflicto de edición (412)'],
+    ['plant.form.conflict.title', 'Conflicto de edición'],
+    ['family.form.conflict.title', 'Conflicto de edición'],
     [
       'plant.form.validation.summary',
-      'El formulario contiene errores o campos obligatorios pendientes de completar.'
+      'Revisa el formulario: hay errores o faltan datos obligatorios.'
     ],
     [
       'family.form.validation.summary',
-      'El formulario contiene errores o campos obligatorios pendientes de completar.'
+      'Revisa el formulario: hay errores o faltan datos obligatorios.'
     ]
   ] as const)('translates %s to %s', (key, expected) => {
     const result = t(key);

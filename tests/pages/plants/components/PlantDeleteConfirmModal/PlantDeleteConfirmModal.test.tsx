@@ -126,7 +126,7 @@ describe('PlantDeleteConfirmModal', () => {
     );
 
     expect(
-      screen.getByText(/Esta planta fue modificada por otro usuario/i)
+      screen.getByText(/Otra persona cambió esta planta/i)
     ).toBeInTheDocument();
     expect(onReload).toHaveBeenCalled();
   });

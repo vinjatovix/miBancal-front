@@ -43,15 +43,14 @@ export const familyMessages = {
       },
       validation: {
         required_field: 'Este campo es obligatorio.',
-        invalid_slug:
-          'El slug solo puede contener letras minúsculas, números y guiones sencillos.',
+        invalid_slug: 'Usa solo letras minúsculas, números y guiones.',
         highlights_required: 'Debes introducir al menos un aspecto destacado.',
         positive_integer: 'Debe ser un número entero mayor o igual a 1.',
         summary:
-          'El formulario contiene errores o campos obligatorios pendientes de completar.'
+          'Revisa el formulario: hay errores o faltan datos obligatorios.'
       },
       conflict: {
-        title: 'Conflicto de edición (412)',
+        title: 'Conflicto de edición',
         message:
           'La familia fue modificada por otro usuario. Recarga la ficha para ver los datos más recientes.',
         reload_button: 'Recargar ficha'

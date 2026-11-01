@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { t } from '../../../../i18n/core/t';
+import { TermHelp } from '../../../../shared/components/TermHelp';
 import type { PlantFormState } from './types';
 
 interface Props {
@@ -42,6 +43,7 @@ export function PlantKnowledgeSection({ values, errors, onChange }: Props) {
     <fieldset className="plant-form__section">
       <legend className="plant-form__section-title">
         {t('plant.form.sections.knowledge')}
+        <TermHelp termKey="edaphoclimatic" />
       </legend>
 
       <div className="plant-form__field">
