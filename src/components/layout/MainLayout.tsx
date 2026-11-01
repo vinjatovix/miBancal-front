@@ -8,6 +8,7 @@ import AccountDropdown from './AccountDropdown/AccountDropdown';
 import AppBottomNav from './AppBottomNav/AppBottomNav';
 import AppNavRail from './AppNavRail/AppNavRail';
 import DevBanner from './DevBanner/DevBanner';
+import ThemeToggle from './ThemeToggle/ThemeToggle';
 import { useNavRailState } from './useNavRailState';
 import './mainLayout.css';
 
@@ -28,26 +29,30 @@ export default function MainLayout() {
           </Link>
         </div>
 
-        <button
-          ref={toggleButtonRef}
-          type="button"
-          className="app-menu-toggle"
-          aria-label={t('app.nav.account_menu')}
-          aria-expanded={isOpen}
-          aria-haspopup="true"
-          aria-controls="account-dropdown-menu"
-          onClick={() => setIsOpen((prev) => !prev)}
-          onKeyDown={(event) => {
-            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-              event.preventDefault();
-              setIsOpen(true);
-            }
-          }}
-        >
-          <span className="app-menu-bar" />
-          <span className="app-menu-bar" />
-          <span className="app-menu-bar" />
-        </button>
+        <div className="app-header-controls">
+          <ThemeToggle />
+
+          <button
+            ref={toggleButtonRef}
+            type="button"
+            className="app-menu-toggle"
+            aria-label={t('app.nav.account_menu')}
+            aria-expanded={isOpen}
+            aria-haspopup="true"
+            aria-controls="account-dropdown-menu"
+            onClick={() => setIsOpen((prev) => !prev)}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                setIsOpen(true);
+              }
+            }}
+          >
+            <span className="app-menu-bar" />
+            <span className="app-menu-bar" />
+            <span className="app-menu-bar" />
+          </button>
+        </div>
 
         <AccountDropdown
           isOpen={isOpen}

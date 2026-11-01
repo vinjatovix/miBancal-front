@@ -42,6 +42,12 @@
   }
 }
 
+.app-header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs, 0.25rem);
+}
+
 .app-menu-toggle {
   display: inline-flex;
   flex-direction: column;

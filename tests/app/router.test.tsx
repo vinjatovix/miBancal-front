@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { routes } from '../../src/app/router';
 import { t } from '../../src/i18n/core/t';
 import { AuthProvider } from '../../src/shared/auth/AuthContext';
+import { ThemeProvider } from '../../src/shared/theme';
 import {
   clearStoredToken,
   setStoredToken
@@ -32,7 +33,9 @@ function renderRoute(path: string, routeObjects: RouteObject[] = routes) {
   render(
     <QueryClientProvider client={createTestQueryClient()}>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <ThemeProvider>
+          <RouterProvider router={router} />
+        </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
