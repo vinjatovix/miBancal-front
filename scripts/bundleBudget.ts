@@ -2,6 +2,7 @@ import type { Finding } from './findings.ts';
 
 export const JS_BUDGET_GZIP = 150 * 1024;
 export const CSS_BUDGET_GZIP = 20 * 1024;
+export const CATALOG_MARKER = 'design-system-catalog';
 
 export interface ManifestChunk {
   readonly file: string;
@@ -58,4 +59,19 @@ export function budgetFindings(sizes: { js: number; css: number }): Finding[] {
     ...overBudget('JS', sizes.js, JS_BUDGET_GZIP),
     ...overBudget('CSS', sizes.css, CSS_BUDGET_GZIP)
   ];
+}
+
+export function catalogMarkerFindings(
+  files: readonly { readonly path: string; readonly content: string }[]
+): Finding[] {
+  const findings: Finding[] = [];
+  for (const file of files) {
+    if (file.content.includes(CATALOG_MARKER)) {
+      findings.push({
+        file: file.path,
+        message: `El catálogo de diseño (${CATALOG_MARKER}) no debe incluirse en producción: ${file.path}`
+      });
+    }
+  }
+  return findings;
 }

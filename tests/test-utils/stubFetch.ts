@@ -100,7 +100,12 @@ export function lastRequest(fetchMock: FetchMock): {
   init?: RequestInit;
 } {
   const [url, init] = fetchMock.mock.lastCall as FetchCall;
-  return { url: decodeURIComponent(url), init };
+  if (!init) {
+    return { url: decodeURIComponent(url) };
+  }
+  const restInit = { ...init };
+  delete restInit.signal;
+  return { url: decodeURIComponent(url), init: restInit };
 }
 
 export function requestUrls(fetchMock: FetchMock): string[] {

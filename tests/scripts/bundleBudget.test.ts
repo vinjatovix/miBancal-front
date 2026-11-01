@@ -4,6 +4,7 @@ import {
   CSS_BUDGET_GZIP,
   JS_BUDGET_GZIP,
   budgetFindings,
+  catalogMarkerFindings,
   eagerFiles
 } from '../../scripts/bundleBudget';
 
@@ -77,5 +78,33 @@ describe('budgetFindings', () => {
     });
 
     expect(findings).toHaveLength(2);
+  });
+});
+
+describe('catalogMarkerFindings', () => {
+  it('returns no findings when dist files do not contain the catalog marker', () => {
+    const files = [
+      { path: 'assets/app.js', content: 'console.log("hello");' },
+      { path: 'assets/style.css', content: 'body { color: red; }' }
+    ];
+
+    const findings = catalogMarkerFindings(files);
+
+    expect(findings).toEqual([]);
+  });
+
+  it('reports a finding when a dist file contains design-system-catalog marker', () => {
+    const files = [
+      {
+        path: 'assets/dev.js',
+        content: 'data-testid="design-system-catalog"'
+      }
+    ];
+
+    const findings = catalogMarkerFindings(files);
+
+    expect(findings).toHaveLength(1);
+    expect(findings[0].file).toBe('assets/dev.js');
+    expect(findings[0].message).toContain('design-system-catalog');
   });
 });

@@ -75,7 +75,7 @@
 }
 
 .plant-companion-group-card__name {
-  font: var(--type-title-md);
+  font: var(--type-headline-md);
   color: var(--color-on-surface);
   font-weight: 600;
   overflow: hidden;
@@ -91,7 +91,7 @@
 }
 
 .plant-companion-group-card__unavailable-text {
-  font: var(--type-title-sm);
+  font: var(--type-headline-sm);
   color: var(--color-on-surface-variant);
 }
 
@@ -118,12 +118,12 @@
 }
 
 .plant-companion-group-card__interaction--detrimental {
-  border-left: 3px solid var(--color-error);
+  border-left: 2px solid var(--color-error-border);
   padding-left: var(--space-sm);
 }
 
 .plant-companion-group-card__interaction--beneficial {
-  border-left: 3px solid var(--color-primary);
+  border-left: 2px solid var(--color-success-border);
   padding-left: var(--space-sm);
 }
 

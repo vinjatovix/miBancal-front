@@ -1,9 +1,14 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
-import { budgetFindings, eagerFiles, type Manifest } from './bundleBudget.ts';
-import { formatFinding } from './findings.ts';
+import {
+  budgetFindings,
+  catalogMarkerFindings,
+  eagerFiles,
+  type Manifest
+} from './bundleBudget.ts';
+import { formatFinding, type Finding } from './findings.ts';
 
 const ROOT = process.cwd();
 const DIST = join(ROOT, 'dist');
@@ -20,15 +25,38 @@ function gzipBytes(files: string[]): number {
   }, 0);
 }
 
+function collectDistFiles(
+  directory: string,
+  baseDir: string = directory
+): { path: string; content: string }[] {
+  const results: { path: string; content: string }[] = [];
+  const entries = readdirSync(directory, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...collectDistFiles(fullPath, baseDir));
+    } else if (/\.(js|html|css)$/.test(entry.name)) {
+      results.push({
+        path: relative(baseDir, fullPath),
+        content: readFileSync(fullPath, 'utf8')
+      });
+    }
+  }
+  return results;
+}
+
 const files = eagerFiles(readManifest());
-const findings = budgetFindings({
-  js: gzipBytes(files.js),
-  css: gzipBytes(files.css)
-});
+const findings: Finding[] = [
+  ...budgetFindings({
+    js: gzipBytes(files.js),
+    css: gzipBytes(files.css)
+  }),
+  ...catalogMarkerFindings(collectDistFiles(DIST))
+];
 
 if (findings.length > 0) {
   process.stderr.write(
-    `${findings.map(formatFinding).join('\n')}\n${findings.length} budget(s) de bundle excedido(s)\n`
+    `${findings.map(formatFinding).join('\n')}\n${findings.length} problema(s) en bundle de producción\n`
   );
   process.exitCode = 1;
 }

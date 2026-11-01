@@ -90,6 +90,9 @@ export const CUSTOM_GLYPHS: Record<string, string> = {
     '<path fill="currentColor" d="M31.25 7.42a2.5 2.5 0 0 0-3.53 0L13.88 21.25l-5.6-5.6a2.5 2.5 0 1 0-3.54 3.53l7.37 7.37a2.5 2.5 0 0 0 3.54 0l15.6-15.6a2.5 2.5 0 0 0 0-3.53z"/>',
   check_circle:
     '<path fill="currentColor" d="M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2zm8.75 11.75-10.5 10.5a1.5 1.5 0 0 1-2.12 0l-4.5-4.5a1.5 1.5 0 1 1 2.12-2.12l3.44 3.44 9.44-9.44a1.5 1.5 0 0 1 2.12 2.12z"/>',
+  error:
+    '<path fill="currentColor" d="M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2zm0 24a2 2 0 1 1 2-2 2 2 0 0 1-2 2zm1.5-8h-3V8h3z"/>',
+  info: '<path fill="currentColor" d="M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2zm1.5 20h-3v-8h3zm0-10h-3V8h3z"/>',
   local_pharmacy:
     '<path fill="#77B255" d="M14 5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v9h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-9v9a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-9H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h9V5z"/>',
   content_copy:

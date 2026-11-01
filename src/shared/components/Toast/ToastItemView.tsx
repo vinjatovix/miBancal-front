@@ -1,7 +1,15 @@
 import React, { useEffect } from 'react';
 import { t } from '../../../i18n/core/t';
 import Icon from '../Icon/Icon';
-import type { ToastItem } from '../../toast/toastStore';
+import type { IconName } from '../Icon/iconPaths';
+import type { ToastItem, ToastVariant } from '../../toast/toastStore';
+
+const ICON_BY_VARIANT: Record<ToastVariant, IconName> = {
+  success: 'check_circle',
+  error: 'error',
+  info: 'info',
+  warning: 'warning'
+};
 
 export interface ToastItemViewProps {
   readonly toast: ToastItem;
@@ -22,7 +30,7 @@ export const ToastItemView: React.FC<ToastItemViewProps> = ({
     return () => clearTimeout(timer);
   }, [toast.id, toast.duration, onDismiss]);
 
-  const iconName = toast.variant === 'success' ? 'tick' : 'warning';
+  const iconName = ICON_BY_VARIANT[toast.variant];
   const role = toast.variant === 'error' ? 'alert' : 'status';
 
   return (

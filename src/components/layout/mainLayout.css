@@ -28,7 +28,7 @@
   }
 
   .app-body > .app-content {
-    padding-bottom: calc(var(--bottom-nav-height, 56px) + var(--space-md));
+    padding-bottom: calc(var(--bottom-nav-height, 0px) + var(--space-md));
   }
 }
 
@@ -45,7 +45,7 @@
 .app-header-controls {
   display: flex;
   align-items: center;
-  gap: var(--space-xs, 0.25rem);
+  gap: var(--space-xs);
 }
 
 .app-menu-toggle {
@@ -60,7 +60,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  border-radius: var(--radius-sm, 4px);
+  border-radius: var(--radius-sm);
 }
 
 .app-menu-toggle:hover {

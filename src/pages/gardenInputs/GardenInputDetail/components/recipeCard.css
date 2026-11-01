@@ -1,14 +1,14 @@
 .recipe-card {
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-decor);
   border-radius: var(--radius-lg);
   padding: var(--space-md);
   margin-bottom: var(--space-md);
-  transition: border-color 0.15s ease;
+  transition: border-color var(--motion-fade) ease;
 }
 
 .recipe-card[open] {
-  border-color: var(--color-outline);
+  border-color: var(--color-border-control);
 }
 
 .recipe-card__summary {
@@ -33,7 +33,7 @@
 
 .recipe-card__summary-title h3 {
   margin: 0;
-  font: var(--type-title-md);
+  font: var(--type-headline-md);
   color: var(--color-on-surface);
 }
 
@@ -60,7 +60,7 @@
 
 .recipe-card__section h4 {
   margin: 0;
-  font: var(--type-title-sm);
+  font: var(--type-headline-sm);
   color: var(--color-on-surface);
 }
 

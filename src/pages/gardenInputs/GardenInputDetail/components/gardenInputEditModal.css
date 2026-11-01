@@ -16,7 +16,7 @@
 }
 
 .garden-input-edit-modal__conflict-banner strong {
-  font: var(--type-title-sm);
+  font: var(--type-headline-sm);
 }
 
 .garden-input-edit-modal__conflict-banner p {

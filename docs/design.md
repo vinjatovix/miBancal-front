@@ -3,6 +3,78 @@
 > Extraído el 2026-10-04 de los prototipos de Stitch ("Botanical Precision"). Los prototipos no se versionan en el repo.
 > **Solo valen los colores, la tipografía y la distribución.** El contenido y los componentes de los prototipos **no son correctos** y no se usan como especificación funcional ni de datos.
 > Paleta, tipografía, radios, espaciado, sombras y anillo de foco están definidos como custom properties en `src/styles/tokens.css` y aplicados en todas las pantallas existentes (feature 009). Fuera de ese archivo no hay colores literales.
+> **Nota de gobernanza (FR-040)**: Los tokens Material 3 originales quedan marcados como **heredados** y conviven temporalmente con el nuevo sistema de diseño accesible hasta su retirada en T143. El nuevo sistema se basa en roles semánticos emparejados (con contraste WCAG 2.2 AAA garantizado) y primitivas de familia privadas.
+
+## Sistema de diseño accesible (Spec 039)
+
+### Familias de color (primitivas privadas)
+
+Las variables `--palette-*` son privadas de `src/styles/tokens.css` y no se consumen directamente en componentes:
+
+- `forest`: verde bosque (`--palette-forest-50` a `950`), acción principal, enlaces y foco.
+- `sage`: verde salvia (`--palette-sage-50` a `900`), selección activa y confirmación de éxito.
+- `earth`: ocres y tierras (`--palette-earth-50` a `600`), acentos cálidos y bancales.
+- `harvest`: ámbar cosecha (`--palette-harvest-50` a `600`), advertencias y medidores.
+- `clay`: terracota arcilla (`--palette-clay-50` a `990`), errores y acciones destructivas.
+- `sky`: azul cielo (`--palette-sky-50` a `600`), mensajes informativos y roles de usuario.
+- `neutral`: escala neutra cálida (`--palette-neutral-50` a `980`), superficies, texto y bordes.
+
+### Roles semánticos (ambos temas)
+
+| Rol                  | Claro     | Oscuro    | Uso                                                 |
+| -------------------- | --------- | --------- | --------------------------------------------------- |
+| `bg-page`            | `#f3f8f4` | `#0f1714` | Fondo de página y barra del navegador               |
+| `bg-surface`         | `#ffffff` | `#16201b` | Tarjetas, cabecera, menús, diálogos, toasts, campos |
+| `bg-sunken`          | `#e9f1eb` | `#121b17` | Listas, zonas agrupadas, carril de medidores        |
+| `bg-hover`           | `#dfe9e2` | `#1f2b25` | Hover de filas, chips y botones planos              |
+| `bg-inverse`         | `#1e2a24` | `#e2ebe5` | Fondos de tooltips e invertidos                     |
+| `bg-scrim`           | `fg` 40%  | negro 65% | Velo de modales y cajones vía `color-mix`           |
+| `fg`                 | `#13201a` | `#e2ebe5` | Texto principal (≥ 7:1)                             |
+| `fg-muted`           | `#35443c` | `#b8c7be` | Texto secundario y auxiliar (≥ 7:1)                 |
+| `fg-placeholder`     | `#55635b` | `#97a69d` | Placeholders en campos de formulario (≥ 4.5:1)      |
+| `fg-link`            | `#1c5236` | `#9fd8b5` | Enlaces en texto y navegación (≥ 7:1)               |
+| `fg-on-inverse`      | `#eef5f0` | `#14201a` | Texto sobre superficies invertidas (≥ 7:1)          |
+| `border-decor`       | `#c4d0c7` | `#34443b` | Separadores y divisores decorativos                 |
+| `border-control`     | `#62726a` | `#8a9b91` | Bordes de campos y controles (≥ 3:1)                |
+| `border-strong`      | `#3f4e46` | `#aebdb4` | Bordes activos y destacados (≥ 3:1)                 |
+| `focus`              | `#1f5038` | `#9fe0b8` | Anillo global de foco accesible (≥ 3:1)             |
+| `action-bg`          | `#1f5038` | `#8fd0a9` | Fondo de acción principal                           |
+| `action-bg-hover`    | `#163d2a` | `#a6dcbb` | Hover de acción principal                           |
+| `action-bg-active`   | `#0e2c1e` | `#bde7cc` | Active de acción principal                          |
+| `on-action`          | `#ffffff` | `#0a2116` | Texto e icono sobre acción principal (≥ 7:1)        |
+| `secondary-fg`       | `#1f5038` | `#9fd8b5` | Texto de acción secundaria (≥ 7:1)                  |
+| `secondary-border`   | `#1f5038` | `#8fd0a9` | Borde de acción secundaria (≥ 3:1)                  |
+| `selected-bg`        | `#d2e8d8` | `#24402f` | Fondo de selección activa                           |
+| `on-selected`        | `#10301e` | `#d4efdc` | Texto de selección activa (≥ 7:1)                   |
+| `selected-indicator` | `#2c6a48` | `#8fd0a9` | Indicador visual de selección (≥ 3:1)               |
+| `earth-bg`           | `#f5e8da` | `#3a2a1b` | Fondo tierra / acento cálido                        |
+| `on-earth`           | `#4f2e10` | `#f3dcc3` | Texto sobre fondo tierra (≥ 7:1)                    |
+| `earth-accent`       | `#8a5a2e` | `#d9a876` | Borde o icono sobre tierra (≥ 3:1)                  |
+| `success-bg`         | `#ddf0e2` | `#183526` | Fondo de éxito                                      |
+| `on-success`         | `#0f3d22` | `#c9ecd5` | Texto sobre fondo de éxito (≥ 7:1)                  |
+| `success-icon`       | `#3a8657` | `#93e0ae` | Icono y borde de éxito (≥ 3:1)                      |
+| `warning-bg`         | `#fcecc7` | `#3a2e10` | Fondo de aviso                                      |
+| `on-warning`         | `#4a3200` | `#f8e2a8` | Texto sobre fondo de aviso (≥ 7:1)                  |
+| `warning-icon`       | `#8a5b00` | `#e7b54a` | Icono y borde de aviso (≥ 3:1)                      |
+| `error-bg`           | `#fbe3dc` | `#3d1d17` | Fondo de error                                      |
+| `on-error`           | `#6e1a0c` | `#ffd9cf` | Texto sobre fondo de error (≥ 7:1)                  |
+| `error-icon`         | `#8e2513` | `#e8806a` | Icono y borde de error (≥ 3:1)                      |
+| `error-text`         | `#8c2412` | `#ffb3a3` | Texto de error inline junto a campo (≥ 7:1)         |
+| `danger-bg`          | `#9e2c17` | `#ffab98` | Fondo de acción destructiva                         |
+| `danger-bg-hover`    | `#82220f` | `#ffc2b3` | Hover destructivo                                   |
+| `on-danger`          | `#ffffff` | `#3d0c03` | Texto sobre fondo destructivo (≥ 7:1)               |
+| `info-bg`            | `#dcebf4` | `#132d3d` | Fondo informativo                                   |
+| `on-info`            | `#0b3550` | `#cfe6f5` | Texto sobre fondo informativo (≥ 7:1)               |
+| `info-icon`          | `#1d6390` | `#86c3ea` | Icono y borde informativo (≥ 3:1)                   |
+| `disabled-bg`        | `#e4e9e6` | `#222c27` | Fondo de control deshabilitado                      |
+| `on-disabled`        | `#56635c` | `#94a299` | Texto de control deshabilitado (≥ 4.5:1)            |
+| `disabled-border`    | `#6c7a72` | `#6f8077` | Borde de control deshabilitado (≥ 3:1)              |
+
+### Foco, objetivo táctil y movimiento
+
+- **Foco global**: `--focus-ring-width: 2px`, `--focus-ring-offset: 2px`, `--focus-ring-color: var(--color-focus)`. En `:focus-visible`, outline de 2px sólido sin halos ni `box-shadow` difusos.
+- **Objetivos táctiles**: `--target-min: 24px` en escritorio fino, adaptado a `44px` en dispositivos táctiles (`pointer: coarse`) o pantallas estrechas (`max-width: 768px`). `--target-min-fine: 24px`.
+- **Movimiento**: `--motion-fade: 150ms`, `--motion-enter: 200ms`. Se anula o minimiza con `@media (prefers-reduced-motion: reduce)`.
 
 ## Decisiones
 

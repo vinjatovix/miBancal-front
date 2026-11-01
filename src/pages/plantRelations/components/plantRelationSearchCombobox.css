@@ -25,20 +25,19 @@
   padding-left: calc(var(--space-md) + 24px + var(--space-xs));
   padding-right: var(--space-xl);
   font: var(--type-body-lg);
-  color: var(--color-on-surface);
-  background-color: var(--color-surface-container-low);
-  border: 1px solid var(--color-outline-variant);
+  color: var(--color-fg);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
   border-radius: var(--radius-md);
-  outline: none;
   box-sizing: border-box;
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    border-color var(--motion-fade) ease,
+    background-color var(--motion-fade) ease;
 }
 
 .plant-search-combobox__input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-fixed);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .plant-search-combobox__clear-button {

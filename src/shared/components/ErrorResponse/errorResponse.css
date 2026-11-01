@@ -17,8 +17,8 @@
 
 .error-response__action {
   font: var(--type-label-lg);
-  color: var(--color-on-error);
-  background: var(--color-error);
+  color: var(--color-on-danger);
+  background: var(--color-danger-bg);
   border: none;
   border-radius: var(--radius-full);
   padding: var(--space-sm) var(--space-md);
@@ -27,5 +27,5 @@
 }
 
 .error-response__action:hover {
-  background: var(--color-on-error-container);
+  background: var(--color-danger-bg-hover);
 }

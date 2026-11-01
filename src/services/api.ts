@@ -8,6 +8,21 @@ import { ApiError } from '../shared/errors/ApiError';
 import { NetworkError } from '../shared/errors/NetworkError';
 import { PreconditionFailedError } from '../shared/errors/PreconditionFailedError';
 
+export const DEFAULT_TIMEOUT_MS = 15_000;
+export const MUTATION_TIMEOUT_MS = 45_000;
+
+const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
+export function defaultTimeoutFor(method?: string): number {
+  return method && MUTATION_METHODS.has(method.toUpperCase())
+    ? MUTATION_TIMEOUT_MS
+    : DEFAULT_TIMEOUT_MS;
+}
+
+export interface ApiFetchOptions extends RequestInit {
+  timeout?: number;
+}
+
 type ErrorBody = {
   message?: string;
   errors?: Record<string, string>;
@@ -20,6 +35,71 @@ function isAbortError(error: unknown): boolean {
     'name' in error &&
     error.name === 'AbortError'
   );
+}
+
+function combineSignals(
+  timeoutSignal: AbortSignal,
+  customSignal?: AbortSignal | null
+): { signal: AbortSignal; cleanup: () => void } {
+  if (!customSignal) {
+    return { signal: timeoutSignal, cleanup: () => {} };
+  }
+  if (typeof AbortSignal.any === 'function') {
+    return {
+      signal: AbortSignal.any([customSignal, timeoutSignal]),
+      cleanup: () => {}
+    };
+  }
+  const controller = new AbortController();
+  const onAbort = () => {
+    const reason = customSignal.aborted
+      ? customSignal.reason
+      : timeoutSignal.reason;
+    controller.abort(reason);
+  };
+  if (customSignal.aborted || timeoutSignal.aborted) {
+    onAbort();
+    return { signal: controller.signal, cleanup: () => {} };
+  }
+  customSignal.addEventListener('abort', onAbort, { once: true });
+  timeoutSignal.addEventListener('abort', onAbort, { once: true });
+  return {
+    signal: controller.signal,
+    cleanup: () => {
+      customSignal.removeEventListener('abort', onAbort);
+      timeoutSignal.removeEventListener('abort', onAbort);
+    }
+  };
+}
+
+function resolveSignal(
+  timeoutMs: number,
+  customSignal?: AbortSignal | null
+): { signal?: AbortSignal; cleanup: () => void } {
+  if (timeoutMs <= 0) {
+    return { signal: customSignal ?? undefined, cleanup: () => {} };
+  }
+  if (typeof AbortSignal.timeout === 'function') {
+    const timeoutSignal = AbortSignal.timeout(timeoutMs);
+    return combineSignals(timeoutSignal, customSignal);
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort(
+      new DOMException(
+        'The operation was aborted due to timeout',
+        'TimeoutError'
+      )
+    );
+  }, timeoutMs);
+  const combined = combineSignals(controller.signal, customSignal);
+  return {
+    signal: combined.signal,
+    cleanup: () => {
+      clearTimeout(timer);
+      combined.cleanup();
+    }
+  };
 }
 
 function isJsonResponse(response: Response): boolean {
@@ -58,12 +138,20 @@ async function toApiError(response: Response): Promise<ApiError> {
   return new ApiError(message, response.status, body.errors);
 }
 
-async function request(url: string, init: RequestInit): Promise<Response> {
+async function request(
+  url: string,
+  init: RequestInit,
+  timeoutMs?: number
+): Promise<Response> {
+  const effectiveTimeout = timeoutMs ?? defaultTimeoutFor(init.method);
+  const { signal, cleanup } = resolveSignal(effectiveTimeout, init.signal);
   try {
-    return await fetch(url, init);
+    return await fetch(url, { ...init, signal });
   } catch (error) {
     if (isAbortError(error)) throw error;
     throw new NetworkError(error);
+  } finally {
+    cleanup();
   }
 }
 
@@ -120,7 +208,7 @@ async function handleResponseError(
   response: Response,
   url: string,
   path: string,
-  options: RequestInit | undefined,
+  options: ApiFetchOptions | undefined,
   hadToken: boolean
 ): Promise<Response> {
   if (response.status === 401) {
@@ -131,7 +219,11 @@ async function handleResponseError(
       const retryHeaders = mergeHeaders(options?.headers, null);
       delete retryHeaders['Authorization'];
       delete retryHeaders['authorization'];
-      return request(url, { ...options, headers: retryHeaders });
+      return request(
+        url,
+        { ...options, headers: retryHeaders },
+        options?.timeout
+      );
     }
   }
 
@@ -140,7 +232,7 @@ async function handleResponseError(
 
 export async function apiFetch<T>(
   path: string,
-  options?: RequestInit
+  options?: ApiFetchOptions
 ): Promise<T> {
   const result = await apiFetchWithMeta<T>(path, options);
   return result.data;
@@ -148,17 +240,21 @@ export async function apiFetch<T>(
 
 export async function apiFetchWithMeta<T>(
   path: string,
-  options?: RequestInit
+  options?: ApiFetchOptions
 ): Promise<{ data: T; etag: string | null }> {
   const token = getStoredToken();
   const hadToken = token !== null;
   const headers = mergeHeaders(options?.headers, token);
   const url = `${API_URL}${path}`;
 
-  const response = await request(url, {
-    ...options,
-    headers
-  });
+  const response = await request(
+    url,
+    {
+      ...options,
+      headers
+    },
+    options?.timeout
+  );
 
   const finalResponse = response.ok
     ? response

@@ -1,8 +1,8 @@
 .app-nav-rail {
   position: sticky;
-  top: var(--app-header-height, 56px);
+  top: var(--app-header-height);
   height: calc(
-    100dvh - var(--app-header-height, 56px) - var(--dev-banner-height, 0px)
+    100dvh - var(--app-header-height) - var(--dev-banner-height, 0px)
   );
   background-color: var(--color-surface-container-lowest);
   border-right: 1px solid var(--color-outline-variant);
@@ -15,11 +15,11 @@
 }
 
 .app-nav-rail--collapsed {
-  width: var(--app-nav-rail-width, 72px);
+  width: var(--app-nav-rail-width);
 }
 
 .app-nav-rail--expanded {
-  width: var(--app-nav-rail-expanded-width, 240px);
+  width: var(--app-nav-rail-expanded-width);
 }
 
 .app-nav-rail__list {
@@ -69,13 +69,14 @@
 }
 
 .app-nav-rail__link--active {
-  background-color: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-  font-weight: 600;
+  background-color: var(--color-selected-bg);
+  color: var(--color-on-selected);
+  border-left: 3px solid var(--color-selected-indicator);
+  font-weight: 700;
 }
 
 .app-nav-rail__link--active:hover {
-  background-color: var(--color-primary-container);
+  background-color: var(--color-selected-bg);
 }
 
 .app-nav-rail__label {
