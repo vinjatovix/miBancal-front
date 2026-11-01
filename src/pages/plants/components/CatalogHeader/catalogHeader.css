@@ -15,7 +15,7 @@
 
 .catalog-header__count {
   margin: 0;
-  font: var(--type-title-md);
+  font: var(--type-headline-md);
   color: var(--color-on-surface);
 }
 

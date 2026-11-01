@@ -8,4 +8,5 @@
 
 .auth-sso-alert-error {
   margin-top: 1rem;
+  color: var(--color-error-text);
 }

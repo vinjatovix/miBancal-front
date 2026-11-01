@@ -19,9 +19,12 @@
   border-color: var(--color-outline);
 }
 
+.plant-relation-card--beneficial {
+  border: 2px solid var(--color-success-border);
+}
+
 .plant-relation-card--detrimental {
-  border-color: var(--color-error-container);
-  background-color: var(--color-surface-container);
+  border: 2px solid var(--color-error-border);
 }
 
 .plant-relation-card__header {
@@ -124,7 +127,7 @@
 }
 
 .plant-relation-card__name {
-  font: var(--type-title-md);
+  font: var(--type-headline-md);
   color: var(--color-on-surface);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -139,7 +142,7 @@
 }
 
 .plant-relation-card__unavailable-text {
-  font: var(--type-title-sm);
+  font: var(--type-headline-sm);
   color: var(--color-on-surface-variant);
 }
 

@@ -7,8 +7,9 @@ import {
 } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { routes } from '../../src/app/router';
+import { createRoutes, routes } from '../../src/app/router';
 import { t } from '../../src/i18n/core/t';
+import '../../src/i18n/messages/designSystem';
 import { AuthProvider } from '../../src/shared/auth/AuthContext';
 import { ThemeProvider } from '../../src/shared/theme';
 import {
@@ -248,4 +249,30 @@ describe('router', () => {
       ).toBeInTheDocument();
     }
   );
+
+  it('renders design system catalog at /dev/design-system when IS_DEV_TOOLS is true', async () => {
+    const devRoutes = createRoutes(true);
+
+    renderRoute('/dev/design-system', devRoutes);
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: t('dev.designSystem.title')
+      })
+    ).toBeInTheDocument();
+  });
+
+  it('renders not found page for /dev/design-system when IS_DEV_TOOLS is false', async () => {
+    const prodRoutes = createRoutes(false);
+
+    renderRoute('/dev/design-system', prodRoutes);
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: t('notFound.title')
+      })
+    ).toBeInTheDocument();
+  });
 });

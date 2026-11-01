@@ -84,5 +84,5 @@
 }
 
 .anomaly-hero__caption-source {
-  opacity: 0.8;
+  color: var(--color-fg-muted);
 }

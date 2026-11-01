@@ -1,4 +1,157 @@
 :root {
+  color-scheme: light;
+
+  --palette-forest-50: #eef7f2;
+  --palette-forest-100: #bde7cc;
+  --palette-forest-200: #a6dcbb;
+  --palette-forest-300: #8fd0a9;
+  --palette-forest-400: #4a9c6d;
+  --palette-forest-500: #2c6a48;
+  --palette-forest-600: #25583c;
+  --palette-forest-700: #1f5038;
+  --palette-forest-800: #163d2a;
+  --palette-forest-900: #0e2c1e;
+  --palette-forest-950: #0a2116;
+
+  --palette-sage-50: #f4faf6;
+  --palette-sage-100: #ddf0e2;
+  --palette-sage-200: #d2e8d8;
+  --palette-sage-300: #c9ecd5;
+  --palette-sage-400: #93e0ae;
+  --palette-sage-500: #3a8657;
+  --palette-sage-600: #24402f;
+  --palette-sage-700: #183526;
+  --palette-sage-800: #10301e;
+  --palette-sage-900: #0f3d22;
+
+  --palette-earth-50: #fbf6f0;
+  --palette-earth-100: #f5e8da;
+  --palette-earth-200: #f3dcc3;
+  --palette-earth-300: #d9a876;
+  --palette-earth-400: #8a5a2e;
+  --palette-earth-500: #4f2e10;
+  --palette-earth-600: #3a2a1b;
+
+  --palette-harvest-50: #fffdf5;
+  --palette-harvest-100: #fcecc7;
+  --palette-harvest-200: #f8e2a8;
+  --palette-harvest-300: #e7b54a;
+  --palette-harvest-400: #8a5b00;
+  --palette-harvest-500: #4a3200;
+  --palette-harvest-600: #3a2e10;
+
+  --palette-clay-50: #fef5f3;
+  --palette-clay-100: #ffd9cf;
+  --palette-clay-200: #fbe3dc;
+  --palette-clay-300: #ffc2b3;
+  --palette-clay-400: #ffab98;
+  --palette-clay-500: #ffb3a3;
+  --palette-clay-600: #e8806a;
+  --palette-clay-700: #9e2c17;
+  --palette-clay-800: #8e2513;
+  --palette-clay-850: #8c2412;
+  --palette-clay-900: #82220f;
+  --palette-clay-950: #6e1a0c;
+  --palette-clay-975: #3d1d17;
+  --palette-clay-990: #3d0c03;
+
+  --palette-sky-50: #f3f9fc;
+  --palette-sky-100: #cfe6f5;
+  --palette-sky-200: #dcebf4;
+  --palette-sky-300: #86c3ea;
+  --palette-sky-400: #1d6390;
+  --palette-sky-500: #0b3550;
+  --palette-sky-600: #132d3d;
+
+  --palette-neutral-50: #ffffff;
+  --palette-neutral-100: #f3f8f4;
+  --palette-neutral-150: #eef5f0;
+  --palette-neutral-200: #e9f1eb;
+  --palette-neutral-250: #e4e9e6;
+  --palette-neutral-300: #dfe9e2;
+  --palette-neutral-350: #e2ebe5;
+  --palette-neutral-400: #c4d0c7;
+  --palette-neutral-450: #b8c7be;
+  --palette-neutral-500: #97a69d;
+  --palette-neutral-550: #94a299;
+  --palette-neutral-600: #8a9b91;
+  --palette-neutral-650: #6f8077;
+  --palette-neutral-700: #6c7a72;
+  --palette-neutral-750: #62726a;
+  --palette-neutral-800: #56635c;
+  --palette-neutral-820: #55635b;
+  --palette-neutral-850: #3f4e46;
+  --palette-neutral-870: #35443c;
+  --palette-neutral-890: #34443b;
+  --palette-neutral-900: #1f2b25;
+  --palette-neutral-920: #1e2a24;
+  --palette-neutral-940: #16201b;
+  --palette-neutral-950: #14201a;
+  --palette-neutral-960: #13201a;
+  --palette-neutral-970: #121b17;
+  --palette-neutral-980: #0f1714;
+
+  --color-bg-page: #f3f8f4;
+  --color-bg-surface: #ffffff;
+  --color-bg-sunken: #e9f1eb;
+  --color-bg-hover: #dfe9e2;
+  --color-bg-inverse: #1e2a24;
+  --color-bg-surface-raised: #ffffff;
+  --color-bg-scrim: color-mix(in srgb, var(--color-fg) 40%, transparent);
+
+  --color-fg: #13201a;
+  --color-fg-muted: #35443c;
+  --color-fg-placeholder: #55635b;
+  --color-fg-link: #1c5236;
+  --color-fg-on-inverse: #eef5f0;
+
+  --color-border-decor: #c4d0c7;
+  --color-border-control: #62726a;
+  --color-border-strong: #3f4e46;
+  --color-focus: #1f5038;
+
+  --color-action-bg: #1f5038;
+  --color-action-bg-hover: #163d2a;
+  --color-action-bg-active: #0e2c1e;
+  --color-on-action: #ffffff;
+  --color-secondary-fg: #1f5038;
+  --color-secondary-border: #1f5038;
+  --color-selected-bg: #d2e8d8;
+  --color-on-selected: #10301e;
+  --color-selected-indicator: #2c6a48;
+
+  --color-earth-bg: #f5e8da;
+  --color-on-earth: #4f2e10;
+  --color-earth-accent: #8a5a2e;
+
+  --color-success-bg: #ddf0e2;
+  --color-on-success: #0f3d22;
+  --color-success-icon: #3a8657;
+  --color-success-border: #3a8657;
+
+  --color-warning-bg: #fcecc7;
+  --color-on-warning: #4a3200;
+  --color-warning-icon: #8a5b00;
+  --color-warning-border: #8a5b00;
+
+  --color-error-bg: #fbe3dc;
+  --color-on-error: #6e1a0c;
+  --color-error-icon: #8e2513;
+  --color-error-border: #8e2513;
+  --color-error-text: #8c2412;
+  --color-danger-bg: #9e2c17;
+  --color-danger-bg-hover: #82220f;
+  --color-on-danger: #ffffff;
+
+  --color-info-bg: #dcebf4;
+  --color-on-info: #0b3550;
+  --color-info-icon: #1d6390;
+  --color-info-border: #1d6390;
+
+  --color-disabled-bg: #e4e9e6;
+  --color-on-disabled: #56635c;
+  --color-disabled-border: #6c7a72;
+
   --color-primary: #002718;
   --color-on-primary: #ffffff;
   --color-primary-container: #133e2b;
@@ -26,7 +179,6 @@
   --color-on-tertiary-fixed: #2c1600;
   --color-on-tertiary-fixed-variant: #623f18;
   --color-error: #ba1a1a;
-  --color-on-error: #ffffff;
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
   --color-background: #f3fbf6;
@@ -67,6 +219,14 @@
     transparent
   );
 
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--color-focus);
+  --target-min: 24px;
+  --target-min-fine: 24px;
+  --motion-fade: 150ms;
+  --motion-enter: 200ms;
+
   --elevation-1:
     0 1px 3px rgba(19, 62, 43, 0.04), 0 6px 16px rgba(19, 62, 43, 0.03);
   --elevation-1-hover: 0 8px 24px rgba(19, 62, 43, 0.08);
@@ -101,17 +261,82 @@
   --radius-xl: 0.75rem;
   --radius-full: 9999px;
 
+  --space-2xs: 0.125rem;
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
   --space-xl: 2.5rem;
+  --space-2xl: 4rem;
   --gutter: 1.25rem;
   --margin-inline: 1rem;
   --margin-inline-desktop: 3rem;
 }
 
 [data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg-page: #0f1714;
+  --color-bg-surface: #16201b;
+  --color-bg-sunken: #121b17;
+  --color-bg-hover: #1f2b25;
+  --color-bg-inverse: #e2ebe5;
+  --color-bg-surface-raised: #1c2923;
+  --color-bg-scrim: color-mix(in srgb, #000000 65%, transparent);
+
+  --color-fg: #e2ebe5;
+  --color-fg-muted: #b8c7be;
+  --color-fg-placeholder: #97a69d;
+  --color-fg-link: #9fd8b5;
+  --color-fg-on-inverse: #14201a;
+
+  --color-border-decor: #34443b;
+  --color-border-control: #8a9b91;
+  --color-border-strong: #aebdb4;
+  --color-focus: #9fe0b8;
+
+  --color-action-bg: #8fd0a9;
+  --color-action-bg-hover: #a6dcbb;
+  --color-action-bg-active: #bde7cc;
+  --color-on-action: #0a2116;
+  --color-secondary-fg: #9fd8b5;
+  --color-secondary-border: #8fd0a9;
+  --color-selected-bg: #24402f;
+  --color-on-selected: #d4efdc;
+  --color-selected-indicator: #8fd0a9;
+
+  --color-earth-bg: #3a2a1b;
+  --color-on-earth: #f3dcc3;
+  --color-earth-accent: #d9a876;
+
+  --color-success-bg: #183526;
+  --color-on-success: #c9ecd5;
+  --color-success-icon: #93e0ae;
+  --color-success-border: #93e0ae;
+
+  --color-warning-bg: #3a2e10;
+  --color-on-warning: #f8e2a8;
+  --color-warning-icon: #e7b54a;
+  --color-warning-border: #e7b54a;
+
+  --color-error-bg: #3d1d17;
+  --color-on-error: #ffd9cf;
+  --color-error-icon: #e8806a;
+  --color-error-border: #e8806a;
+  --color-error-text: #ffb3a3;
+  --color-danger-bg: #ffab98;
+  --color-danger-bg-hover: #ffc2b3;
+  --color-on-danger: #3d0c03;
+
+  --color-info-bg: #132d3d;
+  --color-on-info: #cfe6f5;
+  --color-info-icon: #86c3ea;
+  --color-info-border: #86c3ea;
+
+  --color-disabled-bg: #222c27;
+  --color-on-disabled: #94a299;
+  --color-disabled-border: #6f8077;
+
   --color-primary: #a3d1b6;
   --color-on-primary: #003823;
   --color-primary-container: #133e2b;
@@ -139,7 +364,6 @@
   --color-on-tertiary-fixed: #2c1600;
   --color-on-tertiary-fixed-variant: #623f18;
   --color-error: #ffb4ab;
-  --color-on-error: #690005;
   --color-error-container: #93000a;
   --color-on-error-container: #ffdad6;
   --color-background: #0f1513;
@@ -185,8 +409,21 @@
   --elevation-2: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 
-@media (max-width: 768px) {
+@media (prefers-contrast: more) {
   :root {
+    --color-border-decor: #77857d;
+    --color-border-control: #4d5c54;
+  }
+
+  [data-theme='dark'] {
+    --color-border-decor: #6b7c72;
+    --color-border-control: #a3b3a9;
+  }
+}
+
+@media (pointer: coarse), (max-width: 768px) {
+  :root {
+    --target-min: 44px;
     --type-headline-xl: 500 2rem/2.5rem var(--font-display);
   }
 }

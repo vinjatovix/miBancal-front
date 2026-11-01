@@ -5,25 +5,36 @@
   gap: 0.75rem;
   width: 100%;
   max-width: 320px;
+  min-height: var(--target-min);
   height: 40px;
   padding: 0 1rem;
   font-size: 0.875rem;
   font-weight: 500;
   font-family: inherit;
-  color: var(--color-on-surface);
-  background-color: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
+  color: var(--color-fg);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
   border-radius: 4px;
   box-sizing: border-box;
   cursor: pointer;
+  transition:
+    background-color var(--motion-fade) ease,
+    border-color var(--motion-fade) ease;
 }
 
 .google-auth-button:hover:not(:disabled) {
-  background-color: var(--color-surface-container-high);
+  background-color: var(--color-bg-hover);
+}
+
+.google-auth-button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .google-auth-button:disabled {
-  opacity: 0.6;
+  background-color: var(--color-disabled-bg);
+  color: var(--color-on-disabled);
+  border: 1px dashed var(--color-disabled-border);
   cursor: not-allowed;
 }
 
@@ -43,5 +54,4 @@
 
 .google-auth-desktop-container.google-auth-button-disabled {
   pointer-events: none;
-  opacity: 0.6;
 }

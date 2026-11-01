@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { apiFetch } from '../../src/services/api';
+import {
+  DEFAULT_TIMEOUT_MS,
+  MUTATION_TIMEOUT_MS,
+  apiFetch,
+  defaultTimeoutFor
+} from '../../src/services/api';
 import {
   AUTH_TOKEN_STORAGE_KEY,
   clearStoredToken,
@@ -420,5 +425,99 @@ describe('apiFetch', () => {
     const error = await captureError(apiFetch('/test'));
     expect(error).toBeInstanceOf(NetworkError);
     expect((error as NetworkError).cause).toBe(cause);
+  });
+
+  it('throws NetworkError when request times out', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              reject(
+                new DOMException(
+                  'The operation was aborted due to timeout',
+                  'TimeoutError'
+                )
+              );
+            });
+          })
+      )
+    );
+
+    const error = await captureError(apiFetch('/test', { timeout: 10 }));
+
+    expect(error).toBeInstanceOf(NetworkError);
+  });
+
+  it('rethrows AbortError when cancelled by external signal', async () => {
+    const controller = new AbortController();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              reject(
+                new DOMException('This operation was aborted', 'AbortError')
+              );
+            });
+          })
+      )
+    );
+
+    const promise = apiFetch('/test', {
+      signal: controller.signal,
+      timeout: 5000
+    });
+    controller.abort();
+    const error = await captureError(promise);
+
+    expect(error).toBeInstanceOf(DOMException);
+    expect((error as DOMException).name).toBe('AbortError');
+  });
+
+  it('rethrows AbortError when passed an already-aborted signal', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            if (init?.signal?.aborted) {
+              reject(
+                new DOMException('This operation was aborted', 'AbortError')
+              );
+            }
+          })
+      )
+    );
+
+    const promise = apiFetch('/test', {
+      signal: controller.signal,
+      timeout: 5000
+    });
+    const error = await captureError(promise);
+
+    expect(error).toBeInstanceOf(DOMException);
+    expect((error as DOMException).name).toBe('AbortError');
+  });
+
+  it('exports a 15s read timeout and a 45s mutation timeout', () => {
+    expect(DEFAULT_TIMEOUT_MS).toBe(15_000);
+    expect(MUTATION_TIMEOUT_MS).toBe(45_000);
+  });
+
+  it.each([
+    ['GET', DEFAULT_TIMEOUT_MS],
+    ['get', DEFAULT_TIMEOUT_MS],
+    [undefined, DEFAULT_TIMEOUT_MS],
+    ['POST', MUTATION_TIMEOUT_MS],
+    ['put', MUTATION_TIMEOUT_MS],
+    ['PATCH', MUTATION_TIMEOUT_MS],
+    ['DELETE', MUTATION_TIMEOUT_MS]
+  ])('defaultTimeoutFor(%s) resolves to %d ms', (method, expected) => {
+    expect(defaultTimeoutFor(method)).toBe(expected);
   });
 });

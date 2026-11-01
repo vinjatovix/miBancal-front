@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   z-index: 900;
-  height: var(--bottom-nav-height, 56px);
+  height: var(--bottom-nav-height);
   background-color: var(--color-surface-container-lowest);
   border-top: 1px solid var(--color-outline-variant);
   box-sizing: border-box;
@@ -64,13 +64,14 @@
 }
 
 .app-bottom-nav__link--active {
-  background-color: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-  font-weight: 600;
+  background-color: var(--color-selected-bg);
+  color: var(--color-on-selected);
+  border-top: 3px solid var(--color-selected-indicator);
+  font-weight: 700;
 }
 
 .app-bottom-nav__link--active:hover {
-  background-color: var(--color-primary-container);
+  background-color: var(--color-selected-bg);
 }
 
 .app-bottom-nav__label {

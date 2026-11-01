@@ -35,7 +35,7 @@
 }
 
 .garden-input-filters__clear:disabled {
-  opacity: 0.5;
+  color: var(--color-on-disabled);
   cursor: not-allowed;
 }
 
@@ -92,10 +92,10 @@
 }
 
 .garden-input-filter-chip--active {
-  background: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-  border-color: var(--color-primary);
-  font-weight: 600;
+  background: var(--color-selected-bg);
+  color: var(--color-on-selected);
+  border: 2px solid var(--color-selected-indicator);
+  font-weight: 700;
 }
 
 .garden-input-filter-chip__check {
@@ -106,9 +106,9 @@
 .garden-input-filters__select {
   width: 100%;
   padding: var(--space-sm);
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
   border-radius: var(--radius-md);
   font: var(--type-body-md);
-  color: var(--color-on-surface);
+  color: var(--color-fg);
 }

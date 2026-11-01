@@ -65,7 +65,7 @@
 }
 
 .anomaly-carousel__caption-source {
-  opacity: 0.8;
+  color: var(--color-fg-muted);
 }
 
 .anomaly-carousel__nav {
@@ -82,7 +82,6 @@
   background-color: var(--color-surface-container-high);
   color: var(--color-on-surface);
   cursor: pointer;
-  opacity: 0.85;
   transition:
     opacity 0.15s ease,
     background-color 0.15s ease;

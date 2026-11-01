@@ -6,10 +6,10 @@
 
 .catalog-layout__sidebar {
   position: sticky;
-  top: var(--app-header-height, 64px);
+  top: var(--app-header-height);
   width: 320px;
-  height: calc(100vh - var(--app-header-height, 64px));
-  height: calc(100dvh - var(--app-header-height, 64px));
+  height: calc(100vh - var(--app-header-height));
+  height: calc(100dvh - var(--app-header-height));
   overflow-y: auto;
   overscroll-behavior: contain;
   align-self: flex-start;
@@ -31,7 +31,7 @@
 .catalog-layout__fab {
   position: fixed;
   bottom: calc(
-    var(--bottom-nav-height, 56px) + var(--space-md) +
+    var(--bottom-nav-height, 0px) + var(--space-md) +
       var(--dev-banner-height, 0px)
   );
   right: var(--space-md);

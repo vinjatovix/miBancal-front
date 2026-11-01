@@ -1,7 +1,7 @@
 .anomaly-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xl, 2rem);
+  gap: var(--space-xl);
   width: 100%;
   box-sizing: border-box;
 }
@@ -11,7 +11,7 @@
   box-sizing: border-box;
   background-color: var(--color-surface-container-lowest);
   border: 1px solid var(--color-surface-container-high);
-  border-radius: var(--radius-lg, 12px);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -47,20 +47,20 @@
   padding: 0.625rem 0.75rem;
   font-family: var(--font-ui);
   font-size: 0.875rem;
-  color: var(--color-on-surface);
-  background-color: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline);
+  color: var(--color-fg);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
   border-radius: var(--radius-sm);
 }
 
 .anomaly-form__input[aria-invalid='true'],
 .anomaly-form__textarea[aria-invalid='true'] {
-  border-color: var(--color-error);
+  border: 2px solid var(--color-error-border);
 }
 
 .anomaly-form__error {
   font-size: 0.75rem;
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .anomaly-form__hint {
@@ -103,7 +103,7 @@
 }
 
 .anomaly-form__btn--submit:disabled {
-  opacity: 0.6;
+  color: var(--color-on-disabled);
   cursor: not-allowed;
 }
 
@@ -111,7 +111,7 @@
   padding: 1rem;
   background-color: var(--color-error-container);
   color: var(--color-on-error-container);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -122,7 +122,7 @@
   background-color: var(--color-error-container);
   color: var(--color-on-error-container);
   border: 1px solid var(--color-error);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
   font-family: var(--font-ui);
   font-size: 0.875rem;
   font-weight: 600;

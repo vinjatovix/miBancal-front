@@ -82,7 +82,7 @@
 
 .plant-relations-section__block-title {
   margin: 0;
-  font: var(--type-title-sm);
+  font: var(--type-headline-sm);
   color: var(--color-on-surface);
 }
 

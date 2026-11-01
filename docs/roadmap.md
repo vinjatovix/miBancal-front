@@ -58,6 +58,10 @@ describen el problema de partida y no se reescriben.
 | 15  | Familias con el nuevo diseño               | Parcial              | Existen `FamilyHero`, `FamilyInfo`, `FamilyPlants`. Sin spec dedicada ni DoD verificado                                                                                                                                   |
 | 16  | Accesibilidad base                         | Parcial              | El `Drawer` cierra con Escape y tiene botón con `aria-label`. Faltan `role="dialog"`/`aria-modal`/focus trap, pestañas de recursos con flechas y reglas `jsx-a11y` en CI                                                  |
 | 17  | Pantallas de acceso y menú MiBancal        | Hecha                | Spec 016 (55/55). Renombrado a MiBancal, cabecera unificada con menú accesible `NavDrawer`, sesión JWT en `sessionStorage`/memoria, login, registro, activación de cuenta, Google SSO y preview SSO tras flag.            |
+| 18  | Lenguaje claro en los textos               | Pendiente            | Descartada de la spec 039                                                                                                                                                                                                 |
+| 19  | Regresión visual por captura               | Pendiente            | Descartada de la spec 039. Depende de que la 039 esté cerrada                                                                                                                                                             |
+| 20  | Fotografías adaptadas al tema oscuro       | Pendiente            | Descartada de la spec 039                                                                                                                                                                                                 |
+| 21  | Estructura de títulos y regiones de página | Pendiente            | Descartada de la spec 039. Complementa la 16                                                                                                                                                                              |
 
 Specs de trabajo en `specs/`: 001 (It. 1), 002 (It. 2), 003 (It. 3), 004 (edición de comestibles y
 tóxicas, y estaciones; no estaba en el DoD original), 005 (It. 5), 006 (It. 6), 007 y 008 (It. 7),
@@ -556,6 +560,129 @@ catálogo) y 016 (pantallas de acceso y barra de navegación MiBancal).
   Escape y devuelve el foco al control que lo abrió; cada control tiene un nombre accesible en
   castellano; las pestañas de recursos se navegan con las flechas; y el CI falla ante nuevas
   infracciones de accesibilidad detectables estáticamente.
+  ```
+
+## Iteración 18: Lenguaje claro en los textos de la app
+
+- **Origen**: descartado del alcance de la spec 039 (sistema de diseño accesible) para no
+  mezclar diseño visual con revisión de contenido.
+- **Valor entregado**: cualquier persona entiende etiquetas, ayudas, errores y descripciones a la
+  primera, incluidas personas con dificultades cognitivas o de lectura.
+- **Definition of Done**:
+  - Guía de redacción en `docs/` (tono, frases cortas, voz activa, términos del glosario).
+  - Los textos de interfaz del diccionario i18n se revisan contra la guía.
+  - Los términos técnicos de agronomía se explican la primera vez que aparecen o tienen ayuda.
+- **Dependencias**: ninguna (mejor después de la 039, que reescribe los mensajes de error).
+- **Prompt para /speckit.specify**:
+  ```
+  Los textos de agro-front (etiquetas, ayudas, mensajes y descripciones) no siguen una guía de
+  redacción y usan términos técnicos de agronomía sin explicarlos. Por qué: WCAG 3.1.5 (AAA) pide
+  textos comprensibles sin un nivel de lectura avanzado, y la app la usan personas sin
+  formación agronómica. Resultado esperado: una guía de redacción documentada y todos los textos
+  del diccionario revisados con ella, con los términos técnicos explicados o con ayuda.
+  ```
+
+## Iteración 19: Regresión visual por captura en ambos temas
+
+- **Origen**: descartado del alcance de la spec 039; esta solo vigila tokens y pares de color.
+- **Valor entregado**: un cambio de estilos que rompe un componente en claro u oscuro se detecta
+  en CI antes de llegar a producción.
+- **Definition of Done**:
+  - Capturas de referencia de los componentes del catálogo y de las pantallas principales, en
+    ambos temas y en móvil y escritorio.
+  - CI compara las capturas y falla ante diferencias no aprobadas.
+- **Dependencias**: spec 039 cerrada (catálogo de componentes estable).
+- **Riesgos**: falsos positivos por fuentes y antialiasing entre entornos; coste de tiempo de CI.
+- **Prompt para /speckit.specify**:
+  ```
+  Nada en el CI de agro-front detecta que un cambio de estilos rompa visualmente un componente en
+  el tema claro o en el oscuro: la verificación de la spec 039 solo comprueba tokens y pares de
+  contraste. Por qué: con dos temas y un catálogo común, un cambio en un componente afecta a
+  muchas pantallas. Resultado esperado: capturas de referencia de componentes y pantallas
+  principales en ambos temas y tamaños, comparadas en CI, que fallan ante cambios no aprobados.
+  ```
+
+## Iteración 20: Fotografías adaptadas al tema oscuro
+
+- **Origen**: descartado del alcance de la spec 039 por ser cosmético.
+- **Valor entregado**: en el tema oscuro las fotos de plantas y anomalías no deslumbran.
+- **Definition of Done**:
+  - En el tema oscuro las fotos se atenúan ligeramente y recuperan su brillo al ampliarlas.
+  - La atenuación no altera los colores que sirven para identificar una plaga o una planta.
+- **Dependencias**: spec 039.
+- **Prompt para /speckit.specify**:
+  ```
+  En el tema oscuro de agro-front las fotografías de plantas y anomalías se ven mucho más
+  brillantes que el resto de la interfaz y deslumbran de noche. Por qué: el tema oscuro debe ser
+  cómodo en penumbra. Resultado esperado: fotos ligeramente atenuadas en oscuro, con brillo
+  completo al ampliarlas y sin alterar los colores útiles para identificar plantas o plagas.
+  ```
+
+## Iteración 21: Estructura de títulos y regiones de página
+
+- **Origen**: descartado del alcance de la spec 039 por ser accesibilidad semántica, no visual.
+  Complementa la iteración 16.
+- **Valor entregado**: quien usa lector de pantalla salta directamente a la sección que busca.
+- **Definition of Done**:
+  - Cada página tiene un único título principal y una jerarquía de títulos sin saltos.
+  - Las regiones de cabecera, navegación, contenido principal y pie están declaradas, y hay un
+    enlace visible con el foco para saltar al contenido.
+  - Test automático de la jerarquía de títulos en las pantallas principales.
+- **Dependencias**: ninguna.
+- **Prompt para /speckit.specify**:
+  ```
+  Las páginas de agro-front no garantizan una jerarquía de títulos coherente ni regiones de
+  página declaradas, y no hay enlace para saltar al contenido. Por qué: las personas que usan
+  lector de pantalla navegan por títulos y regiones (WCAG 1.3.1, 2.4.1, 2.4.6). Resultado
+  esperado: un título principal por página, jerarquía sin saltos, regiones declaradas, enlace
+  de salto visible con el foco y un test que lo verifique.
+  ```
+
+## Iteración 22: Consentimiento legal y acceso a los documentos legales
+
+- **Origen**: preparación para producción. Antes de abrir el registro público, la app necesita
+  pedir consentimiento expreso para tratar datos personales (RGPD) y dar acceso a los documentos
+  legales. Hoy `Register.tsx` no tiene ningún checkbox de aceptación y no existe ninguna ruta que
+  muestre aviso legal, política de privacidad o términos de uso; los borradores ya existen en
+  `docs/legal/` (`aviso-legal.md`, `politica-privacidad.md`, `terminos-de-uso.md`) pendientes de
+  publicar.
+- **Valor entregado**: el registro deja de crear cuentas sin que la persona haya aceptado
+  expresamente cómo se tratan sus datos, y cualquiera puede consultar esos documentos desde la
+  propia app, cerrando un requisito legal de cara a producción.
+- **Definition of Done**:
+  - El formulario de registro (`Register.tsx`) incluye un checkbox, no premarcado, para aceptar
+    la política de privacidad y los términos de uso; el envío queda bloqueado mientras no esté
+    marcado, con su propio mensaje de validación (igual que el resto de campos del formulario).
+  - Existen tres rutas públicas (p. ej. `/legal`, `/privacidad`, `/terminos`) que muestran el
+    contenido de los tres documentos de `docs/legal/`, enlazadas desde el checkbox de registro y
+    desde el pie de la aplicación.
+  - Los documentos se muestran en castellano, con los tokens de diseño de `docs/design.md` (sin
+    maquetación nueva de componentes, solo tipografía/espaciado existentes) y son navegables con
+    teclado y lector de pantalla.
+  - Test de que el registro rechaza el envío sin el checkbox marcado, y test de que las tres
+    rutas legales renderizan su contenido.
+  - CI en verde.
+- **Dependencias**: ninguna técnica; conviene cerrarla antes de abrir el registro público.
+- **Riesgos**:
+  - Toca `Register.tsx` y `validation.ts`/`validateRegisterForm`, archivos que otro trabajo en
+    curso sobre accesibilidad (spec 039 y relacionadas) puede estar modificando a la vez: antes
+    de empezar esta iteración, confirmar que no hay cambios simultáneos sobre esos archivos para
+    no pisar ese trabajo.
+  - Los textos de `docs/legal/` todavía tienen datos pendientes de completar (NIF, región de
+    Atlas/Railway, proveedor de email) antes de publicarse como definitivos.
+- **Prompt para /speckit.specify**:
+  ```
+  agro-front no pide ningún consentimiento expreso al registrar una cuenta ni ofrece ninguna
+  pantalla donde consultar el aviso legal, la política de privacidad o los términos de uso,
+  aunque esos tres documentos ya existen como borrador en docs/legal/. Por qué: antes de abrir
+  el registro a usuarios reales, el RGPD exige que la persona acepte expresamente cómo se
+  tratan sus datos, y debe poder consultar esa información en cualquier momento desde la propia
+  aplicación. Resultado esperado: el formulario de registro incluye un checkbox sin marcar por
+  defecto para aceptar la política de privacidad y los términos de uso, y no permite enviarse
+  mientras no esté marcado, con un mensaje de validación igual que el resto de campos; existen
+  tres rutas públicas que muestran el aviso legal, la política de privacidad y los términos de
+  uso a partir del contenido de docs/legal/, enlazadas desde ese checkbox y desde el pie de la
+  aplicación, en castellano y con los tokens de diseño existentes.
   ```
 
 ## Futura Iteración (Bancales): Motor Espacial - Drag & Drop en el Bancal

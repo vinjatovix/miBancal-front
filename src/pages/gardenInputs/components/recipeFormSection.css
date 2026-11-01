@@ -15,7 +15,7 @@
 
 .recipe-form-section__title {
   margin: 0;
-  font: var(--type-title-md);
+  font: var(--type-headline-md);
   color: var(--color-on-surface);
 }
 
@@ -36,7 +36,7 @@
 
 .recipe-form-section__add-btn:hover,
 .recipe-form-sub-section__add-btn:hover {
-  opacity: 0.85;
+  background-color: var(--color-bg-hover);
 }
 
 .recipe-form-card {
@@ -57,7 +57,7 @@
 
 .recipe-form-card__header h4 {
   margin: 0;
-  font: var(--type-title-sm);
+  font: var(--type-headline-sm);
   color: var(--color-on-surface);
 }
 
@@ -90,11 +90,24 @@
 .recipe-form-textarea {
   width: 100%;
   padding: var(--space-xs) var(--space-sm);
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
   border-radius: var(--radius-md);
   font: var(--type-body-md);
-  color: var(--color-on-surface);
+  color: var(--color-fg);
+}
+
+.recipe-form-input:focus,
+.recipe-form-select:focus,
+.recipe-form-textarea:focus {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.recipe-form-input[aria-invalid='true'],
+.recipe-form-select[aria-invalid='true'],
+.recipe-form-textarea[aria-invalid='true'] {
+  border: 2px solid var(--color-error-border);
 }
 
 .recipe-form-textarea {
@@ -103,7 +116,7 @@
 }
 
 .recipe-form-error {
-  color: var(--color-error);
+  color: var(--color-error-text);
   font: var(--type-label-sm);
 }
 
@@ -125,7 +138,7 @@
 
 .recipe-form-sub-section__header h5 {
   margin: 0;
-  font: var(--type-title-xs);
+  font: var(--type-headline-sm);
   color: var(--color-on-surface);
 }
 

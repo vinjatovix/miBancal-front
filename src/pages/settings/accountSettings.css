@@ -9,7 +9,7 @@
   padding: 2.5rem 2.25rem;
   background-color: var(--color-surface);
   border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg, 12px);
+  border-radius: var(--radius-lg);
   box-shadow: var(--elevation-1);
   box-sizing: border-box;
   display: flex;
@@ -75,7 +75,7 @@
   padding: 0.875rem 1rem;
   background-color: var(--color-secondary-container);
   color: var(--color-on-secondary-container);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   width: 100%;
   box-sizing: border-box;
@@ -85,7 +85,7 @@
   padding: 0.875rem 1rem;
   background-color: var(--color-error-container);
   color: var(--color-on-error-container);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   width: 100%;
   box-sizing: border-box;
@@ -108,7 +108,7 @@
   color: var(--color-on-primary);
   background-color: var(--color-primary);
   border: none;
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition:
     opacity 0.2s ease,
@@ -117,10 +117,12 @@
 }
 
 .settings-submit-button:hover:not(:disabled) {
-  opacity: 0.9;
+  background-color: var(--color-action-bg-hover);
 }
 
 .settings-submit-button:disabled {
-  opacity: 0.5;
+  background-color: var(--color-disabled-bg);
+  color: var(--color-on-disabled);
+  border: 1px dashed var(--color-disabled-border);
   cursor: not-allowed;
 }
