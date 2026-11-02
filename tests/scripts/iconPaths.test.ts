@@ -1,3 +1,4 @@
+import { isValidElement, type ReactElement } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -64,5 +65,19 @@ describe('iconGlyphs catalog synchronisation', () => {
     expect(customMarkup).toBeDefined();
     expect(customMarkup).toContain('fill="#77B255"');
     expect(glyph).toBeDefined();
+  });
+
+  it('provides the custom info glyph with circular dot and centered stem', () => {
+    const customMarkup = CUSTOM_GLYPHS.info;
+    const glyph = ICON_GLYPHS.info;
+
+    expect(customMarkup).toBeDefined();
+    expect(customMarkup).toContain(
+      'd="M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2zm0 11a2 2 0 1 1 2-2 2 2 0 0 1-2 2zm1.5 14h-3v-11h3z"'
+    );
+    expect(isValidElement(glyph)).toBe(true);
+    expect((glyph.props.children as ReactElement<{ d: string }>).props.d).toBe(
+      'M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2zm0 11a2 2 0 1 1 2-2 2 2 0 0 1-2 2zm1.5 14h-3v-11h3z'
+    );
   });
 });

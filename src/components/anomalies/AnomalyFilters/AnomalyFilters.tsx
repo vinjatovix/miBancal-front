@@ -3,6 +3,7 @@ import { useId } from 'react';
 import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
 import Icon from '../../../shared/components/Icon/Icon';
+import Select from '../../../shared/components/Select/Select';
 import { ANOMALY_CATEGORIES } from '../../../types/Anomaly/Anomaly';
 
 import './anomalyFilters.css';
@@ -37,19 +38,17 @@ export default function AnomalyFilters({
           <Icon name="crisis_alert" decorative />{' '}
           {t('anomaly.filters.category')}
         </label>
-        <select
+        <Select
           id={categoryId}
           className="anomaly-filters__input"
           value={category}
           onChange={(event) => onCategoryChange(event.target.value)}
-        >
-          <option value="">{t('anomaly.filters.category_any')}</option>
-          {ANOMALY_CATEGORIES.map((value) => (
-            <option key={value} value={value}>
-              {tValue('anomaly.categoryValues', value)}
-            </option>
-          ))}
-        </select>
+          placeholder={t('anomaly.filters.category_any')}
+          options={ANOMALY_CATEGORIES.map((value) => ({
+            value,
+            label: tValue('anomaly.categoryValues', value)
+          }))}
+        />
       </div>
     </div>
   );

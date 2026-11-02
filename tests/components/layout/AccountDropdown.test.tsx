@@ -1,8 +1,11 @@
 import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useLocation } from 'react-router-dom';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import AccountDropdown from '../../../src/components/layout/AccountDropdown/AccountDropdown';
+import AccountDropdown, {
+  type AccountDropdownProps
+} from '../../../src/components/layout/AccountDropdown/AccountDropdown';
 import {
   clearStoredToken,
   setStoredToken
@@ -18,6 +21,10 @@ describe('AccountDropdown', () => {
     sessionStorage.clear();
     clearStoredToken();
     vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    window.scrollY = 0;
   });
 
   it('does not render menu when isOpen is false', () => {
@@ -324,6 +331,111 @@ describe('AccountDropdown', () => {
       await user.click(logoutButton);
 
       expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('preserves public location on logout without redirecting to root', async () => {
+      const user = userEvent.setup();
+      const triggerRef = { current: document.createElement('button') };
+
+      function DropdownWithLocation(props: AccountDropdownProps) {
+        const location = useLocation();
+        return (
+          <>
+            <span data-testid="current-pathname">{location.pathname}</span>
+            <AccountDropdown {...props} />
+          </>
+        );
+      }
+
+      renderWithProviders(
+        <DropdownWithLocation
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { initialToken: VALID_TEST_TOKEN, route: '/plants' }
+      );
+
+      const logoutButton = screen.getByRole('menuitem', {
+        name: /Cerrar sesión/i
+      });
+      await user.click(logoutButton);
+
+      expect(screen.getByTestId('current-pathname').textContent).toBe(
+        '/plants'
+      );
+    });
+
+    it('redirects to root when logging out from a private route', async () => {
+      const user = userEvent.setup();
+      const triggerRef = { current: document.createElement('button') };
+
+      function DropdownWithLocation(props: AccountDropdownProps) {
+        const location = useLocation();
+        return (
+          <>
+            <span data-testid="current-pathname">{location.pathname}</span>
+            <AccountDropdown {...props} />
+          </>
+        );
+      }
+
+      renderWithProviders(
+        <DropdownWithLocation
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { initialToken: VALID_TEST_TOKEN, route: '/settings' }
+      );
+
+      const logoutButton = screen.getByRole('menuitem', {
+        name: /Cerrar sesión/i
+      });
+      await user.click(logoutButton);
+
+      expect(screen.getByTestId('current-pathname').textContent).toBe('/');
+    });
+
+    it('passes current location and scrollY to login link navigation state', async () => {
+      const user = userEvent.setup();
+      const triggerRef = { current: document.createElement('button') };
+      Object.defineProperty(window, 'scrollY', { value: 300, writable: true });
+
+      function DropdownWithLocation(props: AccountDropdownProps) {
+        const location = useLocation();
+        return (
+          <>
+            <span data-testid="current-pathname">{location.pathname}</span>
+            <span data-testid="current-state">
+              {JSON.stringify(location.state)}
+            </span>
+            <AccountDropdown {...props} />
+          </>
+        );
+      }
+
+      renderWithProviders(
+        <DropdownWithLocation
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { route: '/plants/tomate' }
+      );
+
+      const loginLink = screen.getByRole('menuitem', {
+        name: /Iniciar sesión/i
+      });
+      await user.click(loginLink);
+
+      expect(screen.getByTestId('current-pathname').textContent).toBe('/login');
+      expect(screen.getByTestId('current-state').textContent).toContain(
+        '"pathname":"/plants/tomate"'
+      );
+      expect(screen.getByTestId('current-state').textContent).toContain(
+        '"scrollY":300'
+      );
     });
 
     it('focuses the first menu item when opened', () => {

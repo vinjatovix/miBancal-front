@@ -38,7 +38,7 @@ export default function GardenInputHero({
             {onEdit && (
               <button
                 type="button"
-                className="garden-input-hero__btn"
+                className="action-btn"
                 onClick={onEdit}
                 aria-label={t('gardenInput.detail.edit')}
               >
@@ -49,7 +49,7 @@ export default function GardenInputHero({
             {onDelete && !isDeleted && (
               <button
                 type="button"
-                className="garden-input-hero__btn garden-input-hero__btn--danger"
+                className="action-btn action-btn--danger"
                 onClick={onDelete}
                 aria-label={t('gardenInput.detail.delete')}
               >

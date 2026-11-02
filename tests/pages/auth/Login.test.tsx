@@ -681,4 +681,98 @@ describe('Login Page - Alerts & Navigation Integration', () => {
       expect(await screen.findByText('Página principal')).toBeInTheDocument();
     }
   );
+
+  it('redirects with restoreScrollY state when scrollY is provided in navigation state', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(authServiceModule, 'login').mockResolvedValueOnce({
+      token: VALID_TEST_TOKEN
+    });
+
+    function AppWithDestinationState() {
+      const location = useLocation();
+      return (
+        <Routes>
+          <Route path="/" element={<div>Página principal</div>} />
+          <Route
+            path="/admin"
+            element={
+              <div>
+                <span>Panel de administración</span>
+                <span data-testid="target-state">
+                  {JSON.stringify(location.state)}
+                </span>
+              </div>
+            }
+          />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      );
+    }
+
+    renderWithProviders(<AppWithDestinationState />, {
+      route: {
+        pathname: '/login',
+        state: {
+          from: '/admin',
+          scrollY: 520
+        }
+      }
+    });
+
+    const emailInput = screen.getByLabelText(/Correo electrónico/i);
+    const passwordInput = screen.getByLabelText('Contraseña');
+    const submitButton = screen.getByRole('button', {
+      name: 'Iniciar sesión'
+    });
+    await user.type(emailInput, 'hortelano@example.com');
+    await user.type(passwordInput, 'Password123!');
+    await user.click(submitButton);
+
+    expect(
+      await screen.findByText('Panel de administración')
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('target-state').textContent).toBe(
+      JSON.stringify({ restoreScrollY: 520 })
+    );
+  });
+
+  it('preserves location state when navigating to register from login footer', async () => {
+    const user = userEvent.setup();
+
+    function AppWithRegisterState() {
+      const location = useLocation();
+      return (
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/register"
+            element={
+              <span data-testid="register-state">
+                {JSON.stringify(location.state)}
+              </span>
+            }
+          />
+        </Routes>
+      );
+    }
+
+    renderWithProviders(<AppWithRegisterState />, {
+      route: {
+        pathname: '/login',
+        state: {
+          from: '/plants',
+          scrollY: 180
+        }
+      }
+    });
+
+    const registerLink = screen.getByRole('link', {
+      name: /¿No tienes cuenta\? Regístrate/i
+    });
+    await user.click(registerLink);
+
+    expect(screen.getByTestId('register-state').textContent).toBe(
+      JSON.stringify({ from: '/plants', scrollY: 180 })
+    );
+  });
 });

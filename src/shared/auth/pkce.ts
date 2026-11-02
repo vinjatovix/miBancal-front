@@ -1,6 +1,9 @@
+import { normalizeScrollY } from '../scroll/normalizeScrollY';
+
 export const PKCE_VERIFIER_KEY = 'agro_github_sso_verifier';
 export const PKCE_STATE_KEY = 'agro_github_sso_state';
 export const PKCE_RETURN_URL_KEY = 'agro_github_sso_return_url';
+export const PKCE_SCROLL_Y_KEY = 'agro_github_sso_scroll_y';
 
 const UNRESERVED_CHARACTERS =
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
@@ -47,12 +50,14 @@ export interface GithubPkceSessionParams {
   readonly verifier: string;
   readonly state: string;
   readonly returnUrl?: string | null;
+  readonly scrollY?: number | null;
 }
 
 export interface GithubPkceSession {
   readonly verifier: string | null;
   readonly state: string | null;
   readonly returnUrl: string | null;
+  readonly scrollY: number | null;
 }
 
 export function saveGithubPkceSession(params: GithubPkceSessionParams): void {
@@ -63,13 +68,25 @@ export function saveGithubPkceSession(params: GithubPkceSessionParams): void {
   } else {
     sessionStorage.removeItem(PKCE_RETURN_URL_KEY);
   }
+  const normalizedScrollY = normalizeScrollY(params.scrollY);
+  if (normalizedScrollY !== undefined) {
+    sessionStorage.setItem(PKCE_SCROLL_Y_KEY, String(normalizedScrollY));
+  } else {
+    sessionStorage.removeItem(PKCE_SCROLL_Y_KEY);
+  }
 }
 
 export function getGithubPkceSession(): GithubPkceSession {
+  const rawScrollY = sessionStorage.getItem(PKCE_SCROLL_Y_KEY);
+  const parsedScrollY =
+    rawScrollY !== null && rawScrollY.trim() !== ''
+      ? Number(rawScrollY)
+      : undefined;
   return {
     verifier: sessionStorage.getItem(PKCE_VERIFIER_KEY),
     state: sessionStorage.getItem(PKCE_STATE_KEY),
-    returnUrl: sessionStorage.getItem(PKCE_RETURN_URL_KEY)
+    returnUrl: sessionStorage.getItem(PKCE_RETURN_URL_KEY),
+    scrollY: normalizeScrollY(parsedScrollY) ?? null
   };
 }
 
@@ -77,6 +94,7 @@ export function clearGithubPkceSession(): void {
   sessionStorage.removeItem(PKCE_VERIFIER_KEY);
   sessionStorage.removeItem(PKCE_STATE_KEY);
   sessionStorage.removeItem(PKCE_RETURN_URL_KEY);
+  sessionStorage.removeItem(PKCE_SCROLL_Y_KEY);
 }
 
 export interface BuildGithubAuthorizeUrlParams {

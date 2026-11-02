@@ -2,6 +2,7 @@ import { useId, useMemo } from 'react';
 
 import { t } from '../../../../../i18n/core/t';
 import Icon from '../../../../../shared/components/Icon/Icon';
+import Select from '../../../../../shared/components/Select/Select';
 import { toUiError } from '../../../../../shared/errors/toUiError';
 import { useFamilies } from '../../../../../shared/hooks/useFamilies';
 import { getQueryViewState } from '../../../../../shared/reactQuery/queryViewState';
@@ -71,7 +72,7 @@ export default function FamilySelect({ value, onChange }: Props) {
         </span>
       )}
 
-      <select
+      <Select
         id={selectId}
         data-testid="family-select"
         className="plant-filters__input"
@@ -80,18 +81,14 @@ export default function FamilySelect({ value, onChange }: Props) {
         disabled={viewState !== 'success'}
         aria-invalid={hasError}
         aria-describedby={hasError ? errorId : undefined}
-      >
-        {isLoading ? (
-          <option value="">{t('common.loading')}</option>
-        ) : (
-          <option value="">{t('plant.filters.allFamilies')}</option>
-        )}
-        {sortedFamilies.map((f) => (
-          <option key={f.id} value={f.id}>
-            {capitalizeFirstLetter(f.name)}
-          </option>
-        ))}
-      </select>
+        placeholder={
+          isLoading ? t('common.loading') : t('plant.filters.allFamilies')
+        }
+        options={sortedFamilies.map((f) => ({
+          value: f.id,
+          label: capitalizeFirstLetter(f.name)
+        }))}
+      />
 
       {hasError && (
         <FamilySelectError

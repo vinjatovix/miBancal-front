@@ -41,7 +41,7 @@ export const PlantDetailStickyHeader = ({
             {onEdit && (
               <button
                 type="button"
-                className="plant-detail__sticky-edit-btn"
+                className="action-btn"
                 onClick={onEdit}
                 aria-label={t('plant.detail.edit_plant')}
               >
@@ -52,7 +52,7 @@ export const PlantDetailStickyHeader = ({
             {onDelete && (
               <button
                 type="button"
-                className="plant-detail__sticky-delete-btn"
+                className="action-btn action-btn--danger"
                 onClick={onDelete}
                 disabled={isDeleting}
                 aria-label={t('plant.detail.delete_plant')}

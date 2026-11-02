@@ -125,10 +125,13 @@
 }
 
 .modal-close-btn {
+  width: 2rem;
+  height: 2rem;
+  font-size: 1rem;
   background: var(--color-surface-container-high);
   border: none;
   border-radius: var(--radius-md);
-  padding: var(--space-xs);
+  padding: 0;
   cursor: pointer;
   color: var(--color-on-surface-variant);
   display: flex;

@@ -1,6 +1,5 @@
 import { t } from '../../../../i18n/core/t';
-import Icon from '../../../../shared/components/Icon/Icon';
-import Modal from '../../../../shared/components/Modal/Modal';
+import { ConfirmModal } from '../../../../shared/components/Modal/ConfirmModal';
 import { capitalizeFirstLetter } from '../../../../shared/utils/capitalizeFirstLetter';
 
 import './plantDeleteConfirmModal.css';
@@ -24,61 +23,23 @@ export function PlantDeleteConfirmModal({
   isConflict = false,
   onReload
 }: PlantDeleteConfirmModalProps) {
-  const footer = (
-    <div className="plant-delete-modal-actions">
-      <button
-        type="button"
-        className="plant-delete-modal-btn plant-delete-modal-btn--cancel"
-        onClick={onCancel}
-        disabled={isDeleting}
-      >
-        {t('common.cancel')}
-      </button>
-      <button
-        type="button"
-        className="plant-delete-modal-btn plant-delete-modal-btn--confirm"
-        onClick={onConfirm}
-        disabled={isDeleting}
-      >
-        <Icon name="delete" decorative />
-        <span>
-          {isDeleting ? t('common.deleting') : t('plant.detail.delete_plant')}
-        </span>
-      </button>
-    </div>
-  );
-
   return (
-    <Modal
+    <ConfirmModal
       isOpen={isOpen}
-      onClose={onCancel}
+      variant="danger"
       title={t('plant.detail.delete_modal_title')}
       subtitle={t('plant.detail.delete_modal_subtitle')}
-      icon="delete"
-      variant="danger"
-      role="dialog"
-      ariaLabelledBy="plant-delete-modal-title"
-      closeLabel={t('common.drawer.close')}
-      preventClose={isDeleting}
-      overlayClassName="plant-delete-modal-overlay"
-      className="plant-delete-modal-card"
-      footer={footer}
+      prompt={t('plant.detail.delete_modal_prompt', {
+        name: capitalizeFirstLetter(plantName)
+      })}
+      warningText={t('plant.detail.delete_modal_warning')}
+      confirmText={t('plant.detail.delete_plant')}
+      confirmIcon="delete"
+      loadingText={t('common.deleting')}
+      isLoading={isDeleting}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
     >
-      <p className="plant-delete-modal-prompt">
-        {t('plant.detail.delete_modal_prompt', {
-          name: capitalizeFirstLetter(plantName)
-        })}
-      </p>
-
-      <div className="plant-delete-modal-warning">
-        <div className="plant-delete-modal-warning-icon">
-          <Icon name="warning" decorative />
-        </div>
-        <p className="plant-delete-modal-warning-text">
-          {t('plant.detail.delete_modal_warning')}
-        </p>
-      </div>
-
       {isConflict && (
         <div
           role="alert"
@@ -90,12 +51,13 @@ export function PlantDeleteConfirmModal({
               type="button"
               className="plant-delete-modal-alert-btn"
               onClick={onReload}
+              disabled={isDeleting}
             >
               {t('plant.form.conflict.reload_button')}
             </button>
           )}
         </div>
       )}
-    </Modal>
+    </ConfirmModal>
   );
 }

@@ -1,25 +1,33 @@
 .term-help {
   position: relative;
   display: inline-flex;
-  vertical-align: baseline;
+  vertical-align: middle;
+  font: var(--type-body-md);
 }
 
 .term-help__trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
   padding: 0;
+  font-size: 1rem;
   border: none;
+  border-radius: var(--radius-full);
   background: transparent;
-  color: var(--color-primary);
+  color: var(--color-secondary-fg);
   cursor: pointer;
   line-height: 1;
 }
 
+.term-help__trigger:hover {
+  background: var(--color-surface-container-high);
+}
+
 .term-help__trigger:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
-  border-radius: var(--radius-md);
 }
 
 .term-help__popover {
@@ -29,10 +37,12 @@
   z-index: 20;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: var(--space-2xs);
   width: max-content;
-  max-width: min(18rem, calc(100vw - 2 * var(--space-md)));
-  padding: var(--space-sm) var(--space-md);
+  max-width: min(20rem, calc(100vw - 2 * var(--space-md)));
+  padding: var(--space-sm) var(--space-xl) var(--space-sm) var(--space-md);
+  font: var(--type-body-md);
+  text-align: left;
   background: var(--color-bg-surface);
   color: var(--color-on-surface);
   border: 1px solid var(--color-border-decor);
@@ -41,29 +51,40 @@
 }
 
 .term-help__term {
-  font-weight: 600;
+  font: var(--type-label-lg);
   text-transform: lowercase;
+  color: var(--color-on-surface);
 }
 
 .term-help__definition {
-  font-size: var(--type-label-sm);
+  font: var(--type-body-md);
   color: var(--color-on-surface-variant);
 }
 
 .term-help__close {
   position: absolute;
-  top: var(--space-xs);
-  right: var(--space-xs);
+  top: var(--space-2xs);
+  right: var(--space-2xs);
   display: inline-flex;
-  padding: var(--space-xs);
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  font-size: 0.875rem;
   border: none;
+  border-radius: var(--radius-full);
   background: transparent;
   color: var(--color-on-surface-variant);
   cursor: pointer;
 }
 
+.term-help__close:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
 .term-help__close:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
-  border-radius: var(--radius-md);
 }

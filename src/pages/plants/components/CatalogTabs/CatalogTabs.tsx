@@ -1,4 +1,4 @@
-import { useContext, useId } from 'react';
+import { useContext } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { t } from '../../../../i18n/core/t';
@@ -24,7 +24,6 @@ function tabClass(active: boolean): string {
 export default function CatalogTabs() {
   const auth = useContext(AuthContext);
   const [params, setParams] = useSearchParams();
-  const labelId = useId();
 
   if (!auth?.isAuthenticated) return null;
 
@@ -41,11 +40,11 @@ export default function CatalogTabs() {
   }
 
   return (
-    <div className="catalog-tabs" role="group" aria-labelledby={labelId}>
-      <span id={labelId} className="catalog-tabs__label">
-        {t('plant.tabs.group_label')}
-      </span>
-
+    <div
+      className="catalog-tabs"
+      role="group"
+      aria-label={t('plant.tabs.group_label')}
+    >
       <button
         type="button"
         aria-pressed={!favoritesActive}

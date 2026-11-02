@@ -19,6 +19,22 @@ describe('ViewModeToggle', () => {
     );
   });
 
+  it.each([
+    { value: 'grid' as const, active: 'Cuadrícula', inactive: 'Lista' },
+    { value: 'list' as const, active: 'Lista', inactive: 'Cuadrícula' }
+  ])(
+    'asigna la clase activa exclusivamente al segmento seleccionado ($value)',
+    ({ value, active, inactive }) => {
+      render(<ViewModeToggle value={value} onChange={vi.fn()} />);
+
+      const activeButton = screen.getByRole('button', { name: active });
+      const inactiveButton = screen.getByRole('button', { name: inactive });
+
+      expect(activeButton).toHaveClass('view-toggle__segment--active');
+      expect(inactiveButton).not.toHaveClass('view-toggle__segment--active');
+    }
+  );
+
   it('emite el modo elegido al pulsar un segmento', async () => {
     const onChange = vi.fn();
     render(<ViewModeToggle value="grid" onChange={onChange} />);

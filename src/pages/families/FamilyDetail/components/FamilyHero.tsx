@@ -27,7 +27,7 @@ export function FamilyHero({ family, onEdit, isEditing }: Props) {
         {isEditor && onEdit && !isEditing && (
           <button
             type="button"
-            className="family-hero__edit-btn"
+            className="action-btn"
             onClick={onEdit}
             aria-label={t('family.detail.edit_family')}
           >

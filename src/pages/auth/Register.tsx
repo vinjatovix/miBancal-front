@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type FormEvent
@@ -12,6 +13,7 @@ import { t } from '../../i18n/core/t';
 import { useAuth } from '../../shared/auth/useAuth';
 import { validateRegisterForm } from '../../shared/auth/validation';
 import { ApiError } from '../../shared/errors/ApiError';
+import { normalizeScrollY } from '../../shared/scroll/normalizeScrollY';
 import { useToast } from '../../shared/toast/useToast';
 import type { LoginNavigationState } from '../../types/auth';
 import './authPages.css';
@@ -22,6 +24,7 @@ import PasswordField from './components/PasswordField';
 import PasswordStrengthBar from './components/PasswordStrengthBar';
 import RegisterSuccess from './components/RegisterSuccess';
 import { resolveAuthErrorText } from './utils/authErrorText';
+import { resolveRedirectDestination } from './utils/destination';
 import { classifySsoError } from './utils/ssoError';
 
 type FormField = 'email' | 'username' | 'password' | 'repeatPassword';
@@ -49,13 +52,23 @@ export default function Register() {
 
   const isFormValid = Object.keys(validateRegisterForm(formData)).length === 0;
 
+  const destination = resolveRedirectDestination(location.state);
+  const scrollY = normalizeScrollY(navState?.scrollY);
+  const restoreScrollState = useMemo(
+    () => (scrollY !== undefined ? { restoreScrollY: scrollY } : undefined),
+    [scrollY]
+  );
+
   const purgedRef = useRef(false);
   useEffect(() => {
     const ssoErr = navState?.ssoError ?? navState?.error;
     if (!purgedRef.current && ssoErr) {
       purgedRef.current = true;
       showErrorToast(ssoErr);
-      navigate(location.pathname, { replace: true });
+      navigate(location.pathname, {
+        replace: true,
+        state: { from: navState?.from, scrollY: navState?.scrollY }
+      });
     }
   }, [location.pathname, navState, navigate, showErrorToast]);
 
@@ -72,16 +85,23 @@ export default function Register() {
       dismissAll();
       try {
         await googleLogin({ idToken });
-        navigate('/', { replace: true });
+        navigate(destination, { replace: true, state: restoreScrollState });
       } catch (error) {
         showErrorToast(classifySsoError(error, 'google'));
       }
     },
-    [googleLogin, navigate, dismissAll, showErrorToast]
+    [
+      googleLogin,
+      destination,
+      restoreScrollState,
+      navigate,
+      dismissAll,
+      showErrorToast
+    ]
   );
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={destination} replace state={restoreScrollState} />;
   }
 
   const updateField = (field: FormField, value: string) => {
@@ -247,7 +267,7 @@ export default function Register() {
       )}
 
       <div className="auth-footer">
-        <Link to="/login" className="auth-footer-link">
+        <Link to="/login" state={location.state} className="auth-footer-link">
           {t('auth.has_account')}
         </Link>
       </div>

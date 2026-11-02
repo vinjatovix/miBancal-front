@@ -16,7 +16,16 @@ export default function ProtectedRoute({
   const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return (
+      <Navigate
+        to="/login"
+        state={{
+          from: location,
+          scrollY: typeof window !== 'undefined' ? window.scrollY : 0
+        }}
+        replace
+      />
+    );
   }
 
   if (requireAdmin && !isAdmin) {

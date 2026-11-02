@@ -8,6 +8,7 @@ import {
   generateState,
   getGithubPkceSession,
   PKCE_RETURN_URL_KEY,
+  PKCE_SCROLL_Y_KEY,
   PKCE_STATE_KEY,
   PKCE_VERIFIER_KEY,
   saveGithubPkceSession
@@ -89,11 +90,12 @@ describe('sessionStorage PKCE management', () => {
     sessionStorage.clear();
   });
 
-  it('saves verifier, state and returnUrl to sessionStorage with expected keys', () => {
+  it('saves verifier, state, returnUrl and scrollY to sessionStorage with expected keys', () => {
     saveGithubPkceSession({
       verifier: 'test-verifier-value',
       state: 'test-state-value',
-      returnUrl: '/plants'
+      returnUrl: '/plants',
+      scrollY: 400
     });
 
     expect(sessionStorage.getItem(PKCE_VERIFIER_KEY)).toBe(
@@ -101,19 +103,22 @@ describe('sessionStorage PKCE management', () => {
     );
     expect(sessionStorage.getItem(PKCE_STATE_KEY)).toBe('test-state-value');
     expect(sessionStorage.getItem(PKCE_RETURN_URL_KEY)).toBe('/plants');
+    expect(sessionStorage.getItem(PKCE_SCROLL_Y_KEY)).toBe('400');
   });
 
   it('retrieves saved session values from sessionStorage', () => {
     sessionStorage.setItem(PKCE_VERIFIER_KEY, 'stored-verifier');
     sessionStorage.setItem(PKCE_STATE_KEY, 'stored-state');
     sessionStorage.setItem(PKCE_RETURN_URL_KEY, '/catalog');
+    sessionStorage.setItem(PKCE_SCROLL_Y_KEY, '350');
 
     const session = getGithubPkceSession();
 
     expect(session).toEqual({
       verifier: 'stored-verifier',
       state: 'stored-state',
-      returnUrl: '/catalog'
+      returnUrl: '/catalog',
+      scrollY: 350
     });
   });
 
@@ -121,12 +126,14 @@ describe('sessionStorage PKCE management', () => {
     sessionStorage.setItem(PKCE_VERIFIER_KEY, 'stored-verifier');
     sessionStorage.setItem(PKCE_STATE_KEY, 'stored-state');
     sessionStorage.setItem(PKCE_RETURN_URL_KEY, '/catalog');
+    sessionStorage.setItem(PKCE_SCROLL_Y_KEY, '350');
 
     clearGithubPkceSession();
 
     expect(sessionStorage.getItem(PKCE_VERIFIER_KEY)).toBeNull();
     expect(sessionStorage.getItem(PKCE_STATE_KEY)).toBeNull();
     expect(sessionStorage.getItem(PKCE_RETURN_URL_KEY)).toBeNull();
+    expect(sessionStorage.getItem(PKCE_SCROLL_Y_KEY)).toBeNull();
   });
 });
 

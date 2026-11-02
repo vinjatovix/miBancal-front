@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type FormEvent
@@ -12,6 +13,7 @@ import { t } from '../../i18n/core/t';
 import { useAuth } from '../../shared/auth/useAuth';
 import { validateLoginForm } from '../../shared/auth/validation';
 import { ApiError } from '../../shared/errors/ApiError';
+import { normalizeScrollY } from '../../shared/scroll/normalizeScrollY';
 import { useToast } from '../../shared/toast/useToast';
 import type { LoginNavigationState } from '../../types/auth';
 import './authPages.css';
@@ -36,18 +38,30 @@ export default function Login() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const destination = resolveRedirectDestination(location.state);
+  const scrollY = normalizeScrollY(navState?.scrollY);
+  const restoreScrollState = useMemo(
+    () => (scrollY !== undefined ? { restoreScrollY: scrollY } : undefined),
+    [scrollY]
+  );
 
   const handleGoogleCredential = useCallback(
     async (idToken: string) => {
       dismissAll();
       try {
         await googleLogin({ idToken });
-        navigate(destination, { replace: true });
+        navigate(destination, { replace: true, state: restoreScrollState });
       } catch (error) {
         showErrorToast(classifySsoError(error, 'google'));
       }
     },
-    [googleLogin, destination, navigate, dismissAll, showErrorToast]
+    [
+      googleLogin,
+      destination,
+      restoreScrollState,
+      navigate,
+      dismissAll,
+      showErrorToast
+    ]
   );
 
   const purgedRef = useRef(false);
@@ -58,13 +72,13 @@ export default function Login() {
       showErrorToast(ssoErr);
       navigate(location.pathname, {
         replace: true,
-        state: { from: navState?.from }
+        state: { from: navState?.from, scrollY: navState?.scrollY }
       });
     }
   }, [location.pathname, navState, navigate, showErrorToast]);
 
   if (isAuthenticated) {
-    return <Navigate to={destination} replace />;
+    return <Navigate to={destination} replace state={restoreScrollState} />;
   }
 
   const handleSubmit = async (event: FormEvent) => {
@@ -79,7 +93,7 @@ export default function Login() {
 
     try {
       await login({ email, password });
-      navigate(destination, { replace: true });
+      navigate(destination, { replace: true, state: restoreScrollState });
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         showErrorToast({
@@ -171,7 +185,11 @@ export default function Login() {
       )}
 
       <div className="auth-footer">
-        <Link to="/register" className="auth-footer-link">
+        <Link
+          to="/register"
+          state={location.state}
+          className="auth-footer-link"
+        >
           {t('auth.no_account')}
         </Link>
       </div>

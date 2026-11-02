@@ -11,7 +11,10 @@ vi.mock('../../../../src/config/env', () => ({
 }));
 
 import GitHubAuthButton from '../../../../src/pages/auth/components/GitHubAuthButton';
-import { PKCE_RETURN_URL_KEY } from '../../../../src/shared/auth/pkce';
+import {
+  PKCE_RETURN_URL_KEY,
+  PKCE_SCROLL_Y_KEY
+} from '../../../../src/shared/auth/pkce';
 import { renderWithProviders } from '../../../test-utils/renderWithProviders';
 
 describe('GitHubAuthButton', () => {
@@ -135,6 +138,64 @@ describe('GitHubAuthButton', () => {
 
     await waitFor(() => {
       expect(sessionStorage.getItem(PKCE_RETURN_URL_KEY)).toBe('/plants');
+    });
+  });
+
+  it('preserves normalized returnUrl and scrollY into sessionStorage when initiating from /register', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<GitHubAuthButton />, {
+      route: {
+        pathname: '/register',
+        state: { from: '/plants/tomate', scrollY: 340 }
+      }
+    });
+
+    const button = screen.getByRole('button', {
+      name: /continuar con github/i
+    });
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(sessionStorage.getItem(PKCE_RETURN_URL_KEY)).toBe(
+        '/plants/tomate'
+      );
+      expect(sessionStorage.getItem(PKCE_SCROLL_Y_KEY)).toBe('340');
+    });
+  });
+
+  it('preserves scrollY into sessionStorage when initiating from /login', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<GitHubAuthButton />, {
+      route: {
+        pathname: '/login',
+        state: { from: '/admin', scrollY: 510 }
+      }
+    });
+
+    const button = screen.getByRole('button', {
+      name: /continuar con github/i
+    });
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(sessionStorage.getItem(PKCE_SCROLL_Y_KEY)).toBe('510');
+    });
+  });
+
+  it('preserves window scrollY when initiating outside auth pages', async () => {
+    const user = userEvent.setup();
+    window.scrollY = 280;
+    renderWithProviders(<GitHubAuthButton />, {
+      route: '/plants'
+    });
+
+    const button = screen.getByRole('button', {
+      name: /continuar con github/i
+    });
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(sessionStorage.getItem(PKCE_SCROLL_Y_KEY)).toBe('280');
     });
   });
 

@@ -1,8 +1,9 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { t } from '../../../i18n/core/t';
+import { isPrivateRoute } from '../../../shared/auth/isPrivateRoute';
 import { useAuth } from '../../../shared/auth/useAuth';
 import Icon from '../../../shared/components/Icon/Icon';
 import './accountDropdown.css';
@@ -19,6 +20,7 @@ export default function AccountDropdown({
   triggerRef
 }: AccountDropdownProps) {
   const { isAuthenticated, user, isAdmin, logout } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -124,7 +126,9 @@ export default function AccountDropdown({
   const handleLogout = () => {
     logout();
     onClose();
-    navigate('/');
+    if (isPrivateRoute(location.pathname)) {
+      navigate('/');
+    }
   };
 
   return (
@@ -180,6 +184,10 @@ export default function AccountDropdown({
         <>
           <Link
             to="/login"
+            state={{
+              from: location,
+              scrollY: typeof window !== 'undefined' ? window.scrollY : 0
+            }}
             onClick={onClose}
             role="menuitem"
             tabIndex={-1}
@@ -191,6 +199,10 @@ export default function AccountDropdown({
 
           <Link
             to="/register"
+            state={{
+              from: location,
+              scrollY: typeof window !== 'undefined' ? window.scrollY : 0
+            }}
             onClick={onClose}
             role="menuitem"
             tabIndex={-1}

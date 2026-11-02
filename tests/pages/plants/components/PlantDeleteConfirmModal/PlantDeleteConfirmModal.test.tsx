@@ -107,6 +107,24 @@ describe('PlantDeleteConfirmModal', () => {
     expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled();
   });
 
+  it('disables reload button when isConflict and isDeleting are true', () => {
+    render(
+      <PlantDeleteConfirmModal
+        isOpen={true}
+        plantName="Tomate cherry"
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+        isConflict={true}
+        isDeleting={true}
+        onReload={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Recargar datos actuales' })
+    ).toBeDisabled();
+  });
+
   it('renders conflict alert and calls onReload when conflict occurs', () => {
     const onReload = vi.fn();
 

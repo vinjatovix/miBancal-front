@@ -28,8 +28,8 @@
   align-self: flex-start;
   margin-top: var(--space-xs);
   padding: var(--space-xs) var(--space-md);
-  background: var(--color-error);
-  color: var(--color-on-error);
+  background: var(--color-danger-bg);
+  color: var(--color-on-danger);
   border: none;
   border-radius: var(--radius-full);
   font: var(--type-label-md);

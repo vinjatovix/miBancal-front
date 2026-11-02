@@ -27,7 +27,12 @@ export function PlantLikeButton({
 
   const handleClick = () => {
     if (!userId) {
-      navigate('/login', { state: { from: location } });
+      navigate('/login', {
+        state: {
+          from: location,
+          scrollY: typeof window !== 'undefined' ? window.scrollY : 0
+        }
+      });
       return;
     }
     mutate(liked);

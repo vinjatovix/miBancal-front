@@ -5,6 +5,7 @@ import { tValue } from '../../../i18n/core/tValue';
 import { useCreatePlantRelation } from '../../../pages/plantRelations/hooks/useCreatePlantRelation';
 import { useUpdatePlantRelation } from '../../../pages/plantRelations/hooks/useUpdatePlantRelation';
 import Modal from '../../../shared/components/Modal/Modal';
+import Select from '../../../shared/components/Select/Select';
 import { ApiError } from '../../../shared/errors/ApiError';
 import { PreconditionFailedError } from '../../../shared/errors/PreconditionFailedError';
 import type {
@@ -291,20 +292,18 @@ function PlantRelationFormDialog({
           >
             {t('plantRelation.curator.mechanism')}
           </label>
-          <select
+          <Select
             id="plant-relation-mechanism"
             className="plant-relation-form-modal__select"
             value={mechanism}
             onChange={(e) =>
               setMechanism(e.target.value as PlantRelationMechanism)
             }
-          >
-            {MECHANISMS.map((m) => (
-              <option key={m} value={m}>
-                {tValue('plantRelation.mechanismValues', m)}
-              </option>
-            ))}
-          </select>
+            options={MECHANISMS.map((m) => ({
+              value: m,
+              label: tValue('plantRelation.mechanismValues', m)
+            }))}
+          />
         </div>
 
         <div className="plant-relation-form-modal__field">

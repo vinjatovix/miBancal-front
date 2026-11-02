@@ -32,6 +32,16 @@ describe('Pagination', () => {
     expect(current).toBeDisabled();
   });
 
+  it('applies active button class to current page', () => {
+    renderPagination();
+
+    const current = screen.getByRole('button', { name: '1' });
+    const inactive = screen.getByRole('button', { name: '2' });
+
+    expect(current).toHaveClass('pagination__button--active');
+    expect(inactive).not.toHaveClass('pagination__button--active');
+  });
+
   it('changes to the pressed page', () => {
     const onPageChange = renderPagination();
 

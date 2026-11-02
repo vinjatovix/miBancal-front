@@ -1,9 +1,8 @@
 import { useId } from 'react';
 
-export interface SortSelectOption {
-  readonly value: string;
-  readonly label: string;
-}
+import Select, { type SelectOption } from '../Select/Select';
+
+export type SortSelectOption = SelectOption;
 
 interface Props {
   readonly label: string;
@@ -23,17 +22,12 @@ export default function PlantSortSelect({
   return (
     <>
       <label htmlFor={selectId}>{label}</label>
-      <select
+      <Select
         id={selectId}
         value={value}
+        options={options}
         onChange={(event) => onChange(event.target.value)}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      />
     </>
   );
 }

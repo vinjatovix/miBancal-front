@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { t } from '../../../i18n/core/t';
+import Select from '../../../shared/components/Select/Select';
 import { useFamilies } from '../../../shared/hooks/useFamilies';
 import { capitalizeFirstLetter } from '../../../shared/utils/capitalizeFirstLetter';
 
@@ -26,24 +27,22 @@ export default function PlantRelationFamilySelect({
 
   return (
     <>
-      <select
+      <Select
         id={id}
         className="plant-relation-form-modal__select"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={isPending || isError}
-      >
-        <option value="">
-          {isPending
+        placeholder={
+          isPending
             ? t('common.loading')
-            : t('plantRelation.curator.companionFamilySelectPrompt')}
-        </option>
-        {sortedFamilies.map((family) => (
-          <option key={family.id} value={family.id}>
-            {capitalizeFirstLetter(family.name)}
-          </option>
-        ))}
-      </select>
+            : t('plantRelation.curator.companionFamilySelectPrompt')
+        }
+        options={sortedFamilies.map((family) => ({
+          value: family.id,
+          label: capitalizeFirstLetter(family.name)
+        }))}
+      />
       {isError && (
         <p role="alert" className="plant-relation-form-modal__error">
           {t('plantRelation.curator.companionFamiliesError')}
