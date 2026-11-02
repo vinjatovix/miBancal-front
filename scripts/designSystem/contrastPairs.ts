@@ -472,5 +472,29 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
     bg: 'error-icon',
     threshold: 'distinct',
     usage: 'Distinción de luminancia entre icono de éxito y error'
+  },
+  {
+    fg: 'error-text',
+    bg: 'error-bg',
+    threshold: 'text',
+    usage: 'Botón de borrado outline en hover y banner de conflicto'
+  },
+  {
+    fg: 'on-tertiary-fixed',
+    bg: 'tertiary-fixed',
+    threshold: 'text',
+    usage: 'Botón de confirmación de advertencia y aviso de advertencia'
+  },
+  {
+    fg: 'on-tertiary-fixed',
+    bg: 'tertiary-fixed-dim',
+    threshold: 'text',
+    usage: 'Botón de confirmación de advertencia en hover'
+  },
+  {
+    fg: 'on-primary-container',
+    bg: 'primary-container',
+    threshold: 'text',
+    usage: 'Página activa de paginación y contenedor primario'
   }
 ];

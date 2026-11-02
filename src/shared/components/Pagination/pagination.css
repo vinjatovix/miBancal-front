@@ -27,13 +27,14 @@
   background: var(--color-surface-container-high);
 }
 
-.pagination__button:disabled {
+.pagination__button:disabled:not(.pagination__button--active) {
   cursor: default;
   color: var(--color-on-disabled);
 }
 
 .pagination__button--active,
-.pagination__button--active:hover {
+.pagination__button--active:hover,
+.pagination__button--active:disabled {
   opacity: 1;
   border-radius: var(--radius-full);
   background: var(--color-primary-container);

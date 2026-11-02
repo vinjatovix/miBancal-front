@@ -22,9 +22,13 @@
   padding: var(--space-sm);
   border: 1px solid var(--color-border-control);
   border-radius: var(--radius-default);
-  background: var(--color-bg-surface);
+  background-color: var(--color-bg-surface);
   color: var(--color-fg);
   font: var(--type-body-lg);
+}
+
+select.plant-filters__input {
+  padding-right: 2.25rem;
 }
 
 .plant-filters__error {

@@ -10,12 +10,15 @@ import AppNavRail from './AppNavRail/AppNavRail';
 import DevBanner from './DevBanner/DevBanner';
 import ThemeToggle from './ThemeToggle/ThemeToggle';
 import { useNavRailState } from './useNavRailState';
+import { useScrollRestore } from './useScrollRestore';
 import './mainLayout.css';
 
 export default function MainLayout() {
   const [isOpen, setIsOpen] = useState(false);
   const { isExpanded: isRailExpanded, toggleRail } = useNavRailState();
   const toggleButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useScrollRestore();
 
   const shellClassName = IS_DEV ? 'app-shell app-shell--dev' : 'app-shell';
 

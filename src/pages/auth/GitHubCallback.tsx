@@ -57,10 +57,17 @@ export default function GitHubCallback() {
     const session = getGithubPkceSession();
     const from = session.returnUrl;
     const safeDestination = resolveRedirectDestination(from);
+    const restoreScrollState =
+      session.scrollY !== null
+        ? { restoreScrollY: session.scrollY }
+        : undefined;
 
     if (isAuthenticated) {
       clearGithubPkceSession();
-      navigate(safeDestination, { replace: true });
+      navigate(safeDestination, {
+        replace: true,
+        state: restoreScrollState
+      });
       return;
     }
 
@@ -86,7 +93,12 @@ export default function GitHubCallback() {
       const ssoError = classifySsoError(preExchangeError);
       navigate('/login', {
         replace: true,
-        state: { ssoError, error: ssoError, from }
+        state: {
+          ssoError,
+          error: ssoError,
+          from,
+          scrollY: session.scrollY ?? undefined
+        }
       });
       return;
     }
@@ -97,7 +109,12 @@ export default function GitHubCallback() {
         const ssoError = classifySsoError('security_error');
         navigate('/login', {
           replace: true,
-          state: { ssoError, error: ssoError, from }
+          state: {
+            ssoError,
+            error: ssoError,
+            from,
+            scrollY: session.scrollY ?? undefined
+          }
         });
         return;
       }
@@ -108,13 +125,21 @@ export default function GitHubCallback() {
           codeVerifier: session.verifier
         });
         clearGithubPkceSession();
-        navigate(safeDestination, { replace: true });
+        navigate(safeDestination, {
+          replace: true,
+          state: restoreScrollState
+        });
       } catch (err) {
         clearGithubPkceSession();
         const ssoError = classifySsoError(err);
         navigate('/login', {
           replace: true,
-          state: { ssoError, error: ssoError, from }
+          state: {
+            ssoError,
+            error: ssoError,
+            from,
+            scrollY: session.scrollY ?? undefined
+          }
         });
       }
     };

@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
 import PlantRelationSearchCombobox from '../../../pages/plantRelations/components/PlantRelationSearchCombobox';
+import Select from '../../../shared/components/Select/Select';
 import type { RelationTargetScopeType } from '../../../types/Plants/PlantRelation';
 import PlantRelationFamilySelect from './PlantRelationFamilySelect';
 import { GENUS_PATTERN, type CompanionDraft } from './plantRelationForm.utils';
@@ -31,7 +32,7 @@ export default function PlantRelationCompanionField({
         <label htmlFor={scopeId} className="plant-relation-form-modal__label">
           {t('plantRelation.curator.companionScope')}
         </label>
-        <select
+        <Select
           id={scopeId}
           className="plant-relation-form-modal__select"
           value={draft.scope}
@@ -41,13 +42,11 @@ export default function PlantRelationCompanionField({
               scope: e.target.value as RelationTargetScopeType
             })
           }
-        >
-          {availableScopes.map((scope) => (
-            <option key={scope} value={scope}>
-              {tValue('plantRelation.scopeValues', scope)}
-            </option>
-          ))}
-        </select>
+          options={availableScopes.map((scope) => ({
+            value: scope,
+            label: tValue('plantRelation.scopeValues', scope)
+          }))}
+        />
       </div>
 
       <div className="plant-relation-form-modal__field">

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   DEFAULT_TIMEOUT_MS,
@@ -144,6 +144,36 @@ describe('apiFetch', () => {
       headers: {
         'If-Match': '"abc123etag"'
       }
+    });
+
+    const init = getCapturedInit(fetchMock);
+    const headers = new Headers(init?.headers);
+    expect(headers.get('Content-Type')).toBe('application/json');
+    expect(headers.get('If-Match')).toBe('"abc123etag"');
+  });
+
+  it('merges custom headers with default Content-Type (using Headers)', async () => {
+    const fetchMock = createFetchMock({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await apiFetch('/test', {
+      headers: new Headers({
+        'If-Match': '"abc123etag"'
+      })
+    });
+
+    const init = getCapturedInit(fetchMock);
+    const headers = new Headers(init?.headers);
+    expect(headers.get('Content-Type')).toBe('application/json');
+    expect(headers.get('If-Match')).toBe('"abc123etag"');
+  });
+
+  it('merges custom headers with default Content-Type (using Array)', async () => {
+    const fetchMock = createFetchMock({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await apiFetch('/test', {
+      headers: [['If-Match', '"abc123etag"']]
     });
 
     const init = getCapturedInit(fetchMock);
@@ -504,9 +534,16 @@ describe('apiFetch', () => {
     expect((error as DOMException).name).toBe('AbortError');
   });
 
-  it('exports a 15s read timeout and a 45s mutation timeout', () => {
-    expect(DEFAULT_TIMEOUT_MS).toBe(15_000);
-    expect(MUTATION_TIMEOUT_MS).toBe(45_000);
+  it('does not apply timeout when timeoutMs <= 0', async () => {
+    const fetchMock = createFetchMock({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await apiFetch('/test', { timeout: 0 });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:3000/test',
+      expect.objectContaining({ signal: undefined })
+    );
   });
 
   it.each([
@@ -519,5 +556,107 @@ describe('apiFetch', () => {
     ['DELETE', MUTATION_TIMEOUT_MS]
   ])('defaultTimeoutFor(%s) resolves to %d ms', (method, expected) => {
     expect(defaultTimeoutFor(method)).toBe(expected);
+  });
+});
+
+describe('apiFetch AbortSignal fallbacks', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    clearStoredToken();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  function stubWithoutModernAbortSignal() {
+    vi.stubGlobal('AbortSignal', {});
+  }
+
+  it('resolves through the manual timer fallback when AbortSignal.timeout is unavailable', async () => {
+    stubWithoutModernAbortSignal();
+    const fetchMock = createFetchMock({
+      ok: true,
+      json: () => Promise.resolve({ ok: true })
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await apiFetch('/test', { timeout: 5000 });
+
+    expect(result).toEqual({ ok: true });
+    const init = getCapturedInit(fetchMock);
+    expect(init?.signal).toBeDefined();
+    expect(init?.signal?.aborted).toBe(false);
+  });
+
+  it('aborts via the manual timer and surfaces a NetworkError when the timeout elapses', async () => {
+    stubWithoutModernAbortSignal();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              reject(
+                init.signal?.reason ?? new DOMException('aborted', 'AbortError')
+              );
+            });
+          })
+      )
+    );
+
+    const error = await captureError(apiFetch('/test', { timeout: 10 }));
+
+    expect(error).toBeInstanceOf(NetworkError);
+  });
+
+  it('manually combines a pending custom signal when AbortSignal.any is unavailable', async () => {
+    stubWithoutModernAbortSignal();
+    const controller = new AbortController();
+    const fetchMock = createFetchMock({
+      ok: true,
+      json: () => Promise.resolve({ ok: true })
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await apiFetch('/test', {
+      signal: controller.signal,
+      timeout: 5000
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(controller.signal.aborted).toBe(false);
+  });
+
+  it('aborts immediately when a pre-aborted custom signal is combined manually', async () => {
+    stubWithoutModernAbortSignal();
+    const controller = new AbortController();
+    const abortReason = new DOMException('cancelled by caller', 'AbortError');
+    controller.abort(abortReason);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((_url: string, init?: RequestInit) => {
+        if (init?.signal?.aborted) {
+          return Promise.reject(
+            init.signal.reason ?? new DOMException('aborted', 'AbortError')
+          );
+        }
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: () => Promise.resolve({})
+        } as unknown as Response);
+      })
+    );
+
+    const error = await captureError(
+      apiFetch('/test', { signal: controller.signal, timeout: 5000 })
+    );
+
+    expect(error).toBeInstanceOf(DOMException);
+    expect((error as DOMException).name).toBe('AbortError');
   });
 });

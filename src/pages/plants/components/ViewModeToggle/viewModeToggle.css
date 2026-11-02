@@ -36,5 +36,4 @@
   background: var(--color-selected-bg);
   color: var(--color-on-selected);
   font-weight: 700;
-  box-shadow: inset 0 0 0 2px var(--color-selected-indicator);
 }

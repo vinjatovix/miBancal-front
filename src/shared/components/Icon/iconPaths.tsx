@@ -1337,7 +1337,7 @@ const infoGlyph = (
   <>
     <path
       fill="currentColor"
-      d="M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2zm1.5 20h-3v-8h3zm0-10h-3V8h3z"
+      d="M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2zm0 11a2 2 0 1 1 2-2 2 2 0 0 1-2 2zm1.5 14h-3v-11h3z"
     />
   </>
 );

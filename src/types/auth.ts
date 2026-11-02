@@ -82,6 +82,11 @@ export interface LoginNavigationState {
         readonly search?: string;
         readonly hash?: string;
       };
+  readonly scrollY?: number;
+}
+
+export interface LoginRestoreScrollState {
+  readonly restoreScrollY?: number;
 }
 
 export interface SsoCallbackQueryParams {

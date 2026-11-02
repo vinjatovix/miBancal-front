@@ -89,7 +89,7 @@ Las variables `--palette-*` son privadas de `src/styles/tokens.css` y no se cons
 | Token                       | Valor     | Token                        | Valor     |
 | --------------------------- | --------- | ---------------------------- | --------- |
 | `primary`                   | `#002718` | `on-primary`                 | `#ffffff` |
-| `primary-container`         | `#133e2b` | `on-primary-container`       | `#7da990` |
+| `primary-container`         | `#133e2b` | `on-primary-container`       | `#bfedd2` |
 | `primary-fixed`             | `#bfedd2` | `primary-fixed-dim`          | `#a3d1b6` |
 | `on-primary-fixed`          | `#002113` | `on-primary-fixed-variant`   | `#254f3a` |
 | `inverse-primary`           | `#a3d1b6` | `surface-tint`               | `#3d6751` |

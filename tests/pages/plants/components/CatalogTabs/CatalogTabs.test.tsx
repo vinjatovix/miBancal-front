@@ -59,6 +59,24 @@ describe('CatalogTabs: visibilidad', () => {
       screen.getByRole('button', { name: 'Mis Favoritas' })
     ).toHaveAttribute('aria-pressed', 'false');
   });
+
+  it('identifica el grupo con nombre accesible', () => {
+    setStoredToken(VALID_TEST_TOKEN);
+
+    renderCatalogTabs();
+
+    expect(
+      screen.getByRole('group', { name: 'Pestañas del catálogo' })
+    ).toBeInTheDocument();
+  });
+
+  it('no renderiza el texto de grupo como elemento visual', () => {
+    setStoredToken(VALID_TEST_TOKEN);
+
+    renderCatalogTabs();
+
+    expect(screen.queryByText('Pestañas del catálogo')).not.toBeInTheDocument();
+  });
 });
 
 describe('CatalogTabs: navegación', () => {

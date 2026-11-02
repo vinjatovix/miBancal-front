@@ -70,11 +70,13 @@
   background-color: var(--color-bg-surface);
   border: 1px solid var(--color-border-control);
   border-radius: var(--radius-sm);
-  box-sizing: border-box;
-  outline: none;
   transition:
     border-color var(--motion-fade) ease,
     background-color var(--motion-fade) ease;
+}
+
+.plant-relation-form-modal__select {
+  padding-right: 2.25rem;
 }
 
 .plant-relation-form-modal__select:focus,

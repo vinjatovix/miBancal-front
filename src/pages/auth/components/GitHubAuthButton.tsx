@@ -9,6 +9,7 @@ import {
   generateState,
   saveGithubPkceSession
 } from '../../../shared/auth/pkce';
+import { normalizeScrollY } from '../../../shared/scroll/normalizeScrollY';
 import { resolveRedirectDestination } from '../utils/destination';
 import './githubAuthButton.css';
 
@@ -32,16 +33,30 @@ export default function GitHubAuthButton({
     const challenge = await generateCodeChallenge(verifier);
     const state = generateState();
 
-    const rawTarget =
-      location.pathname === '/login'
-        ? (location.state as { from?: unknown })?.from
-        : location.pathname;
+    const isAuthPage =
+      location.pathname === '/login' || location.pathname === '/register';
+    const navState =
+      typeof location.state === 'object' && location.state !== null
+        ? (location.state as { from?: unknown; scrollY?: unknown })
+        : null;
+
+    const rawTarget = isAuthPage
+      ? (navState?.from ?? location.pathname)
+      : location.pathname;
     const returnUrl = resolveRedirectDestination(rawTarget);
+
+    const rawScrollY = isAuthPage
+      ? navState?.scrollY
+      : typeof window !== 'undefined'
+        ? window.scrollY
+        : undefined;
+    const scrollY = normalizeScrollY(rawScrollY);
 
     saveGithubPkceSession({
       verifier,
       state,
-      returnUrl
+      returnUrl,
+      scrollY
     });
 
     window.location.href = buildGithubAuthorizeUrl({

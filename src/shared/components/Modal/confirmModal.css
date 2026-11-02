@@ -62,42 +62,44 @@
 
 .modal-btn--cancel {
   background: transparent;
-  color: var(--color-on-surface);
-  border: 1px solid var(--color-outline);
+  color: var(--color-fg);
+  border: 1px solid var(--color-border-control);
 }
 
 .modal-btn--cancel:hover:not(:disabled) {
-  background: var(--color-surface-container-high);
+  background: var(--color-bg-hover);
 }
 
 .modal-btn--confirm {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--color-action-bg);
+  color: var(--color-on-action);
 }
 
 .modal-btn--confirm:hover:not(:disabled) {
-  background: var(--color-primary-container);
+  background: var(--color-action-bg-hover);
 }
 
 .modal-btn--confirm.modal-btn--danger {
-  background: var(--color-error);
-  color: var(--color-on-error);
+  background: var(--color-danger-bg);
+  color: var(--color-on-danger);
 }
 
 .modal-btn--confirm.modal-btn--danger:hover:not(:disabled) {
-  background: var(--color-on-error-container);
+  background: var(--color-danger-bg-hover);
 }
 
 .modal-btn--confirm.modal-btn--warning {
-  background: var(--color-tertiary-container);
-  color: var(--color-on-tertiary);
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed);
 }
 
 .modal-btn--confirm.modal-btn--warning:hover:not(:disabled) {
-  background: var(--color-tertiary);
+  background: var(--color-tertiary-fixed-dim);
 }
 
 .modal-btn:disabled {
+  background: var(--color-disabled-bg);
+  border: 1px solid var(--color-disabled-border);
   color: var(--color-on-disabled);
   cursor: not-allowed;
 }

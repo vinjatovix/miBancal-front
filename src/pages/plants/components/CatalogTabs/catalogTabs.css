@@ -4,11 +4,6 @@
   gap: var(--space-sm);
 }
 
-.catalog-tabs__label {
-  font: var(--type-label-lg);
-  color: var(--color-fg-muted);
-}
-
 .catalog-tabs__tab {
   padding: var(--space-xs) var(--space-md);
   border: 1px solid var(--color-border-control);

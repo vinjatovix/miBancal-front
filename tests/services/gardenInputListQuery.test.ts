@@ -128,4 +128,74 @@ describe('gardenInputListQuery', () => {
 
     expect(query).toContain('filter%5Bstatus%5D%5Bin%5D=active%2Cdeleted');
   });
+
+  it('serializes a single-value category string into the in filter', () => {
+    const query = buildGardenInputQuery({
+      filters: { category: 'defense' },
+      pagination: { page: 1, limit: 25 },
+      sort: DEFAULT_GARDEN_INPUT_SORT
+    });
+
+    expect(query).toContain('filter%5Bcategory%5D%5Bin%5D=defense');
+  });
+
+  it('omits the category filter when an empty array is provided', () => {
+    const query = buildGardenInputQuery({
+      filters: { category: [] },
+      pagination: { page: 1, limit: 25 },
+      sort: DEFAULT_GARDEN_INPUT_SORT
+    });
+
+    expect(query).not.toContain('filter%5Bcategory%5D');
+  });
+
+  it('omits the action filter when the action string is blank', () => {
+    const query = buildGardenInputQuery({
+      filters: { action: '   ' },
+      pagination: { page: 1, limit: 25 },
+      sort: DEFAULT_GARDEN_INPUT_SORT
+    });
+
+    expect(query).not.toContain('filter%5Baction%5D');
+  });
+
+  it('serializes a single-item status array with the eq operator', () => {
+    const query = buildGardenInputQuery({
+      filters: { status: ['active'] },
+      pagination: { page: 1, limit: 25 },
+      sort: DEFAULT_GARDEN_INPUT_SORT
+    });
+
+    expect(query).toContain('filter%5Bstatus%5D%5Beq%5D=active');
+  });
+
+  it('omits the status filter when an empty status array is provided', () => {
+    const query = buildGardenInputQuery({
+      filters: { status: [] },
+      pagination: { page: 1, limit: 25 },
+      sort: DEFAULT_GARDEN_INPUT_SORT
+    });
+
+    expect(query).not.toContain('filter%5Bstatus%5D');
+  });
+
+  it('omits the status filter when the status string is blank', () => {
+    const query = buildGardenInputQuery({
+      filters: { status: '  ' },
+      pagination: { page: 1, limit: 25 },
+      sort: DEFAULT_GARDEN_INPUT_SORT
+    });
+
+    expect(query).not.toContain('filter%5Bstatus%5D');
+  });
+
+  it('serializes a comma-separated status string with the in operator', () => {
+    const query = buildGardenInputQuery({
+      filters: { status: 'active,deleted' },
+      pagination: { page: 1, limit: 25 },
+      sort: DEFAULT_GARDEN_INPUT_SORT
+    });
+
+    expect(query).toContain('filter%5Bstatus%5D%5Bin%5D=active%2Cdeleted');
+  });
 });

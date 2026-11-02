@@ -18,7 +18,13 @@ export function AnomalyFormFeedback({
       {isSessionExpired && (
         <div role="alert" className="anomaly-form__conflict-banner">
           <p>{t('anomaly.form.session_expired')}</p>
-          <Link to="/login" state={{ from: location }}>
+          <Link
+            to="/login"
+            state={{
+              from: location,
+              scrollY: typeof window !== 'undefined' ? window.scrollY : 0
+            }}
+          >
             {t('anomaly.form.login_again')}
           </Link>
         </div>

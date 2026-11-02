@@ -3,6 +3,7 @@ import { useId } from 'react';
 import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
 import Icon from '../../../shared/components/Icon/Icon';
+import Select from '../../../shared/components/Select/Select';
 import {
   GARDEN_INPUT_ACTIONS,
   GARDEN_INPUT_CATEGORIES,
@@ -128,7 +129,7 @@ export default function GardenInputFilters({
             <Icon name="admin_panel_settings" decorative />
             {t('gardenInput.filters.status')}
           </label>
-          <select
+          <Select
             id={statusId}
             className="garden-input-filters__select"
             value={selectedStatus ?? ''}
@@ -137,15 +138,18 @@ export default function GardenInputFilters({
                 (e.target.value as GardenInputStatus) || undefined
               )
             }
-          >
-            <option value="">{t('gardenInput.filters.all_statuses')}</option>
-            <option value="active">
-              {tValue('gardenInput.statusValues', 'active')}
-            </option>
-            <option value="deleted">
-              {tValue('gardenInput.statusValues', 'deleted')}
-            </option>
-          </select>
+            placeholder={t('gardenInput.filters.all_statuses')}
+            options={[
+              {
+                value: 'active',
+                label: tValue('gardenInput.statusValues', 'active')
+              },
+              {
+                value: 'deleted',
+                label: tValue('gardenInput.statusValues', 'deleted')
+              }
+            ]}
+          />
         </div>
       )}
     </div>

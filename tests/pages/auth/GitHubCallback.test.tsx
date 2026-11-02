@@ -26,6 +26,7 @@ function LoginSpy() {
     ssoError?: string;
     error?: string;
     from?: unknown;
+    scrollY?: number;
   } | null;
 
   return (
@@ -34,6 +35,19 @@ function LoginSpy() {
       <div data-testid="sso-error">{state?.ssoError}</div>
       <div data-testid="legacy-error">{state?.error}</div>
       <div data-testid="from-state">{JSON.stringify(state?.from)}</div>
+      <div data-testid="scroll-y-state">{state?.scrollY}</div>
+    </div>
+  );
+}
+
+function PlantsSpy() {
+  const location = useLocation();
+  const state = location.state as { restoreScrollY?: number } | null;
+
+  return (
+    <div>
+      <div data-testid="plants-page">Plantas</div>
+      <div data-testid="restore-scroll-y">{state?.restoreScrollY}</div>
     </div>
   );
 }
@@ -45,10 +59,7 @@ function TestApp() {
         path="/"
         element={<div data-testid="home-page">Página principal</div>}
       />
-      <Route
-        path="/plants"
-        element={<div data-testid="plants-page">Plantas</div>}
-      />
+      <Route path="/plants" element={<PlantsSpy />} />
       <Route path="/login" element={<LoginSpy />} />
       <Route path="/auth/github/callback" element={<GitHubCallback />} />
     </Routes>
@@ -340,6 +351,51 @@ describe('GitHubCallback - User Story 2 (Authorization Errors & Re-navigation)',
     });
 
     expect(await screen.findByTestId('plants-page')).toBeInTheDocument();
+    expect(getGithubPkceSession().verifier).toBeNull();
+  });
+
+  it('redirects to returnUrl with restoreScrollY state when exchange succeeds and scrollY is present in session', async () => {
+    saveGithubPkceSession({
+      verifier: 'valid-verifier',
+      state: 'valid-state',
+      returnUrl: '/plants',
+      scrollY: 480
+    });
+    vi.spyOn(authServiceModule, 'authenticateWithGithub').mockResolvedValueOnce(
+      {
+        token: VALID_TEST_TOKEN
+      }
+    );
+
+    renderWithProviders(<TestApp />, {
+      route: '/auth/github/callback?code=valid-code&state=valid-state'
+    });
+
+    expect(await screen.findByTestId('plants-page')).toBeInTheDocument();
+    expect(screen.getByTestId('restore-scroll-y')).toHaveTextContent('480');
+    expect(getGithubPkceSession().verifier).toBeNull();
+  });
+
+  it('preserves scrollY in login navigation state when exchange fails with error', async () => {
+    saveGithubPkceSession({
+      verifier: 'valid-verifier',
+      state: 'valid-state',
+      returnUrl: '/plants',
+      scrollY: 310
+    });
+    vi.spyOn(authServiceModule, 'authenticateWithGithub').mockRejectedValueOnce(
+      new Error('Network error')
+    );
+
+    renderWithProviders(<TestApp />, {
+      route: '/auth/github/callback?code=valid-code&state=valid-state'
+    });
+
+    expect(await screen.findByTestId('current-path')).toHaveTextContent(
+      '/login'
+    );
+    expect(screen.getByTestId('from-state')).toHaveTextContent('"/plants"');
+    expect(screen.getByTestId('scroll-y-state')).toHaveTextContent('310');
     expect(getGithubPkceSession().verifier).toBeNull();
   });
 

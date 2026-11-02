@@ -10,19 +10,27 @@
   border: 1px solid var(--color-surface-container-high);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  display: flow-root;
+}
+
+.family-form__section > * + * {
+  margin-top: 1.25rem;
 }
 
 .family-form__section-title {
+  float: left;
+  width: 100%;
   font-family: var(--font-display, 'Newsreader', serif);
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--color-on-surface);
-  margin-bottom: 0.5rem;
+  margin: 0;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--color-surface-container-high);
+}
+
+.family-form__section-title + * {
+  clear: both;
 }
 
 .family-form__field {
@@ -132,7 +140,10 @@
 
   .family-form__section {
     padding: 1rem;
-    gap: 1rem;
+  }
+
+  .family-form__section > * + * {
+    margin-top: 1rem;
   }
 
   .family-form__section-title {

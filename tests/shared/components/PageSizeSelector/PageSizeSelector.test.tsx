@@ -39,6 +39,19 @@ describe('PageSizeSelector', () => {
     );
   });
 
+  it('resalta el botón seleccionado con la clase activa', () => {
+    renderSelector(25);
+
+    const group = screen.getByRole('group', { name: 'Mostrar' });
+
+    expect(within(group).getByRole('button', { name: '25' })).toHaveClass(
+      'page-size__segment--active'
+    );
+    expect(within(group).getByRole('button', { name: '50' })).not.toHaveClass(
+      'page-size__segment--active'
+    );
+  });
+
   it('emite el valor elegido al pulsar un segmento', async () => {
     const { onChange } = renderSelector(25);
 

@@ -4,6 +4,7 @@ import { beforeEach, vi } from 'vitest';
 import '../src/i18n/messages/features';
 
 window.scrollTo = vi.fn();
+window.scrollY = 0;
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -20,5 +21,6 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 beforeEach(() => {
+  window.scrollY = 0;
   vi.mocked(window.scrollTo).mockClear();
 });

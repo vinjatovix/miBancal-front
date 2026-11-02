@@ -1,6 +1,6 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../src/config/env', () => ({
@@ -588,5 +588,45 @@ describe('Register Page - SSO Error Handling & Placement', () => {
     expect(alert).toHaveClass('toast-item--error');
     expect(alert).toHaveTextContent(t('auth.sso_unavailable'));
     expect(container.querySelector('.auth-sso-alert-error')).toBeNull();
+  });
+
+  it('preserves location state when navigating to login from register footer', async () => {
+    const user = userEvent.setup();
+
+    function AppWithLoginState() {
+      const location = useLocation();
+      return (
+        <Routes>
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/login"
+            element={
+              <span data-testid="login-state">
+                {JSON.stringify(location.state)}
+              </span>
+            }
+          />
+        </Routes>
+      );
+    }
+
+    renderWithProviders(<AppWithLoginState />, {
+      route: {
+        pathname: '/register',
+        state: {
+          from: '/plants/tomate',
+          scrollY: 420
+        }
+      }
+    });
+
+    const loginLink = screen.getByRole('link', {
+      name: /¿Ya tienes cuenta\? Inicia sesión/i
+    });
+    await user.click(loginLink);
+
+    expect(screen.getByTestId('login-state').textContent).toBe(
+      JSON.stringify({ from: '/plants/tomate', scrollY: 420 })
+    );
   });
 });

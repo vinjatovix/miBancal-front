@@ -37,7 +37,7 @@ export function AnomalyHero({ anomaly, onEdit, onDelete }: Props) {
           {isEditor && onEdit && (
             <button
               type="button"
-              className="anomaly-hero__btn"
+              className="action-btn"
               onClick={onEdit}
               aria-label={t('anomaly.detail.edit')}
             >
@@ -48,7 +48,7 @@ export function AnomalyHero({ anomaly, onEdit, onDelete }: Props) {
           {canDelete && (
             <button
               type="button"
-              className="anomaly-hero__btn anomaly-hero__btn--danger"
+              className="action-btn action-btn--danger"
               onClick={onDelete}
               aria-label={t('anomaly.detail.delete')}
             >
