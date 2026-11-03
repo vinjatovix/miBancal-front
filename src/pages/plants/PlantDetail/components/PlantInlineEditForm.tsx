@@ -195,7 +195,7 @@ export function PlantInlineEditForm({
           {deleteMutation.isPending ? t('common.deleting') : t('common.delete')}
         </Button>
         <Button
-          variant="neutral"
+          variant="secondary"
           onClick={handleCancel}
           disabled={updateMutation.isPending || deleteMutation.isPending}
         >

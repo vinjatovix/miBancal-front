@@ -4,7 +4,12 @@ import Icon from '../Icon/Icon';
 import type { IconName } from '../Icon/iconPaths';
 import './button.css';
 
-export type ButtonVariant = 'primary' | 'success' | 'danger' | 'neutral';
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'danger'
+  | 'neutral';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface BaseButtonProps {

@@ -154,7 +154,7 @@ export default function PlantCreatePage() {
 
         <div className="plant-form__actions">
           <Button
-            variant="neutral"
+            variant="secondary"
             onClick={handleCancel}
             disabled={createMutation.isPending}
           >

@@ -393,7 +393,7 @@ export default function GardenInputForm({
       />
 
       <div className="garden-input-form__actions">
-        <Button variant="neutral" onClick={onCancel} disabled={isSubmitting}>
+        <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
           {t('gardenInput.form.cancel')}
         </Button>
         <Button variant="primary" type="submit" disabled={isSubmitting}>

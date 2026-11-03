@@ -127,7 +127,7 @@
 .app-button--neutral,
 .app-button--text {
   background-color: transparent;
-  color: var(--color-fg);
+  color: var(--color-on-surface);
   border-color: transparent;
 }
 
@@ -143,7 +143,7 @@
     [aria-disabled='true'],
     .is-disabled
   ) {
-  background-color: var(--color-bg-hover);
+  background-color: var(--color-surface-container-high);
 }
 
 .app-button:is(:disabled, [aria-disabled='true'], .is-disabled),

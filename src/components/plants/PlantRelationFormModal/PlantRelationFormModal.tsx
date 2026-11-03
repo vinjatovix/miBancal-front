@@ -4,6 +4,7 @@ import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
 import { useCreatePlantRelation } from '../../../pages/plantRelations/hooks/useCreatePlantRelation';
 import { useUpdatePlantRelation } from '../../../pages/plantRelations/hooks/useUpdatePlantRelation';
+import Button from '../../../shared/components/Button/Button';
 import Modal from '../../../shared/components/Modal/Modal';
 import Select from '../../../shared/components/Select/Select';
 import { ApiError } from '../../../shared/errors/ApiError';
@@ -180,18 +181,13 @@ function PlantRelationFormDialog({
       subtitle={companionName}
       footer={
         <div className="plant-relation-form-modal__actions">
-          <button
-            type="button"
-            className="plant-relation-form-modal__btn plant-relation-form-modal__btn--secondary"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
+          <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
             {t('plantRelation.curator.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="success"
             type="submit"
             form="plant-relation-form"
-            className="plant-relation-form-modal__btn plant-relation-form-modal__btn--primary"
             disabled={
               isSubmitting ||
               (!isEditing && !isCompanionDraftComplete(companion))
@@ -200,7 +196,7 @@ function PlantRelationFormDialog({
             {isSubmitting
               ? t('plantRelation.curator.saving')
               : t('plantRelation.curator.save')}
-          </button>
+          </Button>
         </div>
       }
     >
