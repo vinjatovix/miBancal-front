@@ -37,7 +37,7 @@ describe('GardenInputDeleteDialog', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Purín de ortiga')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Eliminar insumo' })
+      screen.getByRole('button', { name: 'Eliminar' })
     ).toBeInTheDocument();
   });
 
@@ -58,7 +58,7 @@ describe('GardenInputDeleteDialog', () => {
       />
     );
 
-    const confirmBtn = screen.getByRole('button', { name: 'Eliminar insumo' });
+    const confirmBtn = screen.getByRole('button', { name: 'Eliminar' });
     await user.click(confirmBtn);
 
     await waitFor(() => {
@@ -87,7 +87,7 @@ describe('GardenInputDeleteDialog', () => {
       />
     );
 
-    const confirmBtn = screen.getByRole('button', { name: 'Eliminar insumo' });
+    const confirmBtn = screen.getByRole('button', { name: 'Eliminar' });
     await user.click(confirmBtn);
 
     const conflictMsg = await screen.findByText(
@@ -116,7 +116,7 @@ describe('GardenInputDeleteDialog', () => {
       />
     );
 
-    const confirmBtn = screen.getByRole('button', { name: 'Eliminar insumo' });
+    const confirmBtn = screen.getByRole('button', { name: 'Eliminar' });
     await user.click(confirmBtn);
 
     const toasts = toastStore.getSnapshot();
@@ -143,7 +143,7 @@ describe('GardenInputDeleteDialog', () => {
       />
     );
 
-    const confirmBtn = screen.getByRole('button', { name: 'Eliminar insumo' });
+    const confirmBtn = screen.getByRole('button', { name: 'Eliminar' });
     await user.click(confirmBtn);
 
     await waitFor(() => {

@@ -1,4 +1,8 @@
 import { t } from '../../../../i18n/core/t';
+import {
+  FormAddButton,
+  FormRemoveButton
+} from '../../../../shared/components/FormButtons';
 import { ImageUrlFieldWithPreview } from './ImageUrlFieldWithPreview';
 import type { PlantFormState } from './types';
 
@@ -101,13 +105,10 @@ export function PlantResourcesSection({ values, errors, onChange }: Props) {
           <h3 className="plant-form__label">
             {t('plant.form.resources.videos_title')}
           </h3>
-          <button
-            type="button"
-            className="plant-form__btn plant-form__btn--add"
+          <FormAddButton
             onClick={handleAddVideo}
-          >
-            {t('plant.form.resources.add_video')}
-          </button>
+            label={t('plant.form.resources.add_video')}
+          />
         </div>
 
         {values.videoResources.length === 0 ? (
@@ -124,13 +125,11 @@ export function PlantResourcesSection({ values, errors, onChange }: Props) {
                     <span className="plant-form__label">
                       {t('plant.form.resources.videos_title')} #{index + 1}
                     </span>
-                    <button
-                      type="button"
-                      className="plant-form__btn plant-form__btn--remove"
+                    <FormRemoveButton
                       onClick={() => handleRemoveVideo(index)}
-                    >
-                      {t('plant.form.resources.remove_video')}
-                    </button>
+                      ariaLabel={t('plant.form.resources.remove_video')}
+                      label={t('plant.form.resources.remove_video')}
+                    />
                   </div>
                   <div className="plant-form__field">
                     <label
@@ -190,13 +189,10 @@ export function PlantResourcesSection({ values, errors, onChange }: Props) {
           <h3 className="plant-form__label">
             {t('plant.form.resources.articles_title')}
           </h3>
-          <button
-            type="button"
-            className="plant-form__btn plant-form__btn--add"
+          <FormAddButton
             onClick={handleAddArticle}
-          >
-            {t('plant.form.resources.add_article')}
-          </button>
+            label={t('plant.form.resources.add_article')}
+          />
         </div>
 
         {values.articleResources.length === 0 ? (
@@ -213,13 +209,11 @@ export function PlantResourcesSection({ values, errors, onChange }: Props) {
                     <span className="plant-form__label">
                       {t('plant.form.resources.articles_title')} #{index + 1}
                     </span>
-                    <button
-                      type="button"
-                      className="plant-form__btn plant-form__btn--remove"
+                    <FormRemoveButton
                       onClick={() => handleRemoveArticle(index)}
-                    >
-                      {t('plant.form.resources.remove_article')}
-                    </button>
+                      ariaLabel={t('plant.form.resources.remove_article')}
+                      label={t('plant.form.resources.remove_article')}
+                    />
                   </div>
                   <div className="plant-form__field">
                     <label

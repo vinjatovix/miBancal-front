@@ -69,7 +69,7 @@ export const gardenInputMessages = {
       delete_confirm_title: '¿Eliminar insumo?',
       delete_confirm_message:
         'El insumo quedará borrado. Solo lo verán los editores. ¿Quieres seguir?',
-      delete_confirm_action: 'Eliminar insumo',
+      delete_confirm_action: 'Eliminar',
       delete_cancel_action: 'Cancelar',
       active_ingredients: 'Principios activos',
       nutrients: 'Nutrientes aportados',

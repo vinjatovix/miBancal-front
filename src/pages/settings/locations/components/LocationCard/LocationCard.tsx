@@ -1,5 +1,8 @@
 import { t } from '../../../../../i18n/core/t';
-import Icon from '../../../../../shared/components/Icon/Icon';
+import {
+  DeleteButton,
+  EditButton
+} from '../../../../../shared/components/ActionButtons';
 import type { Location } from '../../../../../types/Location/Location';
 
 import './locationCard.css';
@@ -31,24 +34,14 @@ export default function LocationCard({
       </div>
 
       <footer className="location-card__actions">
-        <button
-          type="button"
-          className="location-card__btn location-card__btn--edit"
-          aria-label={t('location.open_edit', { name: location.name })}
+        <EditButton
+          ariaLabel={t('location.open_edit', { name: location.name })}
           onClick={() => onEdit(location)}
-        >
-          <Icon name="edit_note" decorative />
-          <span>{t('location.card.edit')}</span>
-        </button>
-        <button
-          type="button"
-          className="location-card__btn location-card__btn--delete"
-          aria-label={t('location.open_delete', { name: location.name })}
+        />
+        <DeleteButton
+          ariaLabel={t('location.open_delete', { name: location.name })}
           onClick={() => onDelete(location)}
-        >
-          <Icon name="delete" decorative />
-          <span>{t('location.card.delete')}</span>
-        </button>
+        />
       </footer>
     </article>
   );

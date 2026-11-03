@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 
 import { t } from '../../../../i18n/core/t';
+import Button from '../../../../shared/components/Button/Button';
 import { CancelConfirmModal } from '../../../../shared/components/Modal/CancelConfirmModal';
 import { UnsavedChangesGuard } from '../../../../shared/components/UnsavedChangesGuard/UnsavedChangesGuard';
 import { useToast } from '../../../../shared/toast/useToast';
@@ -113,13 +114,9 @@ export function AnomalyInlineEditForm({
         <div role="alert" className="anomaly-form__conflict-banner">
           <strong>{t('anomaly.form.conflict.title')}</strong>
           <p>{t('anomaly.form.conflict.message')}</p>
-          <button
-            type="button"
-            className="anomaly-form__btn anomaly-form__btn--submit"
-            onClick={onReload}
-          >
+          <Button variant="primary" onClick={onReload}>
             {t('anomaly.form.conflict.reload_button')}
-          </button>
+          </Button>
         </div>
       )}
       <AnomalyFormFeedback

@@ -58,7 +58,7 @@ describe('DeleteLocationModal', () => {
     );
 
     const confirmButton = screen.getByRole('button', {
-      name: 'Eliminar ubicación'
+      name: 'Eliminar'
     });
     await user.click(confirmButton);
 

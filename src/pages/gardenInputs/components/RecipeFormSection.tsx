@@ -1,6 +1,9 @@
 import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
-import Icon from '../../../shared/components/Icon/Icon';
+import {
+  FormAddButton,
+  FormRemoveButton
+} from '../../../shared/components/FormButtons';
 import {
   DOSAGE_METHODS,
   type DosageMethod
@@ -132,13 +135,10 @@ export default function RecipeFormSection({
         <h3 className="recipe-form-section__title">
           {t('gardenInput.form.recipes_section')}
         </h3>
-        <button
-          type="button"
-          className="recipe-form-section__add-btn"
+        <FormAddButton
           onClick={handleAddRecipe}
-        >
-          <span>+ {t('gardenInput.form.add_recipe')}</span>
-        </button>
+          label={t('gardenInput.form.add_recipe')}
+        />
       </div>
 
       {recipes.map((recipe, rIdx) => {
@@ -159,15 +159,11 @@ export default function RecipeFormSection({
                 {recipe.name ||
                   `${t('gardenInput.form.recipe_name')} #${rIdx + 1}`}
               </h4>
-              <button
-                type="button"
-                className="recipe-form-card__remove-btn"
+              <FormRemoveButton
                 onClick={() => handleRemoveRecipe(rIdx)}
-                aria-label={`${t('gardenInput.form.remove_recipe')} ${rIdx + 1}`}
-              >
-                <Icon name="close" decorative />
-                <span>{t('gardenInput.form.remove_recipe')}</span>
-              </button>
+                ariaLabel={`${t('gardenInput.form.remove_recipe')} ${rIdx + 1}`}
+                label={t('gardenInput.form.remove_recipe')}
+              />
             </div>
 
             <div className="recipe-form-field">
@@ -227,13 +223,10 @@ export default function RecipeFormSection({
             <div className="recipe-form-sub-section">
               <div className="recipe-form-sub-section__header">
                 <h5>{t('gardenInput.form.recipe_ingredients')} *</h5>
-                <button
-                  type="button"
-                  className="recipe-form-sub-section__add-btn"
+                <FormAddButton
                   onClick={() => handleAddIngredient(rIdx)}
-                >
-                  <span>+ {t('gardenInput.form.add_ingredient')}</span>
-                </button>
+                  label={t('gardenInput.form.add_ingredient')}
+                />
               </div>
               {ingredientsError && (
                 <span className="recipe-form-error" role="alert">
@@ -300,14 +293,12 @@ export default function RecipeFormSection({
                     </div>
 
                     {recipe.ingredients.length > 1 && (
-                      <button
-                        type="button"
-                        className="recipe-form-row__remove-btn"
+                      <FormRemoveButton
                         onClick={() => handleRemoveIngredient(rIdx, iIdx)}
-                        aria-label={`${t('gardenInput.form.remove_ingredient')} ${iIdx + 1}`}
-                      >
-                        <Icon name="close" decorative />
-                      </button>
+                        ariaLabel={`${t('gardenInput.form.remove_ingredient')} ${iIdx + 1}`}
+                        iconName="close"
+                        iconOnly
+                      />
                     )}
                   </div>
                 );
@@ -317,13 +308,10 @@ export default function RecipeFormSection({
             <div className="recipe-form-sub-section">
               <div className="recipe-form-sub-section__header">
                 <h5>{t('gardenInput.form.recipe_instructions')} *</h5>
-                <button
-                  type="button"
-                  className="recipe-form-sub-section__add-btn"
+                <FormAddButton
                   onClick={() => handleAddInstruction(rIdx)}
-                >
-                  <span>+ {t('gardenInput.form.add_instruction')}</span>
-                </button>
+                  label={t('gardenInput.form.add_instruction')}
+                />
               </div>
               {instructionsError && (
                 <span className="recipe-form-error" role="alert">
@@ -360,14 +348,12 @@ export default function RecipeFormSection({
                     </div>
 
                     {recipe.instructions.length > 1 && (
-                      <button
-                        type="button"
-                        className="recipe-form-row__remove-btn"
+                      <FormRemoveButton
                         onClick={() => handleRemoveInstruction(rIdx, sIdx)}
-                        aria-label={`${t('gardenInput.form.remove_instruction')} ${sIdx + 1}`}
-                      >
-                        <Icon name="close" decorative />
-                      </button>
+                        ariaLabel={`${t('gardenInput.form.remove_instruction')} ${sIdx + 1}`}
+                        iconName="close"
+                        iconOnly
+                      />
                     )}
                   </div>
                 );

@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react';
 
 import { t } from '../../../../../i18n/core/t';
+import Button from '../../../../../shared/components/Button/Button';
 import { ErrorResponse } from '../../../../../shared/components/ErrorResponse/ErrorResponse';
 import { Loader } from '../../../../../shared/components/Loader/Loader';
 import Modal from '../../../../../shared/components/Modal/Modal';
@@ -160,25 +161,16 @@ function LocationFormBody({
         onChange={handleFieldChange}
       />
       <div className="location-form-modal__footer">
-        <button
-          type="button"
-          className="location-form-modal__btn location-form-modal__btn--cancel"
-          disabled={isSubmitting}
-          onClick={onClose}
-        >
+        <Button variant="neutral" disabled={isSubmitting} onClick={onClose}>
           {t('location.form.cancel')}
-        </button>
-        <button
-          type="submit"
-          className="location-form-modal__btn location-form-modal__btn--submit"
-          disabled={isSubmitting}
-        >
+        </Button>
+        <Button variant="primary" type="submit" disabled={isSubmitting}>
           {isSubmitting
             ? t('location.form.submitting')
             : isEditMode
               ? t('location.form.submit_edit')
               : t('location.form.submit_create')}
-        </button>
+        </Button>
       </div>
     </form>
   );

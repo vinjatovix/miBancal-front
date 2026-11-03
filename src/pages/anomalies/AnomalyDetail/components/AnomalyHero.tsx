@@ -4,6 +4,10 @@ import AnomalyStatusBadge from '../../../../components/anomalies/AnomalyStatusBa
 import { t } from '../../../../i18n/core/t';
 import { tValue } from '../../../../i18n/core/tValue';
 import { AuthContext } from '../../../../shared/auth/authContextDef';
+import {
+  DeleteButton,
+  EditButton
+} from '../../../../shared/components/ActionButtons';
 import Badge from '../../../../shared/components/Badge/Badge';
 import Icon from '../../../../shared/components/Icon/Icon';
 import ScientificName from '../../../../shared/components/ScientificName/ScientificName';
@@ -35,26 +39,18 @@ export function AnomalyHero({ anomaly, onEdit, onDelete }: Props) {
         <h1>{capitalizeFirstLetter(anomaly.name)}</h1>
         <div className="anomaly-hero__actions">
           {isEditor && onEdit && (
-            <button
-              type="button"
-              className="action-btn"
+            <EditButton
               onClick={onEdit}
-              aria-label={t('anomaly.detail.edit')}
-            >
-              <Icon name="edit_note" decorative />
-              <span>{t('anomaly.detail.edit')}</span>
-            </button>
+              ariaLabel={t('anomaly.detail.edit')}
+              label={t('anomaly.detail.edit')}
+            />
           )}
           {canDelete && (
-            <button
-              type="button"
-              className="action-btn action-btn--danger"
+            <DeleteButton
               onClick={onDelete}
-              aria-label={t('anomaly.detail.delete')}
-            >
-              <Icon name="delete" decorative />
-              <span>{t('anomaly.detail.delete')}</span>
-            </button>
+              ariaLabel={t('anomaly.detail.delete')}
+              label={t('anomaly.detail.delete')}
+            />
           )}
         </div>
       </div>

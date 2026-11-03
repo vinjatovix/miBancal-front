@@ -193,7 +193,7 @@ describe('LocationsPage', () => {
     });
 
     const confirmBtn = screen.getByRole('button', {
-      name: 'Eliminar ubicación'
+      name: 'Eliminar'
     });
     await user.click(confirmBtn);
 
@@ -232,7 +232,7 @@ describe('LocationsPage', () => {
     await user.click(deleteBtn);
 
     const confirmBtn = screen.getByRole('button', {
-      name: 'Eliminar ubicación'
+      name: 'Eliminar'
     });
     await user.click(confirmBtn);
 

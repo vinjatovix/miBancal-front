@@ -43,7 +43,7 @@ export const anomalyMessages = {
       delete_confirm_title: 'Eliminar anomalía',
       delete_confirm_message:
         'La gente ya no verá esta anomalía. ¿Quieres borrarla?',
-      delete_confirm_action: 'Eliminar anomalía',
+      delete_confirm_action: 'Eliminar',
       delete_error: 'No se ha podido eliminar la anomalía.',
       delete_conflict:
         'La anomalía fue modificada por otro usuario. Recarga la ficha para ver los datos más recientes.',

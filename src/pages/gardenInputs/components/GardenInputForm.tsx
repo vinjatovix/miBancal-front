@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 
 import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
+import Button from '../../../shared/components/Button/Button';
 import Icon from '../../../shared/components/Icon/Icon';
 import {
   GARDEN_INPUT_ACTIONS,
@@ -392,25 +393,16 @@ export default function GardenInputForm({
       />
 
       <div className="garden-input-form__actions">
-        <button
-          type="button"
-          className="garden-input-form__cancel-btn"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
+        <Button variant="neutral" onClick={onCancel} disabled={isSubmitting}>
           {t('gardenInput.form.cancel')}
-        </button>
-        <button
-          type="submit"
-          className="garden-input-form__submit-btn"
-          disabled={isSubmitting}
-        >
+        </Button>
+        <Button variant="primary" type="submit" disabled={isSubmitting}>
           {isSubmitting
             ? t('gardenInput.form.submitting')
             : isCreate
               ? t('gardenInput.form.submit_create')
               : t('gardenInput.form.submit_edit')}
-        </button>
+        </Button>
       </div>
     </form>
   );

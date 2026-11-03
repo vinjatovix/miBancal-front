@@ -47,9 +47,7 @@ describe('AnomalyDetail eliminación', () => {
     const user = userEvent.setup();
     const dialog = await openDeleteDialog(user);
 
-    await user.click(
-      within(dialog).getByRole('button', { name: 'Eliminar anomalía' })
-    );
+    await user.click(within(dialog).getByRole('button', { name: 'Eliminar' }));
 
     await waitFor(() =>
       expect(mockedDeleteAnomaly).toHaveBeenCalledWith('pulgon-verde', ETAG)
@@ -62,9 +60,7 @@ describe('AnomalyDetail eliminación', () => {
     const user = userEvent.setup();
     const dialog = await openDeleteDialog(user);
 
-    await user.click(
-      within(dialog).getByRole('button', { name: 'Eliminar anomalía' })
-    );
+    await user.click(within(dialog).getByRole('button', { name: 'Eliminar' }));
 
     const alert = await within(dialog).findByRole('alert');
     expect(alert).toHaveTextContent(/modificada por otro usuario/);
@@ -87,9 +83,7 @@ describe('AnomalyDetail eliminación', () => {
     const user = userEvent.setup();
     const dialog = await openDeleteDialog(user);
 
-    await user.click(
-      within(dialog).getByRole('button', { name: 'Eliminar anomalía' })
-    );
+    await user.click(within(dialog).getByRole('button', { name: 'Eliminar' }));
 
     const toastRegion = await screen.findByRole('region', {
       name: t('toast.region_label')
@@ -105,9 +99,7 @@ describe('AnomalyDetail eliminación', () => {
     const user = userEvent.setup();
     const dialog = await openDeleteDialog(user);
 
-    await user.click(
-      within(dialog).getByRole('button', { name: 'Eliminar anomalía' })
-    );
+    await user.click(within(dialog).getByRole('button', { name: 'Eliminar' }));
 
     const toastRegion = await screen.findByRole('region', {
       name: t('toast.region_label')

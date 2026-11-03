@@ -31,17 +31,3 @@
 select.anomaly-filters__input {
   padding-right: 2.25rem;
 }
-
-.anomaly-filters__clear {
-  padding: var(--space-sm);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-outline);
-  background: var(--color-surface-container-lowest);
-  color: var(--color-on-surface);
-  font: var(--type-label-lg);
-  cursor: pointer;
-}
-
-.anomaly-filters__clear:hover {
-  background: var(--color-surface-container-high);
-}

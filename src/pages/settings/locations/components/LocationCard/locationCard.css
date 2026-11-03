@@ -45,25 +45,3 @@
   border-top: 1px solid var(--color-border-decor);
   padding-top: 10px;
 }
-
-.location-card__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-control);
-  background: transparent;
-  font-size: 0.875rem;
-  cursor: pointer;
-  color: var(--color-fg);
-}
-
-.location-card__btn:hover {
-  background: var(--color-bg-hover);
-}
-
-.location-card__btn--delete:hover {
-  border-color: var(--color-error-border);
-  color: var(--color-on-error);
-}

@@ -9,6 +9,10 @@ import {
 } from '../../../components/plants/PlantRelationCard/plantRelationCard.utils';
 import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
+import {
+  DeleteButton,
+  EditButton
+} from '../../../shared/components/ActionButtons';
 import Badge from '../../../shared/components/Badge/Badge';
 import Icon from '../../../shared/components/Icon/Icon';
 import ScientificName from '../../../shared/components/ScientificName/ScientificName';
@@ -122,24 +126,18 @@ export default function PlantCompanionGroupCard({
                 {(onEdit || onDelete) && (
                   <div className="plant-companion-group-card__curator-actions">
                     {onEdit && (
-                      <button
-                        type="button"
-                        className="plant-companion-group-card__action-btn"
-                        aria-label={`${t('plantRelation.curator.editRelation')}: ${companion.primaryName ?? ''}`}
+                      <EditButton
+                        size="sm"
+                        ariaLabel={`${t('plantRelation.curator.editRelation')}: ${companion.primaryName ?? ''}`}
                         onClick={() => onEdit(relation)}
-                      >
-                        <Icon name="edit_note" decorative />
-                      </button>
+                      />
                     )}
                     {onDelete && (
-                      <button
-                        type="button"
-                        className="plant-companion-group-card__action-btn plant-companion-group-card__action-btn--delete"
-                        aria-label={`${t('plantRelation.curator.deleteRelation')}: ${companion.primaryName ?? ''}`}
+                      <DeleteButton
+                        size="sm"
+                        ariaLabel={`${t('plantRelation.curator.deleteRelation')}: ${companion.primaryName ?? ''}`}
                         onClick={() => onDelete(relation)}
-                      >
-                        <Icon name="delete" decorative />
-                      </button>
+                      />
                     )}
                   </div>
                 )}

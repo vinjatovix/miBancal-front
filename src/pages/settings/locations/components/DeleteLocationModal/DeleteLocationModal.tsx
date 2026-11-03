@@ -1,8 +1,6 @@
 import { t } from '../../../../../i18n/core/t';
-import Modal from '../../../../../shared/components/Modal/Modal';
+import { ConfirmModal } from '../../../../../shared/components/Modal/ConfirmModal';
 import type { Location } from '../../../../../types/Location/Location';
-
-import './deleteLocationModal.css';
 
 export interface DeleteLocationModalProps {
   readonly isOpen: boolean;
@@ -22,38 +20,18 @@ export default function DeleteLocationModal({
   if (!location) return null;
 
   return (
-    <Modal
+    <ConfirmModal
       isOpen={isOpen}
-      onClose={onClose}
-      title={t('location.delete.title')}
-      role="dialog"
       variant="danger"
-    >
-      <div className="delete-location-modal__body">
-        <p className="delete-location-modal__message">
-          {t('location.delete.message', { name: location.name })}
-        </p>
-        <div className="delete-location-modal__footer">
-          <button
-            type="button"
-            className="delete-location-modal__btn delete-location-modal__btn--cancel"
-            disabled={isDeleting}
-            onClick={onClose}
-          >
-            {t('location.delete.cancel')}
-          </button>
-          <button
-            type="button"
-            className="delete-location-modal__btn delete-location-modal__btn--confirm"
-            disabled={isDeleting}
-            onClick={() => onConfirm(location)}
-          >
-            {isDeleting
-              ? t('location.delete.deleting')
-              : t('location.delete.confirm')}
-          </button>
-        </div>
-      </div>
-    </Modal>
+      role="dialog"
+      title={t('location.delete.title')}
+      prompt={t('location.delete.message', { name: location.name })}
+      confirmText={t('location.delete.confirm')}
+      cancelText={t('location.delete.cancel')}
+      loadingText={t('location.delete.deleting')}
+      isLoading={isDeleting}
+      onConfirm={() => onConfirm(location)}
+      onCancel={onClose}
+    />
   );
 }
