@@ -21,13 +21,14 @@ interface Props {
   readonly anomaly: Anomaly;
   readonly onEdit?: () => void;
   readonly onDelete?: () => void;
+  readonly isEditing?: boolean;
 }
 
 function formatDeletedAt(deletedAt: string): string {
   return new Date(deletedAt).toLocaleDateString('es-ES');
 }
 
-export function AnomalyHero({ anomaly, onEdit, onDelete }: Props) {
+export function AnomalyHero({ anomaly, onEdit, onDelete, isEditing }: Props) {
   const auth = useContext(AuthContext);
   const isEditor = auth?.isEditor ?? false;
   const canDelete = isEditor && onDelete && anomaly.status === 'ACTIVE';
@@ -38,14 +39,14 @@ export function AnomalyHero({ anomaly, onEdit, onDelete }: Props) {
       <div className="anomaly-hero__title-row">
         <h1>{capitalizeFirstLetter(anomaly.name)}</h1>
         <div className="anomaly-hero__actions">
-          {isEditor && onEdit && (
+          {isEditor && onEdit && !isEditing && (
             <EditButton
               onClick={onEdit}
               ariaLabel={t('anomaly.detail.edit')}
               label={t('anomaly.detail.edit')}
             />
           )}
-          {canDelete && (
+          {canDelete && !isEditing && (
             <DeleteButton
               onClick={onDelete}
               ariaLabel={t('anomaly.detail.delete')}
@@ -83,7 +84,7 @@ export function AnomalyHero({ anomaly, onEdit, onDelete }: Props) {
         </p>
       )}
 
-      {images.length === 1 && (
+      {!isEditing && images.length === 1 && (
         <figure className="anomaly-hero__figure">
           <img
             src={images[0].url}
@@ -108,7 +109,7 @@ export function AnomalyHero({ anomaly, onEdit, onDelete }: Props) {
         </figure>
       )}
 
-      {images.length >= 2 && (
+      {!isEditing && images.length >= 2 && (
         <AnomalyImageCarousel images={images} anomalyName={anomaly.name} />
       )}
     </header>

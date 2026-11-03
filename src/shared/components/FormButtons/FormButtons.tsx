@@ -22,7 +22,6 @@ export function FormAddButton({
       onClick={onClick}
       aria-label={ariaLabel ?? label}
     >
-      <Icon name="add" decorative />
       <span>{label}</span>
     </button>
   );

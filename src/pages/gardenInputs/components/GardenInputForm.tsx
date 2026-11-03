@@ -29,6 +29,7 @@ export interface GardenInputFormProps {
   readonly isSubmitting: boolean;
   readonly onSubmit: (values: GardenInputFormValues) => Promise<void>;
   readonly onCancel: () => void;
+  readonly onDirtyChange?: (isDirty: boolean) => void;
   readonly externalError?: string;
 }
 
@@ -53,6 +54,7 @@ export default function GardenInputForm({
   isSubmitting,
   onSubmit,
   onCancel,
+  onDirtyChange,
   externalError
 }: GardenInputFormProps) {
   const [values, setValues] = useState<GardenInputFormValues>({
@@ -60,6 +62,14 @@ export default function GardenInputForm({
     ...initialValues
   });
   const [errors, setErrors] = useState<GardenInputFormErrors>({});
+
+  const isDirty =
+    JSON.stringify(values) !==
+    JSON.stringify({ ...defaultValues, ...initialValues });
+
+  if (onDirtyChange) {
+    onDirtyChange(isDirty);
+  }
 
   function handleActionToggle(action: GardenInputAction) {
     const current = values.actions;
