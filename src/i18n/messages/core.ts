@@ -273,6 +273,7 @@ export const coreMessages = {
 
     loading: 'Cargando...',
     filters: 'Filtros',
+    clear_filters: 'Limpiar filtros',
     months: {
       short: {
         january: 'Ene',

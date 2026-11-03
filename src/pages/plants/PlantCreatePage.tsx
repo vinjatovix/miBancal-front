@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { t } from '../../i18n/core/t';
+import Button from '../../shared/components/Button/Button';
 import { CancelConfirmModal } from '../../shared/components/Modal/CancelConfirmModal';
 import { ApiError } from '../../shared/errors/ApiError';
 import { useToast } from '../../shared/toast/useToast';
@@ -152,21 +153,20 @@ export default function PlantCreatePage() {
         )}
 
         <div className="plant-form__actions">
-          <button
-            type="button"
-            className="plant-form__btn plant-form__btn--cancel"
+          <Button
+            variant="neutral"
             onClick={handleCancel}
             disabled={createMutation.isPending}
           >
             {t('common.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="primary"
             type="submit"
-            className="plant-form__btn plant-form__btn--submit"
             disabled={createMutation.isPending}
           >
             {createMutation.isPending ? t('common.creating') : t('common.save')}
-          </button>
+          </Button>
         </div>
       </form>
 

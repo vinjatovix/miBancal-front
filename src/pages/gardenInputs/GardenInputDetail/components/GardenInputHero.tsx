@@ -1,13 +1,17 @@
 import { useContext } from 'react';
 
+import GardenInputStatusBadge from '../../../../components/gardenInputs/GardenInputStatusBadge/GardenInputStatusBadge';
 import { t } from '../../../../i18n/core/t';
 import { tValue } from '../../../../i18n/core/tValue';
 import { AuthContext } from '../../../../shared/auth/authContextDef';
+import {
+  DeleteButton,
+  EditButton
+} from '../../../../shared/components/ActionButtons';
 import Badge from '../../../../shared/components/Badge/Badge';
 import Icon from '../../../../shared/components/Icon/Icon';
 import { capitalizeFirstLetter } from '../../../../shared/utils/capitalizeFirstLetter';
 import type { GardenInput } from '../../../../types/GardenInput/GardenInput';
-import GardenInputStatusBadge from '../../../../components/gardenInputs/GardenInputStatusBadge/GardenInputStatusBadge';
 
 import './gardenInputHero.css';
 
@@ -36,26 +40,18 @@ export default function GardenInputHero({
         {isEditor && (
           <div className="garden-input-hero__actions">
             {onEdit && (
-              <button
-                type="button"
-                className="action-btn"
+              <EditButton
                 onClick={onEdit}
-                aria-label={t('gardenInput.detail.edit')}
-              >
-                <Icon name="edit_note" decorative />
-                <span>{t('gardenInput.detail.edit')}</span>
-              </button>
+                ariaLabel={t('gardenInput.detail.edit')}
+                label={t('gardenInput.detail.edit')}
+              />
             )}
             {onDelete && !isDeleted && (
-              <button
-                type="button"
-                className="action-btn action-btn--danger"
+              <DeleteButton
                 onClick={onDelete}
-                aria-label={t('gardenInput.detail.delete')}
-              >
-                <Icon name="delete" decorative />
-                <span>{t('gardenInput.detail.delete')}</span>
-              </button>
+                ariaLabel={t('gardenInput.detail.delete')}
+                label={t('gardenInput.detail.delete')}
+              />
             )}
           </div>
         )}

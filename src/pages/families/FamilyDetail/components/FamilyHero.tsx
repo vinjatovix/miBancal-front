@@ -2,6 +2,7 @@ import { useContext } from 'react';
 
 import { t } from '../../../../i18n/core/t';
 import { AuthContext } from '../../../../shared/auth/authContextDef';
+import { EditButton } from '../../../../shared/components/ActionButtons';
 import Badge from '../../../../shared/components/Badge/Badge';
 import Icon from '../../../../shared/components/Icon/Icon';
 import ScientificName from '../../../../shared/components/ScientificName/ScientificName';
@@ -25,15 +26,11 @@ export function FamilyHero({ family, onEdit, isEditing }: Props) {
       <div className="family-hero__title-row">
         <h1>{capitalizeFirstLetter(family.name)}</h1>
         {isEditor && onEdit && !isEditing && (
-          <button
-            type="button"
-            className="action-btn"
+          <EditButton
             onClick={onEdit}
-            aria-label={t('family.detail.edit_family')}
-          >
-            <Icon name="edit_note" decorative />
-            <span>{t('family.detail.edit_family')}</span>
-          </button>
+            ariaLabel={t('family.detail.edit_family')}
+            label={t('family.detail.edit_family')}
+          />
         )}
       </div>
 

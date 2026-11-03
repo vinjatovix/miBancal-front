@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 
 import { t } from '../../../../i18n/core/t';
+import Button from '../../../../shared/components/Button/Button';
 import { CancelConfirmModal } from '../../../../shared/components/Modal/CancelConfirmModal';
 import { ApiError } from '../../../../shared/errors/ApiError';
 import { PreconditionFailedError } from '../../../../shared/errors/PreconditionFailedError';
@@ -133,13 +134,9 @@ export function FamilyInlineEditForm({
         <div role="alert" className="family-form__conflict-banner">
           <strong>{t('family.form.conflict.title')}</strong>
           <p>{t('family.form.conflict.message')}</p>
-          <button
-            type="button"
-            className="family-form__btn family-form__btn--submit"
-            onClick={onReload}
-          >
+          <Button variant="primary" onClick={onReload}>
             {t('family.form.conflict.reload_button')}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -157,23 +154,22 @@ export function FamilyInlineEditForm({
       )}
 
       <div className="family-form__actions">
-        <button
-          type="button"
-          className="family-form__btn family-form__btn--cancel"
+        <Button
+          variant="neutral"
           onClick={handleCancel}
           disabled={updateMutation.isPending}
         >
           {t('common.cancel')}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="primary"
           type="submit"
-          className="family-form__btn family-form__btn--submit"
           disabled={updateMutation.isPending}
         >
           {updateMutation.isPending
             ? t('common.saving')
             : t('common.save_changes')}
-        </button>
+        </Button>
       </div>
 
       <CancelConfirmModal

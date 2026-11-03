@@ -75,7 +75,7 @@ export const locationsMessages = {
       title: '¿Eliminar ubicación?',
       message:
         'La ubicación «{name}» se eliminará de tu lista. Podrás volver a crear una con el mismo nombre.',
-      confirm: 'Eliminar ubicación',
+      confirm: 'Eliminar',
       cancel: 'Cancelar',
       deleting: 'Eliminando...',
       success: 'Ubicación eliminada correctamente.',

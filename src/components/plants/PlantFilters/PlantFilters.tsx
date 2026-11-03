@@ -1,6 +1,6 @@
 import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
-import Icon from '../../../shared/components/Icon/Icon';
+import { ClearFiltersButton } from '../../../shared/components/ClearFiltersButton';
 
 import SliderFilter from '../SliderFilter';
 import ToggleGroup from '../ToggleGroup';
@@ -75,14 +75,11 @@ export default function PlantFilters({ activeCount = 0 }: Props) {
           </span>
         )}
 
-        <button
-          data-testid="clear-filters"
-          type="button"
-          className="plant-filters__clear"
-          onClick={clearFilters}
-        >
-          <Icon name="clear_all" decorative /> {t('plant.applied.clear_all')}
-        </button>
+        <ClearFiltersButton
+          testId="clear-filters"
+          onClear={clearFilters}
+          label={t('plant.applied.clear_all')}
+        />
       </div>
 
       <div className="plant-filters__quick-search" data-testid="quick-search">

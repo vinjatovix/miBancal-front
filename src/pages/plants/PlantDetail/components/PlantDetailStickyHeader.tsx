@@ -2,8 +2,11 @@ import { useContext } from 'react';
 
 import { t } from '../../../../i18n/core/t';
 import { AuthContext } from '../../../../shared/auth/authContextDef';
+import {
+  DeleteButton,
+  EditButton
+} from '../../../../shared/components/ActionButtons';
 import Badge from '../../../../shared/components/Badge/Badge';
-import Icon from '../../../../shared/components/Icon/Icon';
 import { capitalizeFirstLetter } from '../../../../shared/utils/capitalizeFirstLetter';
 import type { Plant } from '../../../../types/Plants/Plant';
 import PlantSafetyIndicators from '../../components/PlantSafetyIndicators/PlantSafetyIndicators';
@@ -39,31 +42,19 @@ export const PlantDetailStickyHeader = ({
         {isEditor && !isEditing && (
           <div className="plant-detail__sticky-actions">
             {onEdit && (
-              <button
-                type="button"
-                className="action-btn"
+              <EditButton
                 onClick={onEdit}
-                aria-label={t('plant.detail.edit_plant')}
-              >
-                <Icon name="edit_note" decorative />
-                <span>{t('plant.detail.edit_plant')}</span>
-              </button>
+                ariaLabel={t('plant.detail.edit_plant')}
+                label={t('plant.detail.edit_plant')}
+              />
             )}
             {onDelete && (
-              <button
-                type="button"
-                className="action-btn action-btn--danger"
+              <DeleteButton
                 onClick={onDelete}
-                disabled={isDeleting}
-                aria-label={t('plant.detail.delete_plant')}
-              >
-                <Icon name="delete" decorative />
-                <span>
-                  {isDeleting
-                    ? t('common.deleting')
-                    : t('plant.detail.delete_plant')}
-                </span>
-              </button>
+                isDeleting={isDeleting}
+                ariaLabel={t('plant.detail.delete_plant')}
+                label={t('plant.detail.delete_plant')}
+              />
             )}
           </div>
         )}

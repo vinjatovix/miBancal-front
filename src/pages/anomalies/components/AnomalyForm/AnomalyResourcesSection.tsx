@@ -1,5 +1,8 @@
 import { t } from '../../../../i18n/core/t';
-import Icon from '../../../../shared/components/Icon/Icon';
+import {
+  FormAddButton,
+  FormRemoveButton
+} from '../../../../shared/components/FormButtons';
 import type {
   ArticleResourceFormItem,
   ImageResourceFormItem,
@@ -108,24 +111,17 @@ export function AnomalyResourcesSection({
                 }
               />
             </div>
-            <button
-              type="button"
-              className="anomaly-form__remove-btn"
+            <FormRemoveButton
               onClick={() => onRemoveImage(img.id)}
-              aria-label={`${t('anomaly.form.fields.remove_image')} ${index + 1}`}
-            >
-              <Icon name="delete" decorative />
-              <span>{t('anomaly.form.fields.remove_image')}</span>
-            </button>
+              ariaLabel={`${t('anomaly.form.fields.remove_image')} ${index + 1}`}
+              label={t('anomaly.form.fields.remove_image')}
+            />
           </div>
         ))}
-        <button
-          type="button"
-          className="anomaly-form__add-btn"
+        <FormAddButton
           onClick={onAddImage}
-        >
-          <span>{t('anomaly.form.fields.add_image')}</span>
-        </button>
+          label={t('anomaly.form.fields.add_image')}
+        />
       </div>
 
       <div className="anomaly-form__subgroup">
@@ -156,24 +152,17 @@ export function AnomalyResourcesSection({
                 onChange={(e) => onUpdateVideo(v.id, { title: e.target.value })}
               />
             </div>
-            <button
-              type="button"
-              className="anomaly-form__remove-btn"
+            <FormRemoveButton
               onClick={() => onRemoveVideo(v.id)}
-              aria-label={`${t('anomaly.form.fields.remove_video')} ${index + 1}`}
-            >
-              <Icon name="delete" decorative />
-              <span>{t('anomaly.form.fields.remove_video')}</span>
-            </button>
+              ariaLabel={`${t('anomaly.form.fields.remove_video')} ${index + 1}`}
+              label={t('anomaly.form.fields.remove_video')}
+            />
           </div>
         ))}
-        <button
-          type="button"
-          className="anomaly-form__add-btn"
+        <FormAddButton
           onClick={onAddVideo}
-        >
-          <span>{t('anomaly.form.fields.add_video')}</span>
-        </button>
+          label={t('anomaly.form.fields.add_video')}
+        />
       </div>
 
       <div className="anomaly-form__subgroup">
@@ -206,24 +195,17 @@ export function AnomalyResourcesSection({
                 }
               />
             </div>
-            <button
-              type="button"
-              className="anomaly-form__remove-btn"
+            <FormRemoveButton
               onClick={() => onRemoveArticle(a.id)}
-              aria-label={`${t('anomaly.form.fields.remove_article')} ${index + 1}`}
-            >
-              <Icon name="delete" decorative />
-              <span>{t('anomaly.form.fields.remove_article')}</span>
-            </button>
+              ariaLabel={`${t('anomaly.form.fields.remove_article')} ${index + 1}`}
+              label={t('anomaly.form.fields.remove_article')}
+            />
           </div>
         ))}
-        <button
-          type="button"
-          className="anomaly-form__add-btn"
+        <FormAddButton
           onClick={onAddArticle}
-        >
-          <span>{t('anomaly.form.fields.add_article')}</span>
-        </button>
+          label={t('anomaly.form.fields.add_article')}
+        />
       </div>
     </fieldset>
   );

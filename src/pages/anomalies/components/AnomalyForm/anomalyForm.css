@@ -102,23 +102,6 @@ select.anomaly-form__input {
   cursor: pointer;
 }
 
-.anomaly-form__btn--cancel {
-  background: transparent;
-  color: var(--color-on-surface);
-  border: 1px solid var(--color-outline);
-}
-
-.anomaly-form__btn--submit {
-  background-color: var(--color-primary);
-  color: var(--color-on-primary);
-  border: none;
-}
-
-.anomaly-form__btn--submit:disabled {
-  color: var(--color-on-disabled);
-  cursor: not-allowed;
-}
-
 .anomaly-form__conflict-banner {
   padding: 1rem;
   background-color: var(--color-error-container);
@@ -170,44 +153,6 @@ select.anomaly-form__input {
   object-fit: cover;
   border-radius: var(--radius-sm);
   background-color: var(--color-surface-container);
-}
-
-.anomaly-form__add-btn {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  gap: var(--space-2xs);
-  padding: var(--space-xs) var(--space-sm);
-  background-color: transparent;
-  color: var(--color-primary);
-  border: 1px dashed var(--color-outline);
-  border-radius: var(--radius-sm);
-  font: var(--type-label-md);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.anomaly-form__add-btn:hover {
-  background-color: var(--color-surface-container-high);
-}
-
-.anomaly-form__remove-btn {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-end;
-  gap: var(--space-2xs);
-  padding: var(--space-xs) var(--space-sm);
-  background-color: transparent;
-  color: var(--color-error);
-  border: 1px solid var(--color-error);
-  border-radius: var(--radius-sm);
-  font: var(--type-label-sm);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.anomaly-form__remove-btn:hover {
-  background-color: var(--color-error-container);
 }
 
 .anomaly-form__counter {

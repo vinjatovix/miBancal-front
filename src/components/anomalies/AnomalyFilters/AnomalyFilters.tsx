@@ -2,6 +2,7 @@ import { useId } from 'react';
 
 import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
+import { ClearFiltersButton } from '../../../shared/components/ClearFiltersButton';
 import Icon from '../../../shared/components/Icon/Icon';
 import Select from '../../../shared/components/Select/Select';
 import { ANOMALY_CATEGORIES } from '../../../types/Anomaly/Anomaly';
@@ -24,13 +25,10 @@ export default function AnomalyFilters({
   return (
     <div className="anomaly-filters">
       <div className="anomaly-filters__header">
-        <button
-          type="button"
-          className="anomaly-filters__clear"
-          onClick={onClear}
-        >
-          <Icon name="clear_all" decorative /> {t('anomaly.filters.clear')}
-        </button>
+        <ClearFiltersButton
+          onClear={onClear}
+          label={t('anomaly.filters.clear')}
+        />
       </div>
 
       <div className="anomaly-filters__group">

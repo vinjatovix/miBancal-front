@@ -1,4 +1,8 @@
 import { t } from '../../../../i18n/core/t';
+import {
+  FormAddButton,
+  FormRemoveButton
+} from '../../../../shared/components/FormButtons';
 import type { PlantFormState } from './types';
 
 interface Props {
@@ -44,13 +48,11 @@ export function PlantNotesSection({ values, errors, onChange }: Props) {
                   <span className="plant-form__label">
                     {t('plant.form.notes.note_label', { n: index + 1 })}
                   </span>
-                  <button
-                    type="button"
-                    className="plant-form__btn plant-form__btn--remove"
+                  <FormRemoveButton
                     onClick={() => handleRemoveNote(index)}
-                  >
-                    {t('plant.form.notes.remove')}
-                  </button>
+                    ariaLabel={t('plant.form.notes.remove')}
+                    label={t('plant.form.notes.remove')}
+                  />
                 </div>
                 <textarea
                   id={`plant-note-input-${index}`}
@@ -76,13 +78,10 @@ export function PlantNotesSection({ values, errors, onChange }: Props) {
       )}
 
       <div>
-        <button
-          type="button"
-          className="plant-form__btn plant-form__btn--add"
+        <FormAddButton
           onClick={handleAddNote}
-        >
-          {t('plant.form.notes.add')}
-        </button>
+          label={t('plant.form.notes.add')}
+        />
       </div>
     </fieldset>
   );

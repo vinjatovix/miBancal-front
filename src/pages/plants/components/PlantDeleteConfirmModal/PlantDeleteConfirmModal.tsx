@@ -34,7 +34,6 @@ export function PlantDeleteConfirmModal({
       })}
       warningText={t('plant.detail.delete_modal_warning')}
       confirmText={t('plant.detail.delete_plant')}
-      confirmIcon="delete"
       loadingText={t('common.deleting')}
       isLoading={isDeleting}
       onConfirm={onConfirm}

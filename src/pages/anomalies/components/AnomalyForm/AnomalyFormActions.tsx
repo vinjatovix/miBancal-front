@@ -1,4 +1,5 @@
 import { t } from '../../../../i18n/core/t';
+import Button from '../../../../shared/components/Button/Button';
 
 interface Props {
   readonly isPending: boolean;
@@ -13,21 +14,12 @@ export function AnomalyFormActions({
 }: Props) {
   return (
     <div className="anomaly-form__actions">
-      <button
-        type="button"
-        className="anomaly-form__btn anomaly-form__btn--cancel"
-        onClick={onCancel}
-        disabled={isPending}
-      >
+      <Button variant="neutral" onClick={onCancel} disabled={isPending}>
         {t('common.cancel')}
-      </button>
-      <button
-        type="submit"
-        className="anomaly-form__btn anomaly-form__btn--submit"
-        disabled={isPending}
-      >
+      </Button>
+      <Button variant="primary" type="submit" disabled={isPending}>
         {submitLabel}
-      </button>
+      </Button>
     </div>
   );
 }

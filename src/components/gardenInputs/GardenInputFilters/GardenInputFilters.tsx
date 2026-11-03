@@ -2,6 +2,7 @@ import { useId } from 'react';
 
 import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
+import { ClearFiltersButton } from '../../../shared/components/ClearFiltersButton';
 import Icon from '../../../shared/components/Icon/Icon';
 import Select from '../../../shared/components/Select/Select';
 import {
@@ -42,15 +43,11 @@ export default function GardenInputFilters({
   return (
     <div className="garden-input-filters">
       <div className="garden-input-filters__header">
-        <button
-          type="button"
-          className="garden-input-filters__clear"
-          onClick={onClear}
+        <ClearFiltersButton
+          onClear={onClear}
           disabled={!hasActiveFilters}
-        >
-          <Icon name="clear_all" decorative />
-          <span>{t('gardenInput.filters.clear')}</span>
-        </button>
+          label={t('gardenInput.filters.clear')}
+        />
       </div>
 
       <fieldset className="garden-input-filters__section">

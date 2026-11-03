@@ -1,5 +1,8 @@
 import { t } from '../../../i18n/core/t';
-import Icon from '../../../shared/components/Icon/Icon';
+import {
+  FormAddButton,
+  FormRemoveButton
+} from '../../../shared/components/FormButtons';
 import type {
   ArticleResourceFormItem,
   ImageResourceFormItem,
@@ -119,24 +122,17 @@ export default function ResourcesFormSection({
                 }
               />
             </div>
-            <button
-              type="button"
-              className="garden-input-form__resource-remove-btn"
+            <FormRemoveButton
               onClick={() => onRemoveImage(img.id)}
-              aria-label={`${t('gardenInput.form.resource_remove_image')} ${index + 1}`}
-            >
-              <Icon name="delete" decorative />
-              <span>{t('gardenInput.form.resource_remove_image')}</span>
-            </button>
+              ariaLabel={`${t('gardenInput.form.resource_remove_image')} ${index + 1}`}
+              label={t('gardenInput.form.resource_remove_image')}
+            />
           </div>
         ))}
-        <button
-          type="button"
-          className="garden-input-form__resource-add-btn"
+        <FormAddButton
           onClick={onAddImage}
-        >
-          <span>{t('gardenInput.form.resource_add_image')}</span>
-        </button>
+          label={t('gardenInput.form.resource_add_image')}
+        />
       </div>
 
       <div className="garden-input-form__resources-subgroup">
@@ -173,24 +169,17 @@ export default function ResourcesFormSection({
                 onChange={(e) => onUpdateVideo(v.id, { title: e.target.value })}
               />
             </div>
-            <button
-              type="button"
-              className="garden-input-form__resource-remove-btn"
+            <FormRemoveButton
               onClick={() => onRemoveVideo(v.id)}
-              aria-label={`${t('gardenInput.form.resource_remove_video')} ${index + 1}`}
-            >
-              <Icon name="delete" decorative />
-              <span>{t('gardenInput.form.resource_remove_video')}</span>
-            </button>
+              ariaLabel={`${t('gardenInput.form.resource_remove_video')} ${index + 1}`}
+              label={t('gardenInput.form.resource_remove_video')}
+            />
           </div>
         ))}
-        <button
-          type="button"
-          className="garden-input-form__resource-add-btn"
+        <FormAddButton
           onClick={onAddVideo}
-        >
-          <span>{t('gardenInput.form.resource_add_video')}</span>
-        </button>
+          label={t('gardenInput.form.resource_add_video')}
+        />
       </div>
 
       <div className="garden-input-form__resources-subgroup">
@@ -229,24 +218,17 @@ export default function ResourcesFormSection({
                 }
               />
             </div>
-            <button
-              type="button"
-              className="garden-input-form__resource-remove-btn"
+            <FormRemoveButton
               onClick={() => onRemoveArticle(a.id)}
-              aria-label={`${t('gardenInput.form.resource_remove_article')} ${index + 1}`}
-            >
-              <Icon name="delete" decorative />
-              <span>{t('gardenInput.form.resource_remove_article')}</span>
-            </button>
+              ariaLabel={`${t('gardenInput.form.resource_remove_article')} ${index + 1}`}
+              label={t('gardenInput.form.resource_remove_article')}
+            />
           </div>
         ))}
-        <button
-          type="button"
-          className="garden-input-form__resource-add-btn"
+        <FormAddButton
           onClick={onAddArticle}
-        >
-          <span>{t('gardenInput.form.resource_add_article')}</span>
-        </button>
+          label={t('gardenInput.form.resource_add_article')}
+        />
       </div>
     </fieldset>
   );

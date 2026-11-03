@@ -95,23 +95,6 @@
   cursor: pointer;
 }
 
-.family-form__btn--cancel {
-  background: transparent;
-  color: var(--color-on-surface);
-  border: 1px solid var(--color-outline);
-}
-
-.family-form__btn--submit {
-  background-color: var(--color-primary);
-  color: var(--color-on-primary);
-  border: none;
-}
-
-.family-form__btn--submit:disabled {
-  color: var(--color-on-disabled);
-  cursor: not-allowed;
-}
-
 .family-form__conflict-banner {
   padding: 1rem;
   background-color: var(--color-error-container);

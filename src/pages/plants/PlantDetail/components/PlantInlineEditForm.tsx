@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { t } from '../../../../i18n/core/t';
+import Button from '../../../../shared/components/Button/Button';
 import { CancelConfirmModal } from '../../../../shared/components/Modal/CancelConfirmModal';
 import { ApiError } from '../../../../shared/errors/ApiError';
 import { PreconditionFailedError } from '../../../../shared/errors/PreconditionFailedError';
@@ -150,13 +151,9 @@ export function PlantInlineEditForm({
         <div role="alert" className="plant-form__conflict-banner">
           <strong>{t('plant.form.conflict.title')}</strong>
           <p>{t('plant.form.conflict.message')}</p>
-          <button
-            type="button"
-            className="plant-form__btn plant-form__btn--submit"
-            onClick={onReload}
-          >
+          <Button variant="primary" onClick={onReload}>
             {t('plant.form.conflict.reload_button')}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -190,31 +187,29 @@ export function PlantInlineEditForm({
       )}
 
       <div className="plant-form__actions">
-        <button
-          type="button"
-          className="plant-form__btn plant-form__btn--delete"
+        <Button
+          variant="danger"
           onClick={() => setIsDeleteModalOpen(true)}
           disabled={updateMutation.isPending || deleteMutation.isPending}
         >
           {deleteMutation.isPending ? t('common.deleting') : t('common.delete')}
-        </button>
-        <button
-          type="button"
-          className="plant-form__btn plant-form__btn--cancel"
+        </Button>
+        <Button
+          variant="neutral"
           onClick={handleCancel}
           disabled={updateMutation.isPending || deleteMutation.isPending}
         >
           {t('common.cancel')}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="primary"
           type="submit"
-          className="plant-form__btn plant-form__btn--submit"
           disabled={updateMutation.isPending || deleteMutation.isPending}
         >
           {updateMutation.isPending
             ? t('common.saving')
             : t('common.save_changes')}
-        </button>
+        </Button>
       </div>
 
       <PlantDeleteConfirmModal
