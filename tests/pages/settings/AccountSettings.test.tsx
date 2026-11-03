@@ -67,6 +67,17 @@ describe('AccountSettings Page', () => {
     ).toBeInTheDocument();
   });
 
+  it('renders link to locations settings', () => {
+    renderWithProviders(<TestSettingsApp />, { route: '/settings' });
+
+    const link = screen.getByRole('link', {
+      name: t('settings.locations_link')
+    });
+
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '/settings/locations');
+  });
+
   it('toggles visibility of password inputs when clicking toggle button', async () => {
     const user = userEvent.setup();
     renderWithProviders(<TestSettingsApp />, { route: '/settings' });

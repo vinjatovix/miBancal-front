@@ -1,4 +1,5 @@
 import { useCallback, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 
 import { t } from '../../i18n/core/t';
 import { useAuth } from '../../shared/auth/useAuth';
@@ -145,6 +146,21 @@ export default function AccountSettings() {
               <span className="settings-display-value">{user?.email}</span>
             </div>
           </div>
+        </section>
+
+        <section
+          className="settings-section settings-locations-section"
+          aria-labelledby="locations-heading"
+        >
+          <h2 id="locations-heading" className="settings-section-title">
+            {t('settings.locations_section')}
+          </h2>
+          <p className="settings-section-description">
+            {t('settings.locations_description')}
+          </p>
+          <Link to="/settings/locations" className="settings-locations-link">
+            {t('settings.locations_link')}
+          </Link>
         </section>
 
         <section

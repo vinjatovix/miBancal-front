@@ -155,6 +155,26 @@ async function request(
   }
 }
 
+function applyCustomHeaders(
+  target: Record<string, string>,
+  customHeaders?: HeadersInit
+): void {
+  if (!customHeaders) {
+    return;
+  }
+  if (customHeaders instanceof Headers) {
+    customHeaders.forEach((value, key) => {
+      target[key] = value;
+    });
+  } else if (Array.isArray(customHeaders)) {
+    for (const [key, value] of customHeaders) {
+      target[key] = value;
+    }
+  } else {
+    Object.assign(target, customHeaders);
+  }
+}
+
 function mergeHeaders(
   customHeaders?: HeadersInit,
   token?: string | null
@@ -167,19 +187,22 @@ function mergeHeaders(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  if (customHeaders) {
-    if (customHeaders instanceof Headers) {
-      customHeaders.forEach((value, key) => {
-        headers[key] = value;
-      });
-    } else if (Array.isArray(customHeaders)) {
-      for (const [key, value] of customHeaders) {
-        headers[key] = value;
-      }
-    } else {
-      Object.assign(headers, customHeaders);
-    }
+  applyCustomHeaders(headers, customHeaders);
+
+  return headers;
+}
+
+function mergeExternalHeaders(
+  customHeaders?: HeadersInit,
+  body?: BodyInit | null
+): Record<string, string> {
+  const headers: Record<string, string> = {};
+
+  if (body !== undefined && body !== null) {
+    headers['Content-Type'] = 'application/json';
   }
+
+  applyCustomHeaders(headers, customHeaders);
 
   return headers;
 }
@@ -269,4 +292,24 @@ export async function apiFetchWithMeta<T>(
   const etag = rawEtag ? rawEtag.replace(/^W\//i, '') : null;
 
   return { data, etag };
+}
+
+export async function externalFetch<T>(
+  url: string,
+  options?: ApiFetchOptions
+): Promise<T> {
+  const response = await request(
+    url,
+    {
+      ...options,
+      headers: mergeExternalHeaders(options?.headers, options?.body)
+    },
+    options?.timeout
+  );
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  return parseResponseBody<T>(response);
 }
