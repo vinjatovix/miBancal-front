@@ -12,6 +12,7 @@ import { useAnomalyForEdit } from '../hooks/useAnomalyForEdit';
 
 import { AnomalyDeleteDialog } from './components/AnomalyDeleteDialog';
 import { AnomalyHero } from './components/AnomalyHero';
+import { AnomalyDetailStickyHeader } from './components/AnomalyDetailStickyHeader';
 import { AnomalyInlineEditForm } from './components/AnomalyInlineEditForm';
 import { AnomalySections } from './components/AnomalySections';
 import { AnomalyConfusedWith } from './components/AnomalyConfusedWith';
@@ -72,7 +73,10 @@ export default function AnomalyDetail() {
     return (
       <div className="anomaly-detail">
         <SectionErrorBoundary section="anomaly.hero">
-          <AnomalyHero anomaly={anomaly ?? forEditQuery.data.anomaly} />
+          <AnomalyDetailStickyHeader
+            anomaly={anomaly ?? forEditQuery.data.anomaly}
+            isEditing={true}
+          />
         </SectionErrorBoundary>
         <AnomalyInlineEditForm
           key={forEditQuery.data.etag}

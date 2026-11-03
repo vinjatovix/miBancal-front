@@ -19,12 +19,14 @@ export interface GardenInputHeroProps {
   readonly gardenInput: GardenInput;
   readonly onEdit?: () => void;
   readonly onDelete?: () => void;
+  readonly isEditing?: boolean;
 }
 
 export default function GardenInputHero({
   gardenInput,
   onEdit,
-  onDelete
+  onDelete,
+  isEditing
 }: GardenInputHeroProps) {
   const auth = useContext(AuthContext);
   const isEditor = auth?.isEditor ?? false;
@@ -37,7 +39,7 @@ export default function GardenInputHero({
           {capitalizeFirstLetter(gardenInput.name)}
         </h1>
 
-        {isEditor && (
+        {isEditor && !isEditing && (
           <div className="garden-input-hero__actions">
             {onEdit && (
               <EditButton

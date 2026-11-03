@@ -11,10 +11,11 @@ import { getDetailViewState } from '../../../shared/reactQuery/detailViewState';
 import { useGardenInput } from '../hooks/useGardenInput';
 import { useGardenInputForEdit } from '../hooks/useGardenInputForEdit';
 import GardenInputDeleteDialog from './components/GardenInputDeleteDialog';
-import GardenInputEditModal from './components/GardenInputEditModal';
 import GardenInputHero from './components/GardenInputHero';
 import { GardenInputResources } from './components/GardenInputResources';
 import RecipeCard from './components/RecipeCard';
+import { GardenInputDetailStickyHeader } from './components/GardenInputDetailStickyHeader';
+import { GardenInputInlineEditForm } from './components/GardenInputInlineEditForm';
 
 import './gardenInputDetail.css';
 
@@ -34,17 +35,9 @@ export default function GardenInputDetailPage() {
   }
 
   const query = useGardenInput(slug);
-  const forEditQuery = useGardenInputForEdit(slug, isEditor);
+  const forEditQuery = useGardenInputForEdit(slug, isEditor || isEditing);
   const viewState = getDetailViewState(slug, query);
   const gardenInput = query.data;
-
-  const resolveEtag = async () => {
-    if (forEditQuery.data?.etag) {
-      return forEditQuery.data.etag;
-    }
-    const refetched = await forEditQuery.refetch();
-    return refetched.data?.etag;
-  };
 
   if (viewState === 'notFound') {
     return (
@@ -67,8 +60,50 @@ export default function GardenInputDetailPage() {
     return <Loader labelKey="gardenInput.detail.loading" />;
   }
 
+  if (isEditing) {
+    if (!forEditQuery.data) {
+      return forEditQuery.isError ? (
+        <ErrorResponse
+          error={forEditQuery.error}
+          onRetry={() => void forEditQuery.refetch()}
+        />
+      ) : (
+        <Loader labelKey="common.loading" />
+      );
+    }
+
+    return (
+      <div className="garden-input-detail">
+        <SectionErrorBoundary section="gardenInput.hero">
+          <GardenInputDetailStickyHeader
+            gardenInput={gardenInput ?? forEditQuery.data.gardenInput}
+            isEditing={true}
+          />
+        </SectionErrorBoundary>
+        <GardenInputInlineEditForm
+          gardenInput={forEditQuery.data.gardenInput}
+          etag={forEditQuery.data.etag}
+          onCancel={() => setIsEditing(false)}
+          onSuccess={() => {
+            setIsEditing(false);
+            void query.refetch();
+          }}
+          onReload={() => {
+            void forEditQuery.refetch();
+          }}
+        />
+      </div>
+    );
+  }
+
   const recipes = gardenInput.recipes ?? [];
-  const etag = forEditQuery.data?.etag ?? '';
+  const resolveEtag = async () => {
+    if (forEditQuery.data?.etag) {
+      return forEditQuery.data.etag;
+    }
+    const refetched = await forEditQuery.refetch();
+    return refetched.data?.etag;
+  };
 
   return (
     <article className="garden-input-detail">
@@ -103,40 +138,21 @@ export default function GardenInputDetailPage() {
       </SectionErrorBoundary>
 
       {isEditor && (
-        <>
-          <GardenInputEditModal
-            isOpen={isEditing}
-            gardenInput={gardenInput}
-            etag={etag}
-            resolveEtag={resolveEtag}
-            onClose={() => setIsEditing(false)}
-            onSuccess={() => {
-              setIsEditing(false);
-              void query.refetch();
-              void forEditQuery.refetch();
-            }}
-            onReload={() => {
-              void query.refetch();
-              void forEditQuery.refetch();
-            }}
-          />
-
-          <GardenInputDeleteDialog
-            isOpen={isDeleteOpen}
-            slug={gardenInput.slug}
-            name={gardenInput.name}
-            resolveEtag={resolveEtag}
-            onClose={() => setIsDeleteOpen(false)}
-            onDeleted={() => {
-              setIsDeleteOpen(false);
-              navigate('/garden-inputs');
-            }}
-            onReload={() => {
-              void query.refetch();
-              void forEditQuery.refetch();
-            }}
-          />
-        </>
+        <GardenInputDeleteDialog
+          isOpen={isDeleteOpen}
+          slug={gardenInput.slug}
+          name={gardenInput.name}
+          resolveEtag={resolveEtag}
+          onClose={() => setIsDeleteOpen(false)}
+          onDeleted={() => {
+            setIsDeleteOpen(false);
+            void navigate('/garden-inputs');
+          }}
+          onReload={() => {
+            void query.refetch();
+            void forEditQuery.refetch();
+          }}
+        />
       )}
     </article>
   );

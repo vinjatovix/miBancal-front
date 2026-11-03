@@ -115,7 +115,7 @@ describe('GardenInputDetailPage', () => {
     await user.click(editButton);
 
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Editar insumo' })
+      screen.getByRole('button', { name: 'Guardar cambios' })
     ).toBeInTheDocument();
   });
 
@@ -179,7 +179,7 @@ describe('GardenInputDetailPage', () => {
     await user.click(cancelButton);
 
     expect(
-      screen.queryByRole('heading', { level: 2, name: 'Editar insumo' })
+      screen.queryByRole('button', { name: 'Guardar cambios' })
     ).not.toBeInTheDocument();
   });
 
