@@ -14,7 +14,7 @@ export function AnomalyFormActions({
 }: Props) {
   return (
     <div className="anomaly-form__actions">
-      <Button variant="neutral" onClick={onCancel} disabled={isPending}>
+      <Button variant="secondary" onClick={onCancel} disabled={isPending}>
         {t('common.cancel')}
       </Button>
       <Button variant="primary" type="submit" disabled={isPending}>

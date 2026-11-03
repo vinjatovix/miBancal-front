@@ -137,7 +137,7 @@ export default function FamilyCreatePage() {
 
         <div className="family-form__actions">
           <Button
-            variant="neutral"
+            variant="secondary"
             onClick={handleCancel}
             disabled={createMutation.isPending}
           >

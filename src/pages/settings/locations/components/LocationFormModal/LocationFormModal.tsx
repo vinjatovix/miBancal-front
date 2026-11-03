@@ -161,7 +161,7 @@ function LocationFormBody({
         onChange={handleFieldChange}
       />
       <div className="location-form-modal__footer">
-        <Button variant="neutral" disabled={isSubmitting} onClick={onClose}>
+        <Button variant="secondary" disabled={isSubmitting} onClick={onClose}>
           {t('location.form.cancel')}
         </Button>
         <Button variant="primary" type="submit" disabled={isSubmitting}>
