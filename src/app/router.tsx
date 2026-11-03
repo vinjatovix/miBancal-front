@@ -284,6 +284,22 @@ export function createRoutes(isDevTools = IS_DEV_TOOLS): RouteObject[] {
                 };
               }
             },
+            {
+              path: '/settings/locations',
+              lazy: async () => {
+                const [{ default: LocationsPage }] = await Promise.all([
+                  import('../pages/settings/locations/LocationsPage'),
+                  import('../i18n/messages/locations')
+                ]);
+                return {
+                  Component: () => (
+                    <ProtectedRoute requireAdmin={false}>
+                      <LocationsPage />
+                    </ProtectedRoute>
+                  )
+                };
+              }
+            },
             ...devChildren,
             { path: '/offline', element: <OfflinePage /> },
             { path: '*', element: <NotFoundPage /> }

@@ -4,6 +4,7 @@ import type { designSystemMessages } from '../messages/designSystem';
 import type { familyMessages } from '../messages/family';
 import type { gardenInputMessages } from '../messages/gardenInput';
 import type { glossaryMessages } from '../messages/glossary';
+import type { locationsMessages } from '../messages/locations';
 import type { plantMessages } from '../messages/plant';
 import type { plantRelationsMessages } from '../messages/plantRelations';
 import type { pwaMessages } from '../messages/pwa';
@@ -18,7 +19,8 @@ export type Dictionary = typeof coreMessages &
   typeof pwaMessages &
   typeof themeMessages &
   typeof glossaryMessages &
-  typeof designSystemMessages;
+  typeof designSystemMessages &
+  typeof locationsMessages;
 
 type Join<K, P> = K extends string
   ? P extends string

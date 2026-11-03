@@ -13,3 +13,8 @@ export const QUERY_DEFAULTS = {
   staleTime: QUERY_CACHE_TIMES.ONE_DAY,
   gcTime: QUERY_CACHE_TIMES.SEVEN_DAYS
 } as const;
+
+export const LOCATION_QUERY_DEFAULTS = {
+  staleTime: QUERY_CACHE_TIMES.FIVE_MINUTES,
+  gcTime: QUERY_CACHE_TIMES.SEVEN_DAYS
+} as const;

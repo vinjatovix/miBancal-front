@@ -251,7 +251,10 @@ export const coreMessages = {
     success_message: 'Contraseña actualizada correctamente',
     invalid_current_password: 'La contraseña actual no es válida',
     password_must_be_different:
-      'La nueva contraseña debe ser diferente de la anterior'
+      'La nueva contraseña debe ser diferente de la anterior',
+    locations_section: 'Ubicaciones',
+    locations_description: 'Gestiona los lugares geográficos de tu huerto.',
+    locations_link: 'Gestionar mis ubicaciones'
   },
   common: {
     resources: {

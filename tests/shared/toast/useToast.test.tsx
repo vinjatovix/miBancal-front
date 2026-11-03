@@ -54,6 +54,23 @@ describe('useToast', () => {
     });
   });
 
+  it('enqueues a success toast using showSuccessToast', () => {
+    const { result } = renderHook(() => useToast());
+
+    let toastId = '';
+    act(() => {
+      toastId = result.current.showSuccessToast('Operación completada');
+    });
+
+    expect(toastId).toBeDefined();
+    expect(result.current.toasts).toHaveLength(1);
+    expect(result.current.toasts[0]).toMatchObject({
+      id: toastId,
+      message: 'Operación completada',
+      variant: 'success'
+    });
+  });
+
   it('removes a specific toast via dismissToast', () => {
     const { result } = renderHook(() => useToast());
 
