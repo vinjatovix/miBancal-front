@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
 import GardenInputCard from '../../components/gardenInputs/GardenInputCard/GardenInputCard';
@@ -19,8 +19,6 @@ import {
 } from './utils/buildGardenInputSortOptions';
 
 import './gardenInputList.css';
-
-const SORT_OPTIONS = buildGardenInputSortOptions();
 
 interface EmptyProps {
   readonly hasActiveFilters: boolean;
@@ -76,6 +74,7 @@ export default function GardenInputList() {
   } = useGardenInputs();
   const auth = useContext(AuthContext);
   const isEditor = auth?.isEditor ?? false;
+  const sortOptions = useMemo(() => buildGardenInputSortOptions(), []);
   const viewState = getQueryViewState(query);
 
   if (viewState === 'loading') return <Loader />;
@@ -115,7 +114,7 @@ export default function GardenInputList() {
         <PlantSortSelect
           label={t('gardenInput.sort.label')}
           value={`${request.sort.field}:${request.sort.direction}`}
-          options={SORT_OPTIONS}
+          options={sortOptions}
           onChange={(value) => {
             const { field, direction } = splitGardenInputSortValue(value);
             setSort(field, direction);
