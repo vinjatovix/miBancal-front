@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { t } from '../../i18n/core/t';
@@ -44,8 +44,6 @@ function readHemisphere(params: URLSearchParams): 'north' | 'south' {
     ? 'south'
     : 'north';
 }
-
-const SORT_OPTIONS = buildSortOptions();
 
 const EMPTY_STATE_MESSAGE_KEYS = {
   outOfRange: 'plant.emptyState.outOfRange',
@@ -138,6 +136,8 @@ export default function PlantList() {
     setSort
   } = usePlants();
 
+  const sortOptions = useMemo(() => buildSortOptions(), []);
+
   const auth = useContext(AuthContext);
   const isEditor = auth?.isEditor ?? false;
   const [viewMode, setViewMode] = useState(readStoredMode);
@@ -200,7 +200,7 @@ export default function PlantList() {
         <PlantSortSelect
           label={t('plant.orders.sort_label')}
           value={`${request.sort.field}:${request.sort.direction}`}
-          options={SORT_OPTIONS}
+          options={sortOptions}
           onChange={(value) => {
             const { field, direction } = splitSortValue(value);
             setSort(field, direction);

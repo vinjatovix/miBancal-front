@@ -38,11 +38,11 @@ import {
 } from './utils/plantRelationsUrl.utils';
 import './plantRelationsPage.css';
 
-const SORT_OPTIONS = buildSortOptions();
-
 export default function PlantRelationsPage() {
   const { user } = useAuth();
   const isCurator = hasCatalogEditorRole(user);
+
+  const sortOptions = useMemo(() => buildSortOptions(), []);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [relationToEdit, setRelationToEdit] = useState<PlantRelation | null>(
@@ -143,7 +143,7 @@ export default function PlantRelationsPage() {
           <PlantSortSelect
             label={t('plant.orders.sort_label')}
             value={`${sort.field}:${sort.direction}`}
-            options={SORT_OPTIONS}
+            options={sortOptions}
             onChange={(value) => {
               const { field, direction } = splitSortValue(value);
               handleSortChange({ field, direction });

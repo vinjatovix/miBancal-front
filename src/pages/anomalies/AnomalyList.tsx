@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
 import AnomalyStatusBadge from '../../components/anomalies/AnomalyStatusBadge/AnomalyStatusBadge';
@@ -25,8 +25,6 @@ import {
 } from './utils/buildAnomalySortOptions';
 
 import './anomalyList.css';
-
-const SORT_OPTIONS = buildAnomalySortOptions();
 
 function AnomalyCard({ anomaly }: { readonly anomaly: AnomalyListItem }) {
   const coverImage = (anomaly.resources ?? []).find((r) => r.type === 'image');
@@ -121,6 +119,7 @@ export default function AnomalyList() {
   } = useAnomalies();
   const auth = useContext(AuthContext);
   const isEditor = auth?.isEditor ?? false;
+  const sortOptions = useMemo(() => buildAnomalySortOptions(), []);
   const viewState = getQueryViewState(query);
 
   if (viewState === 'loading') return <Loader />;
@@ -160,7 +159,7 @@ export default function AnomalyList() {
         <PlantSortSelect
           label={t('anomaly.sort.label')}
           value={`${request.sort.field}:${request.sort.direction}`}
-          options={SORT_OPTIONS}
+          options={sortOptions}
           onChange={(value) => {
             const { field, direction } = splitAnomalySortValue(value);
             setSort(field, direction);
