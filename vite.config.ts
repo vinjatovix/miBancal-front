@@ -68,12 +68,6 @@ export default defineVitestConfig(({ mode }) => {
               purpose: 'maskable'
             },
             {
-              src: '/icons/icon-maskable.svg',
-              sizes: 'any',
-              type: 'image/svg+xml',
-              purpose: 'maskable'
-            },
-            {
               src: '/icons/apple-touch-icon.png',
               sizes: '180x180',
               type: 'image/png',
