@@ -4,6 +4,4 @@ import './gardenInput';
 import './locations';
 import './plant';
 import './plantRelations';
-import './pwa';
-import './theme';
 import './glossary';

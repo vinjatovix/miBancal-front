@@ -1,4 +1,6 @@
 import '../messages/core';
+import '../messages/pwa';
+import '../messages/theme';
 import { getMessages } from './registry';
 import type { I18nKey } from './types';
 
