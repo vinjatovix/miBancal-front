@@ -10,6 +10,7 @@ const purgeListeners = new Set<PurgeListener>();
 
 export function clearStoredToken(): void {
   try {
+    localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
     sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
   } catch {
     return;
@@ -18,8 +19,10 @@ export function clearStoredToken(): void {
 
 export function getStoredToken(): string | null {
   try {
-    const token = sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
-    if (!token) return null;
+    const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+    if (!token) {
+      return null;
+    }
 
     const payload = parseJwtPayload(token);
     if (!payload || isTokenExpired(payload.exp)) {
@@ -35,7 +38,7 @@ export function getStoredToken(): string | null {
 
 export function setStoredToken(token: string): void {
   try {
-    sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
   } catch {
     return;
   }

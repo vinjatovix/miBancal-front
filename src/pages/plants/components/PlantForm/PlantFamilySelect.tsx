@@ -1,9 +1,7 @@
-import { useContext, useEffect, type ChangeEvent } from 'react';
+import { useEffect, type ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 
 import { t } from '../../../../i18n/core/t';
-import { AuthContext } from '../../../../shared/auth/authContextDef';
-import { createSessionTransferUrl } from '../../../../shared/auth/sessionTransfer';
 import Icon from '../../../../shared/components/Icon/Icon';
 import { useFamilies } from '../../../../shared/hooks/useFamilies';
 
@@ -18,12 +16,7 @@ export function PlantFamilySelect({
   onChange,
   error
 }: PlantFamilySelectProps) {
-  const auth = useContext(AuthContext);
   const { data: families = [], refetch, isFetching } = useFamilies();
-
-  const createFamilyHref = auth?.session?.token
-    ? createSessionTransferUrl('/families/new', auth.session.token)
-    : '/families/new';
 
   useEffect(() => {
     const handleFocus = () => {
@@ -72,7 +65,7 @@ export function PlantFamilySelect({
       )}
       <div className="plant-family-select__meta">
         <Link
-          to={createFamilyHref}
+          to="/families/new"
           target="_blank"
           rel="noopener noreferrer"
           className="plant-family-select__new-link"

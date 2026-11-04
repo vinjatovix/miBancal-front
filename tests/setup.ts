@@ -23,6 +23,8 @@ Object.defineProperty(window, 'matchMedia', {
 beforeEach(() => {
   window.scrollY = 0;
   vi.mocked(window.scrollTo).mockClear();
+  localStorage.clear();
+  sessionStorage.clear();
 });
 
 vi.mock('leaflet', () => {

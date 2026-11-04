@@ -47,7 +47,6 @@ export function consumeSessionTransferToken(): string | null {
     return null;
   }
 
-  // Sanitize the URL immediately regardless of whether ticket resolves
   params.delete('session_transfer');
   const remaining = params.toString();
   const sanitizedHash = remaining ? `#${remaining}` : '';

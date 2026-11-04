@@ -19,7 +19,9 @@ import {
 
 describe('session storage manager', () => {
   beforeEach(() => {
+    localStorage.clear();
     sessionStorage.clear();
+    window.history.replaceState(null, '', '/');
     vi.restoreAllMocks();
   });
 
@@ -34,38 +36,39 @@ describe('session storage manager', () => {
     expect(token).toBeNull();
   });
 
-  it('stores and retrieves a valid token', () => {
+  it('stores token in localStorage and retrieves it', () => {
     setStoredToken(VALID_TEST_TOKEN);
 
     const token = getStoredToken();
 
     expect(token).toBe(VALID_TEST_TOKEN);
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBe(VALID_TEST_TOKEN);
   });
 
-  it('clears storage and returns null when stored token is expired', () => {
-    sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, EXPIRED_TEST_TOKEN);
+  it('clears localStorage and returns null when stored token is expired', () => {
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, EXPIRED_TEST_TOKEN);
 
     const token = getStoredToken();
 
     expect(token).toBeNull();
-    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
   });
 
-  it('clears storage and returns null when stored token is malformed', () => {
-    sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, 'malformed.jwt');
+  it('clears localStorage and returns null when stored token is malformed', () => {
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, 'malformed.jwt');
 
     const token = getStoredToken();
 
     expect(token).toBeNull();
-    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
   });
 
-  it('removes token on clearStoredToken', () => {
+  it('removes token from localStorage on clearStoredToken', () => {
     setStoredToken(VALID_TEST_TOKEN);
 
     clearStoredToken();
 
-    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
   });
 
   it('builds AuthSession from a valid token', () => {
@@ -97,7 +100,7 @@ describe('session storage manager', () => {
     expect(session).toBeNull();
   });
 
-  it('restores valid session with getInitialSession', () => {
+  it('restores valid session from localStorage with getInitialSession', () => {
     setStoredToken(VALID_TEST_TOKEN);
 
     const session = getInitialSession();
@@ -105,7 +108,17 @@ describe('session storage manager', () => {
     expect(session?.user.username).toBe('hortelano');
   });
 
-  it('preserves existing authenticated session and does not replace it when URL contains a transfer ticket', () => {
+  it('persists session across tab restarts when sessionStorage is empty', () => {
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, VALID_TEST_TOKEN);
+    sessionStorage.clear();
+
+    const session = getInitialSession();
+
+    expect(session?.user.username).toBe('hortelano');
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBe(VALID_TEST_TOKEN);
+  });
+
+  it('preserves localStorage session and sanitizes legacy transfer ticket from URL', () => {
     const attackerToken = createTestJwt({
       id: '00000000-0000-4000-8000-000000000099',
       username: 'attacker',
@@ -126,12 +139,11 @@ describe('session storage manager', () => {
     const session = getInitialSession();
 
     expect(session?.user.username).toBe('hortelano');
-    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBe(
-      VALID_TEST_TOKEN
-    );
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBe(VALID_TEST_TOKEN);
+    expect(window.location.hash).toBe('');
   });
 
-  it('restores and stores valid session from origin-validated transferred ticket in getInitialSession', () => {
+  it('restores valid session from legacy transferred ticket when localStorage is empty', () => {
     const ticket = 'valid-handoff-ticket';
     localStorage.setItem(
       `session_transfer_${ticket}`,
@@ -146,12 +158,11 @@ describe('session storage manager', () => {
     const session = getInitialSession();
 
     expect(session?.user.username).toBe('hortelano');
-    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBe(
-      VALID_TEST_TOKEN
-    );
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBe(VALID_TEST_TOKEN);
+    expect(window.location.hash).toBe('');
   });
 
-  it('rejects untrusted transfer ticket not present in origin localStorage', () => {
+  it('rejects untrusted transfer ticket not present in localStorage', () => {
     window.history.pushState(
       null,
       '',
@@ -161,7 +172,7 @@ describe('session storage manager', () => {
     const session = getInitialSession();
 
     expect(session).toBeNull();
-    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
   });
 
   it('does not accept raw bearer token in URL hash fragment', () => {
@@ -174,16 +185,16 @@ describe('session storage manager', () => {
     const session = getInitialSession();
 
     expect(session).toBeNull();
-    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
   });
 
-  it('cleans storage and returns null in getInitialSession when token is expired', () => {
-    sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, EXPIRED_TEST_TOKEN);
+  it('cleans localStorage and returns null in getInitialSession when token is expired', () => {
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, EXPIRED_TEST_TOKEN);
 
     const session = getInitialSession();
 
     expect(session).toBeNull();
-    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
   });
 
   it('notifies registered purge listeners', () => {

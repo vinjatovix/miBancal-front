@@ -58,6 +58,7 @@ function lastUrl(fetchMock: FetchMock): string {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  localStorage.clear();
   sessionStorage.clear();
 });
 

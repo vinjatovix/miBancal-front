@@ -13,6 +13,8 @@ import {
 import { useAuth } from '../../../src/shared/auth/useAuth';
 import { ApiError } from '../../../src/shared/errors/ApiError';
 import { NetworkError } from '../../../src/shared/errors/NetworkError';
+import { toastActions } from '../../../src/shared/toast/useToast';
+import { t } from '../../../src/i18n/core/t';
 import {
   ADMIN_TEST_TOKEN,
   createTestJwt,
@@ -178,6 +180,37 @@ describe('useAuth & AuthProvider', () => {
 
     expect(result.current.session).toBeNull();
     expect(result.current.isAuthenticated).toBe(false);
+  });
+
+  it('cancels queries and broadcasts logout when session purge is notified', async () => {
+    const queryClient = createTestQueryClient();
+    const cancelSpy = vi.spyOn(queryClient, 'cancelQueries');
+    const channel = new BroadcastChannel('agro_session_sync');
+    const received: unknown[] = [];
+    channel.onmessage = (event) => {
+      received.push(event.data);
+    };
+    setStoredToken(VALID_TEST_TOKEN);
+
+    renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider queryClient={queryClient}>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    act(() => {
+      notifySessionPurged();
+    });
+
+    await vi.waitFor(() => {
+      expect(received).toHaveLength(1);
+    });
+    expect(cancelSpy).toHaveBeenCalled();
+    const message = received[0] as Record<string, unknown>;
+    expect(message.type).toBe('SESSION_LOGOUT');
+    channel.close();
   });
 
   it('renders children passed to AuthProvider', () => {
@@ -495,5 +528,136 @@ describe('AuthProvider: queryClient cache clearing', () => {
     });
 
     expect(clearSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('resets session, cancels queries, clears cache, and shows warning toast upon remote SESSION_LOGOUT', async () => {
+    const queryClient = createTestQueryClient();
+    const cancelSpy = vi.spyOn(queryClient, 'cancelQueries');
+    const clearSpy = vi.spyOn(queryClient, 'clear');
+    const toastSpy = vi.spyOn(toastActions, 'showToast');
+    setStoredToken(VALID_TEST_TOKEN);
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider queryClient={queryClient}>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    expect(result.current.isAuthenticated).toBe(true);
+
+    act(() => {
+      const channel = new BroadcastChannel('agro_session_sync');
+      channel.postMessage({
+        type: 'SESSION_LOGOUT',
+        eventId: '00000000-0000-4000-8000-000000000101',
+        timestamp: Date.now()
+      });
+      channel.close();
+    });
+
+    await vi.waitFor(() => {
+      expect(result.current.isAuthenticated).toBe(false);
+    });
+
+    expect(result.current.session).toBeNull();
+    expect(cancelSpy).toHaveBeenCalled();
+    expect(clearSpy).toHaveBeenCalled();
+    expect(toastSpy).toHaveBeenCalledWith({
+      message: t('auth.session_closed_in_other_tab'),
+      variant: 'warning'
+    });
+  });
+
+  it('does not dispatch warning toast on remote SESSION_LOGOUT when session is already null', async () => {
+    const toastSpy = vi.spyOn(toastActions, 'showToast');
+
+    renderHook(() => useAuth(), {
+      wrapper: AuthProvider
+    });
+
+    act(() => {
+      const channel = new BroadcastChannel('agro_session_sync');
+      channel.postMessage({
+        type: 'SESSION_LOGOUT',
+        eventId: '00000000-0000-4000-8000-000000000102',
+        timestamp: Date.now()
+      });
+      channel.close();
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(toastSpy).not.toHaveBeenCalled();
+  });
+
+  it('synchronizes session, stores token, and clears query cache on remote SESSION_LOGIN', async () => {
+    const queryClient = createTestQueryClient();
+    const clearSpy = vi.spyOn(queryClient, 'clear');
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider queryClient={queryClient}>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    expect(result.current.isAuthenticated).toBe(false);
+
+    act(() => {
+      const channel = new BroadcastChannel('agro_session_sync');
+      channel.postMessage({
+        type: 'SESSION_LOGIN',
+        eventId: '00000000-0000-4000-8000-000000000103',
+        timestamp: Date.now(),
+        token: VALID_TEST_TOKEN
+      });
+      channel.close();
+    });
+
+    await vi.waitFor(() => {
+      expect(result.current.isAuthenticated).toBe(true);
+    });
+
+    expect(result.current.user?.username).toBe('hortelano');
+    expect(localStorage.getItem('auth_token')).toBe(VALID_TEST_TOKEN);
+    expect(clearSpy).toHaveBeenCalled();
+  });
+
+  it('synchronizes session, stores token, and preserves query cache on remote SESSION_REFRESH', async () => {
+    const queryClient = createTestQueryClient();
+    const clearSpy = vi.spyOn(queryClient, 'clear');
+    setStoredToken(VALID_TEST_TOKEN);
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider queryClient={queryClient}>{children}</AuthProvider>
+        </QueryClientProvider>
+      )
+    });
+
+    expect(result.current.isAuthenticated).toBe(true);
+
+    act(() => {
+      const channel = new BroadcastChannel('agro_session_sync');
+      channel.postMessage({
+        type: 'SESSION_REFRESH',
+        eventId: '00000000-0000-4000-8000-000000000104',
+        timestamp: Date.now(),
+        token: ADMIN_TEST_TOKEN
+      });
+      channel.close();
+    });
+
+    await vi.waitFor(() => {
+      expect(result.current.user?.username).toBe('admin');
+    });
+
+    expect(result.current.isAdmin).toBe(true);
+    expect(localStorage.getItem('auth_token')).toBe(ADMIN_TEST_TOKEN);
+    expect(clearSpy).not.toHaveBeenCalled();
   });
 });
