@@ -123,6 +123,7 @@ export const coreMessages = {
     reset_invalid_link_text:
       'El enlace de restablecimiento no es válido o ha caducado. Solicita uno nuevo.',
     reset_request_again: 'Solicitar un enlace nuevo',
+    session_closed_in_other_tab: 'La sesión se ha cerrado en otra pestaña',
     insufficient_permissions: {
       title: 'Permisos insuficientes',
       message:

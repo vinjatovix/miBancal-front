@@ -3,26 +3,18 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode
 } from 'react';
 import { QueryClientContext, type QueryClient } from '@tanstack/react-query';
 
-import {
-  activate as serviceActivate,
-  authenticateWithGoogle as serviceGoogleLogin,
-  authenticateWithGithub as serviceGithubLogin,
-  forgotPassword as serviceForgotPassword,
-  login as serviceLogin,
-  refreshToken as serviceRefreshToken,
-  register as serviceRegister,
-  resetPassword as serviceResetPassword,
-  updatePassword as serviceUpdatePassword
-} from '../../services/auth.service';
+import { t } from '../../i18n/core/t';
+import * as authService from '../../services/auth.service';
 import type {
   ActivateAccountData,
-  AuthenticateWithGoogleData,
   AuthenticateWithGithubData,
+  AuthenticateWithGoogleData,
   AuthSession,
   ForgotPasswordData,
   LoginCredentials,
@@ -31,6 +23,7 @@ import type {
   UpdatePasswordData
 } from '../../types/auth';
 import { ApiError } from '../errors/ApiError';
+import { toastActions } from '../toast/useToast';
 import { AuthContext, type AuthContextValue } from './authContextDef';
 import { hasCatalogEditorRole } from './roleUtils';
 import {
@@ -41,6 +34,12 @@ import {
   subscribeToSessionPurge,
   TOKEN_REFRESH_MARGIN_MS
 } from './session';
+import {
+  broadcastSessionLogin,
+  broadcastSessionLogout,
+  broadcastSessionRefresh,
+  subscribeToSessionSync
+} from './sessionSync';
 
 const MAX_TIMEOUT_DELAY_MS = 2_147_483_647;
 
@@ -57,122 +56,140 @@ export function AuthProvider({
   const queryClient = explicitClient ?? contextClient;
   const [session, setSession] = useState<AuthSession | null>(getInitialSession);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const sessionRef = useRef(session);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   const logout = useCallback(() => {
     clearStoredToken();
+    broadcastSessionLogout();
+    void queryClient?.cancelQueries();
     queryClient?.clear();
     setSession(null);
   }, [queryClient]);
 
-  const login = useCallback(
-    async (credentials: LoginCredentials) => {
+  const commitSession = useCallback(
+    (token: string) => {
+      const nextSession = buildSessionFromToken(token);
+      if (!nextSession) {
+        clearStoredToken();
+        broadcastSessionLogout();
+        throw new Error('Token de sesión no válido');
+      }
+      setStoredToken(token);
+      broadcastSessionLogin(token);
+      void queryClient?.cancelQueries();
+      queryClient?.clear();
+      setSession(nextSession);
+    },
+    [queryClient]
+  );
+
+  const withLoading = useCallback(
+    async <T,>(action: () => Promise<T>): Promise<T> => {
       setIsLoading(true);
       try {
-        const response = await serviceLogin(credentials);
-        const nextSession = buildSessionFromToken(response.token);
-        if (!nextSession) {
-          clearStoredToken();
-          throw new Error('Token de sesión no válido');
-        }
-        setStoredToken(response.token);
-        queryClient?.clear();
-        setSession(nextSession);
+        return await action();
       } finally {
         setIsLoading(false);
       }
     },
-    [queryClient]
+    []
+  );
+
+  const login = useCallback(
+    (credentials: LoginCredentials) =>
+      withLoading(async () => {
+        const response = await authService.login(credentials);
+        commitSession(response.token);
+      }),
+    [commitSession, withLoading]
   );
 
   const googleLogin = useCallback(
-    async (data: AuthenticateWithGoogleData) => {
-      setIsLoading(true);
-      try {
-        const response = await serviceGoogleLogin(data);
-        const nextSession = buildSessionFromToken(response.token);
-        if (!nextSession) {
-          clearStoredToken();
-          throw new Error('Token de sesión no válido');
-        }
-        setStoredToken(response.token);
-        queryClient?.clear();
-        setSession(nextSession);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [queryClient]
+    (data: AuthenticateWithGoogleData) =>
+      withLoading(async () => {
+        const response = await authService.authenticateWithGoogle(data);
+        commitSession(response.token);
+      }),
+    [commitSession, withLoading]
   );
 
   const githubLogin = useCallback(
-    async (data: AuthenticateWithGithubData) => {
-      setIsLoading(true);
-      try {
-        const response = await serviceGithubLogin(data);
-        const nextSession = buildSessionFromToken(response.token);
-        if (!nextSession) {
-          clearStoredToken();
-          throw new Error('Token de sesión no válido');
-        }
-        setStoredToken(response.token);
-        queryClient?.clear();
-        setSession(nextSession);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [queryClient]
+    (data: AuthenticateWithGithubData) =>
+      withLoading(async () => {
+        const response = await authService.authenticateWithGithub(data);
+        commitSession(response.token);
+      }),
+    [commitSession, withLoading]
   );
 
-  const register = useCallback(async (data: RegisterData) => {
-    setIsLoading(true);
-    try {
-      await serviceRegister(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const activate = useCallback(async (data: ActivateAccountData) => {
-    setIsLoading(true);
-    try {
-      await serviceActivate(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const forgotPassword = useCallback(async (data: ForgotPasswordData) => {
-    setIsLoading(true);
-    try {
-      await serviceForgotPassword(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const resetPassword = useCallback(async (data: ResetPasswordData) => {
-    setIsLoading(true);
-    try {
-      await serviceResetPassword(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const updatePassword = useCallback(async (data: UpdatePasswordData) => {
-    setIsLoading(true);
-    try {
-      await serviceUpdatePassword(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const register = useCallback(
+    (data: RegisterData) => withLoading(() => authService.register(data)),
+    [withLoading]
+  );
+  const activate = useCallback(
+    (data: ActivateAccountData) =>
+      withLoading(() => authService.activate(data)),
+    [withLoading]
+  );
+  const forgotPassword = useCallback(
+    (data: ForgotPasswordData) =>
+      withLoading(() => authService.forgotPassword(data)),
+    [withLoading]
+  );
+  const resetPassword = useCallback(
+    (data: ResetPasswordData) =>
+      withLoading(() => authService.resetPassword(data)),
+    [withLoading]
+  );
+  const updatePassword = useCallback(
+    (data: UpdatePasswordData) =>
+      withLoading(async () => {
+        await authService.updatePassword(data);
+      }),
+    [withLoading]
+  );
 
   useEffect(() => {
     return subscribeToSessionPurge(() => {
+      clearStoredToken();
+      broadcastSessionLogout();
+      void queryClient?.cancelQueries();
       queryClient?.clear();
       setSession(null);
+    });
+  }, [queryClient]);
+
+  useEffect(() => {
+    return subscribeToSessionSync((message) => {
+      if (message.type === 'SESSION_LOGOUT') {
+        clearStoredToken();
+        void queryClient?.cancelQueries();
+        queryClient?.clear();
+        if (sessionRef.current !== null) {
+          toastActions.showToast({
+            message: t('auth.session_closed_in_other_tab'),
+            variant: 'warning'
+          });
+        }
+        setSession(null);
+        return;
+      }
+      const nextSession = buildSessionFromToken(message.token);
+      if (nextSession) {
+        setStoredToken(message.token);
+        if (message.type === 'SESSION_LOGIN') {
+          void queryClient?.cancelQueries();
+          queryClient?.clear();
+        }
+        setSession(nextSession);
+      } else {
+        clearStoredToken();
+        setSession(null);
+      }
     });
   }, [queryClient]);
 
@@ -185,10 +202,11 @@ export function AuthProvider({
 
     const timer = setTimeout(async () => {
       try {
-        const response = await serviceRefreshToken();
+        const response = await authService.refreshToken();
         const nextSession = buildSessionFromToken(response.token);
         if (nextSession) {
           setStoredToken(response.token);
+          broadcastSessionRefresh(response.token);
           setSession(nextSession);
         } else {
           logout();

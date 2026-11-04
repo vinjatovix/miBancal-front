@@ -206,7 +206,7 @@ describe('apiFetch', () => {
   });
 
   it('clears expired token and does not inject Authorization header', async () => {
-    sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, EXPIRED_TEST_TOKEN);
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, EXPIRED_TEST_TOKEN);
     const fetchMock = createFetchMock({ ok: true });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -215,7 +215,7 @@ describe('apiFetch', () => {
     const init = getCapturedInit(fetchMock);
     const headers = new Headers(init?.headers);
     expect(headers.has('Authorization')).toBe(false);
-    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
   });
 
   it('purges session on 401 response', async () => {
@@ -231,7 +231,7 @@ describe('apiFetch', () => {
 
     await captureError(apiFetch('/admin'));
 
-    expect(sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)).toBeNull();
   });
 
   it('transparently retries public GET endpoint on 401 without Authorization', async () => {

@@ -48,6 +48,29 @@ describe('Register Page', () => {
     expect(screen.getByText('Página principal')).toBeInTheDocument();
   });
 
+  it('redirects to home when remote SESSION_LOGIN event is received', async () => {
+    renderWithProviders(<TestApp />, { route: '/register' });
+
+    expect(
+      screen.getByRole('button', { name: 'Crear cuenta' })
+    ).toBeInTheDocument();
+
+    act(() => {
+      const channel = new BroadcastChannel('agro_session_sync');
+      channel.postMessage({
+        type: 'SESSION_LOGIN',
+        eventId: '00000000-0000-4000-8000-000000000202',
+        timestamp: Date.now(),
+        token: VALID_TEST_TOKEN
+      });
+      channel.close();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Página principal')).toBeInTheDocument();
+    });
+  });
+
   it('keeps submit button disabled when form fields are missing', async () => {
     const user = userEvent.setup();
     renderWithProviders(<TestApp />, { route: '/register' });

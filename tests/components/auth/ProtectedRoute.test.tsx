@@ -1,5 +1,5 @@
-import { screen } from '@testing-library/react';
-import { Route, Routes } from 'react-router-dom';
+import { act, screen } from '@testing-library/react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ProtectedRoute from '../../../src/components/auth/ProtectedRoute';
@@ -13,6 +13,18 @@ import {
 } from '../../fixtures/auth/authFixtures';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
+function LoginHarness() {
+  const location = useLocation();
+  const from = (location.state as { from?: { pathname?: string } })?.from
+    ?.pathname;
+  return (
+    <div>
+      Pantalla de login
+      {from && <span data-testid="from-path">{from}</span>}
+    </div>
+  );
+}
+
 function TestHarness({
   requireAdmin = false
 }: {
@@ -20,7 +32,7 @@ function TestHarness({
 }) {
   return (
     <Routes>
-      <Route path="/login" element={<div>Pantalla de login</div>} />
+      <Route path="/login" element={<LoginHarness />} />
       <Route path="/" element={<div>Pantalla de inicio</div>} />
       <Route
         path="/protected"
@@ -45,6 +57,7 @@ describe('ProtectedRoute', () => {
     renderWithProviders(<TestHarness />, { route: '/protected' });
 
     expect(screen.getByText('Pantalla de login')).toBeInTheDocument();
+    expect(screen.getByTestId('from-path')).toHaveTextContent('/protected');
     expect(screen.queryByText('Contenido protegido')).toBeNull();
   });
 
@@ -75,5 +88,29 @@ describe('ProtectedRoute', () => {
     });
 
     expect(screen.getByText('Contenido protegido')).toBeInTheDocument();
+  });
+
+  it('redirects to /login preserving state.from when remote SESSION_LOGOUT event is received', async () => {
+    setStoredToken(VALID_TEST_TOKEN);
+
+    renderWithProviders(<TestHarness />, { route: '/protected' });
+
+    expect(screen.getByText('Contenido protegido')).toBeInTheDocument();
+
+    act(() => {
+      const channel = new BroadcastChannel('agro_session_sync');
+      channel.postMessage({
+        type: 'SESSION_LOGOUT',
+        eventId: '00000000-0000-4000-8000-000000000099',
+        timestamp: Date.now()
+      });
+      channel.close();
+    });
+
+    await vi.waitFor(() => {
+      expect(screen.getByText('Pantalla de login')).toBeInTheDocument();
+      expect(screen.getByTestId('from-path')).toHaveTextContent('/protected');
+    });
+    expect(screen.queryByText('Contenido protegido')).toBeNull();
   });
 });
