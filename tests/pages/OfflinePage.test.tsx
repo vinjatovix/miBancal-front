@@ -1,7 +1,6 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { t } from '../../src/i18n/core/t';
 import OfflinePage from '../../src/pages/OfflinePage';
 import { renderWithProviders } from '../test-utils/renderWithProviders';
 
@@ -11,7 +10,7 @@ describe('OfflinePage', () => {
 
     const heading = screen.getByRole('heading', {
       level: 1,
-      name: t('offline.title')
+      name: 'Sin conexión'
     });
 
     expect(heading).toBeInTheDocument();
@@ -22,13 +21,15 @@ describe('OfflinePage', () => {
 
     const statusMessage = screen.getByRole('status');
 
-    expect(statusMessage).toHaveTextContent(t('offline.message'));
+    expect(statusMessage).toHaveTextContent(
+      'Esta página no está disponible sin conexión a internet.'
+    );
   });
 
   it('renders link back to plants catalog', () => {
     renderWithProviders(<OfflinePage />, { route: '/offline' });
 
-    const link = screen.getByRole('link', { name: t('offline.link') });
+    const link = screen.getByRole('link', { name: 'Volver al catálogo' });
 
     expect(link).toHaveAttribute('href', '/plants');
   });

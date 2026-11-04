@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import UpdatePrompt from '../../../src/components/UpdatePrompt/UpdatePrompt';
-import { t } from '../../../src/i18n/core/t';
 
 const mockUpdateServiceWorker = vi.fn();
 let mockNeedRefresh = false;
@@ -38,7 +37,7 @@ describe('UpdatePrompt', () => {
 
     const alert = screen.getByRole('alert');
 
-    expect(alert).toHaveTextContent(t('sw.update.title'));
+    expect(alert).toHaveTextContent('Nueva versión disponible');
   });
 
   it('renders update action button when needRefresh is true', () => {
@@ -47,7 +46,7 @@ describe('UpdatePrompt', () => {
     render(<UpdatePrompt />);
 
     const button = screen.getByRole('button', {
-      name: t('sw.update.action')
+      name: 'Actualizar ahora'
     });
 
     expect(button).toBeInTheDocument();
@@ -56,9 +55,11 @@ describe('UpdatePrompt', () => {
   it('calls updateServiceWorker with true when update action button is clicked', async () => {
     const user = userEvent.setup();
     mockNeedRefresh = true;
+
     render(<UpdatePrompt />);
+
     const button = screen.getByRole('button', {
-      name: t('sw.update.action')
+      name: 'Actualizar ahora'
     });
 
     await user.click(button);
