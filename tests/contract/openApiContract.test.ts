@@ -1,4 +1,9 @@
-import { validateRequest, validateSchema } from './openApiContract';
+import {
+  assertContractRequest,
+  assertContractResponse,
+  validateRequest,
+  validateSchema
+} from './openApiContract';
 
 const VALID_LIST_URL =
   '/api/v1/plants?pagination[page]=1&pagination[limit]=25&sort[name]=asc';
@@ -8,23 +13,23 @@ function locations(method: 'get', url: string): string[] {
 }
 
 describe('validateRequest', () => {
-  it('una petición del listado conforme al contrato no tiene violaciones', () => {
+  it('a plant list request conforming to contract has no violations', () => {
     expect(validateRequest('get', VALID_LIST_URL)).toEqual([]);
   });
 
-  it('acepta una URL absoluta con origen y fragmento', () => {
+  it('accepts an absolute URL with origin and fragment', () => {
     expect(
       validateRequest('get', 'https://x.test/api/v1/plants?sort[name]=asc#a')
     ).toEqual([]);
   });
 
-  it('acepta una URL codificada', () => {
+  it('accepts an encoded URL', () => {
     expect(validateRequest('get', '/api/v1/plants?sort%5Bname%5D=asc')).toEqual(
       []
     );
   });
 
-  it('una clave repetida se valida como lista', () => {
+  it('validates repeated keys as a list', () => {
     expect(
       validateRequest(
         'get',
@@ -37,19 +42,19 @@ describe('validateRequest', () => {
     expect(locations('get', '/api/v1/plantas')).toEqual(['path']);
   });
 
-  it('un método no declarado es una violación de path', () => {
+  it('an undeclared method is a path violation', () => {
     expect(validateRequest('delete', '/api/v1/plants')).toEqual([
       expect.objectContaining({ location: 'path' })
     ]);
   });
 
-  it('un parámetro de query no declarado es una violación', () => {
+  it('an undeclared query parameter is a violation', () => {
     expect(locations('get', '/api/v1/plants?orderBy=name')).toContain(
       'query.orderBy'
     );
   });
 
-  it('un parámetro deepObject sin corchetes es una violación', () => {
+  it('a deepObject parameter without brackets is a violation', () => {
     expect(locations('get', '/api/v1/plants?sort=name')).toContain(
       'query.sort'
     );
@@ -60,7 +65,7 @@ describe('validateRequest', () => {
     ['pagination[limit]=101', 'query.pagination'],
     ['filter[family][eq]=rosaceae', 'query.filter'],
     ['filter[soilPh][eq]=1e3', 'query.filter']
-  ])('%s no cumple el schema (%s)', (query, prefix) => {
+  ])('%s does not conform to schema (%s)', (query, prefix) => {
     const found = locations('get', `/api/v1/plants?${query}`);
 
     expect(found.length).toBeGreaterThan(0);
@@ -69,7 +74,7 @@ describe('validateRequest', () => {
 });
 
 describe('validateSchema', () => {
-  it('valida un FamilySummary válido sin violaciones', () => {
+  it('validates a valid FamilySummary without violations', () => {
     const summary = {
       id: 'fa821c9a-9e12-4c28-98e3-533bbbe114e2',
       name: 'Solanáceas',
@@ -81,7 +86,7 @@ describe('validateSchema', () => {
     expect(violations).toEqual([]);
   });
 
-  it('rechaza propiedades adicionales en FamilySummary', () => {
+  it('rejects additional properties in FamilySummary', () => {
     const summaryWithExtra = {
       id: 'fa821c9a-9e12-4c28-98e3-533bbbe114e2',
       name: 'Solanáceas',
@@ -105,7 +110,7 @@ describe('validateSchema', () => {
       }
     ],
     ['string id', 'fa821c9a-9e12-4c28-98e3-533bbbe114e2']
-  ])('valida PlantIdentityView con familia como %s', (_, family) => {
+  ])('validates PlantIdentityView with family as %s', (_, family) => {
     const identity = {
       name: {
         primary: 'Tomate',
@@ -120,7 +125,7 @@ describe('validateSchema', () => {
     expect(violations).toEqual([]);
   });
 
-  it('rechaza PlantIdentityView sin campos requeridos', () => {
+  it('rejects PlantIdentityView without required fields', () => {
     const invalidIdentity = {
       name: {
         primary: 'Tomate'
@@ -136,7 +141,7 @@ describe('validateSchema', () => {
     [0.5, true],
     [0, false]
   ])(
-    'lee exclusiveMinimum booleano de OpenAPI 3.0: frequencyPerYear %s válido = %s',
+    'reads boolean exclusiveMinimum from OpenAPI 3.0: frequencyPerYear %s valid = %s',
     (frequencyPerYear, isValid) => {
       const pruning = {
         type: 'formación',
@@ -150,4 +155,97 @@ describe('validateSchema', () => {
       expect(violations.length === 0).toBe(isValid);
     }
   );
+});
+
+describe('assertContractRequest', () => {
+  it('accepts a valid plant list query matching contract', async () => {
+    const requestInput = {
+      url: VALID_LIST_URL,
+      method: 'GET',
+      strictParameters: true
+    };
+
+    const assertion = assertContractRequest(requestInput);
+
+    await expect(assertion).resolves.toBeUndefined();
+  });
+
+  it('accepts a valid request passed as a standard Request object', async () => {
+    const request = new Request('http://localhost/api/v1/auth/refresh', {
+      method: 'POST'
+    });
+
+    const assertion = assertContractRequest({ request });
+
+    await expect(assertion).resolves.toBeUndefined();
+  });
+
+  it('accepts a valid request passed in req object shape', async () => {
+    const req = {
+      url: 'http://localhost/api/v1/bookmarks/plants',
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ plantId: '6ba7b810-9dad-11d1-80b4-00c04fd430c8' })
+    };
+
+    const assertion = assertContractRequest({ req });
+
+    await expect(assertion).resolves.toBeUndefined();
+  });
+
+  it('rejects an undeclared route', async () => {
+    const requestInput = {
+      path: '/api/v1/nonexistent',
+      method: 'GET'
+    };
+
+    const assertion = assertContractRequest(requestInput);
+
+    await expect(assertion).rejects.toThrow();
+  });
+
+  it.each([
+    ['undeclared query param', '/api/v1/plants?orderBy=name'],
+    ['invalid pagination limit', '/api/v1/plants?pagination[limit]=101'],
+    ['invalid uuid filter', '/api/v1/plants?filter[family][eq]=rosaceae'],
+    ['invalid numeric filter pattern', '/api/v1/plants?filter[soilPh][eq]=1e3']
+  ])('rejects %s with strict parameters', async (_desc, url) => {
+    const assertion = assertContractRequest({
+      url,
+      method: 'GET',
+      strictParameters: true
+    });
+
+    await expect(assertion).rejects.toThrow();
+  });
+});
+
+describe('assertContractResponse', () => {
+  it('accepts a valid response matching contract schema', async () => {
+    const responseInput = {
+      path: '/api/v1/bookmarks',
+      method: 'GET',
+      status: 200,
+      body: { plants: [] },
+      contentType: 'application/json'
+    };
+
+    const assertion = assertContractResponse(responseInput);
+
+    await expect(assertion).resolves.toBeUndefined();
+  });
+
+  it('rejects a response with missing required fields', async () => {
+    const responseInput = {
+      path: '/api/v1/bookmarks',
+      method: 'GET',
+      status: 200,
+      body: { data: [] },
+      contentType: 'application/json'
+    };
+
+    const assertion = assertContractResponse(responseInput);
+
+    await expect(assertion).rejects.toThrow();
+  });
 });

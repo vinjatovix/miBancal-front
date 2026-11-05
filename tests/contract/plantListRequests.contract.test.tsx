@@ -7,7 +7,11 @@ import { buildPlantListItem } from '../fixtures/plants/buildPlantListItem';
 import { listPlantsResponse } from '../fixtures/plants/listPlants';
 import { renderWithProviders } from '../test-utils/renderWithProviders';
 import { lastRequest, stubFetchOk, API_URL } from '../test-utils/stubFetch';
-import { validateRequest, validateSchema } from './openApiContract';
+import {
+  assertContractRequest,
+  validateRequest,
+  validateSchema
+} from './openApiContract';
 
 vi.mock('../../src/services/families.service', () => ({
   getFamilyList: vi.fn(() => Promise.resolve([]))
@@ -35,7 +39,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('peticiones del listado conformes al contrato', () => {
+describe('plant list requests conform to contract', () => {
   it.each([
     ['/plants', DEFAULT_TAIL],
     [
@@ -118,10 +122,13 @@ describe('peticiones del listado conformes al contrato', () => {
 
     expect(url).toBe(expected(query));
     expect(validateRequest('get', url)).toEqual([]);
+    await expect(
+      assertContractRequest({ url, method: 'GET', strictParameters: true })
+    ).resolves.toBeUndefined();
   });
 });
 
-describe('filtros de comestible y tóxica conformes al contrato', () => {
+describe('edible and toxic filters conform to contract', () => {
   it.each([
     ['/plants?edible=true', `filter[edible][eq]=true&${DEFAULT_TAIL}`],
     [
@@ -141,10 +148,13 @@ describe('filtros de comestible y tóxica conformes al contrato', () => {
 
     expect(url).toBe(expected(query));
     expect(validateRequest('get', url)).toEqual([]);
+    await expect(
+      assertContractRequest({ url, method: 'GET', strictParameters: true })
+    ).resolves.toBeUndefined();
   });
 });
 
-describe('las URL inválidas producen peticiones corregidas y conformes', () => {
+describe('invalid URLs produce sanitized and conforming requests', () => {
   it.each([
     ['/plants?limit=500', DEFAULT_TAIL],
     ['/plants?limit=37', DEFAULT_TAIL],
@@ -173,21 +183,27 @@ describe('las URL inválidas producen peticiones corregidas y conformes', () => 
 
     expect(url).toBe(expected(query));
     expect(validateRequest('get', url)).toEqual([]);
+    await expect(
+      assertContractRequest({ url, method: 'GET', strictParameters: true })
+    ).resolves.toBeUndefined();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });
 
-describe('petición de las plantas de la ficha de familia', () => {
-  it('cumple el contrato', () => {
+describe('family detail plants request', () => {
+  it('conforms to contract', async () => {
     const url = `${API_URL}/api/v1/plants?filter[family][eq]=${UUID}&sort[name]=asc&fields[plants]=slug,identity,status`;
 
     expect(validateRequest('get', url)).toEqual([]);
+    await expect(
+      assertContractRequest({ url, method: 'GET', strictParameters: true })
+    ).resolves.toBeUndefined();
   });
 });
 
-describe('las plantas parciales de los listados cumplen PlantFieldset', () => {
+describe('partial plants from listings conform to PlantFieldset', () => {
   it.each(['ACTIVE', 'DELETED', undefined] as const)(
-    'planta de la ficha de familia con status %s',
+    'family detail plant with status %s',
     (status) => {
       const item = buildFamilyPlantItem({ status });
 
@@ -196,7 +212,7 @@ describe('las plantas parciales de los listados cumplen PlantFieldset', () => {
   );
 
   it.each(['ACTIVE', 'DELETED', undefined] as const)(
-    'planta del listado con status %s',
+    'listing plant with status %s',
     (status) => {
       const item = buildPlantListItem({ status });
 
@@ -205,15 +221,15 @@ describe('las plantas parciales de los listados cumplen PlantFieldset', () => {
   );
 });
 
-describe('la imagen principal cumple PlantImage', () => {
+describe('primary image conforms to PlantImage', () => {
   it.each(listPlantsResponse.data)(
-    'imagen de $identity.name.primary',
+    'image of $identity.name.primary',
     ({ image }) => {
       expect(validateSchema('PlantImage', image)).toEqual([]);
     }
   );
 
-  it('una planta del listado sin imagen no cumple PlantFieldset', () => {
+  it('a listed plant without an image violates PlantFieldset', () => {
     const item = { ...buildPlantListItem(), image: null };
 
     expect(validateSchema('PlantFieldset', item)).not.toEqual([]);

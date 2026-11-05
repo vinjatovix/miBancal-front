@@ -5,25 +5,25 @@ import {
   buildLocation
 } from '../fixtures/locations/buildLocation';
 import { listLocationsResponse } from '../fixtures/locations/listLocations';
-import { validateSchema } from './openApiContract';
+import { assertContractRequest, validateSchema } from './openApiContract';
 
-describe('las ubicaciones del listado cumplen el schema Location', () => {
-  it.each(listLocationsResponse.data)('ubicación $name', (location) => {
+describe('listed locations conform to Location schema', () => {
+  it.each(listLocationsResponse.data)('location $name', (location) => {
     expect(validateSchema('Location', location)).toEqual([]);
   });
 
-  it('la factoría buildLocation cumple Location', () => {
+  it('buildLocation factory conforms to Location', () => {
     expect(validateSchema('Location', buildLocation())).toEqual([]);
   });
 
-  it('rechaza una ubicación sin nombre (campo requerido)', () => {
+  it('rejects a location without name (required field)', () => {
     const withoutName: Record<string, unknown> = { ...buildLocation() };
     delete withoutName.name;
 
     expect(validateSchema('Location', withoutName)).not.toEqual([]);
   });
 
-  it('rechaza una ubicación sin latitud o longitud (campos requeridos)', () => {
+  it('rejects a location without latitude or longitude (required fields)', () => {
     const withoutLat: Record<string, unknown> = { ...buildLocation() };
     delete withoutLat.latitude;
 
@@ -31,74 +31,126 @@ describe('las ubicaciones del listado cumplen el schema Location', () => {
   });
 });
 
-describe('las peticiones de creación cumplen CreateLocation', () => {
-  it('factoría completa', () => {
-    expect(
-      validateSchema('CreateLocation', buildCreateLocationRequest())
-    ).toEqual([]);
+describe('creation requests conform to CreateLocation', () => {
+  it('accepts complete factory payload', async () => {
+    const payload = buildCreateLocationRequest();
+
+    const assertion = assertContractRequest({
+      path: '/api/v1/locations',
+      method: 'POST',
+      body: payload
+    });
+
+    await expect(assertion).resolves.toBeUndefined();
   });
 
-  it('rechaza creación sin coordenadas', () => {
-    expect(
-      validateSchema('CreateLocation', {
-        id: '11111111-1111-4111-8111-111111111111',
-        name: 'Huerto'
-      })
-    ).not.toEqual([]);
+  it('rejects creation without coordinates', async () => {
+    const payload = {
+      id: '11111111-1111-4111-8111-111111111111',
+      name: 'Huerto'
+    };
+
+    const assertion = assertContractRequest({
+      path: '/api/v1/locations',
+      method: 'POST',
+      body: payload
+    });
+
+    await expect(assertion).rejects.toThrow();
   });
 
-  it('rechaza latitud fuera de rango (-90 a 90)', () => {
-    expect(
-      validateSchema(
-        'CreateLocation',
-        buildCreateLocationRequest({ latitude: 95.0 })
-      )
-    ).not.toEqual([]);
+  it('rejects latitude out of range (-90 to 90)', async () => {
+    const payload = buildCreateLocationRequest({ latitude: 95.0 });
+
+    const assertion = assertContractRequest({
+      path: '/api/v1/locations',
+      method: 'POST',
+      body: payload
+    });
+
+    await expect(assertion).rejects.toThrow();
   });
 
-  it('rechaza longitud fuera de rango (-180 a 180)', () => {
-    expect(
-      validateSchema(
-        'CreateLocation',
-        buildCreateLocationRequest({ longitude: -185.0 })
-      )
-    ).not.toEqual([]);
+  it('rejects longitude out of range (-180 to 180)', async () => {
+    const payload = buildCreateLocationRequest({ longitude: -185.0 });
+
+    const assertion = assertContractRequest({
+      path: '/api/v1/locations',
+      method: 'POST',
+      body: payload
+    });
+
+    await expect(assertion).rejects.toThrow();
   });
 
-  it('rechaza campos heredados obsoletos', () => {
+  it('rejects obsolete legacy fields', async () => {
     const withLegacy = {
       ...buildCreateLocationRequest(),
       postalCode: '28013'
     };
 
-    expect(validateSchema('CreateLocation', withLegacy)).not.toEqual([]);
+    const assertion = assertContractRequest({
+      path: '/api/v1/locations',
+      method: 'POST',
+      body: withLegacy
+    });
+
+    await expect(assertion).rejects.toThrow();
   });
 });
 
-describe('las peticiones de edición cumplen UpdateLocation', () => {
-  it('admite el no-op con cuerpo vacío', () => {
-    expect(validateSchema('UpdateLocation', {})).toEqual([]);
+describe('update requests conform to UpdateLocation', () => {
+  it('accepts empty body no-op', async () => {
+    const assertion = assertContractRequest({
+      path: '/api/v1/locations/11111111-1111-4111-8111-111111111111',
+      method: 'PATCH',
+      headers: { 'If-Match': '"1"' },
+      body: {}
+    });
+
+    await expect(assertion).resolves.toBeUndefined();
   });
 
-  it('admite actualizar nombre y coordenadas', () => {
-    expect(
-      validateSchema('UpdateLocation', {
-        name: 'Huerto nuevo',
-        latitude: 37.3891,
-        longitude: -5.9845
-      })
-    ).toEqual([]);
+  it('accepts updating name and coordinates', async () => {
+    const payload = {
+      name: 'Huerto nuevo',
+      latitude: 37.3891,
+      longitude: -5.9845
+    };
+
+    const assertion = assertContractRequest({
+      path: '/api/v1/locations/11111111-1111-4111-8111-111111111111',
+      method: 'PATCH',
+      headers: { 'If-Match': '"1"' },
+      body: payload
+    });
+
+    await expect(assertion).resolves.toBeUndefined();
   });
 
-  it('rechaza name null', () => {
-    expect(validateSchema('UpdateLocation', { name: null })).not.toEqual([]);
+  it('rejects null name', async () => {
+    const payload = { name: null };
+
+    const assertion = assertContractRequest({
+      path: '/api/v1/locations/11111111-1111-4111-8111-111111111111',
+      method: 'PATCH',
+      headers: { 'If-Match': '"1"' },
+      body: payload
+    });
+
+    await expect(assertion).rejects.toThrow();
   });
 
-  it('rechaza campos heredados obsoletos', () => {
-    expect(
-      validateSchema('UpdateLocation', {
-        country: 'España'
-      })
-    ).not.toEqual([]);
+  it('rejects obsolete legacy fields', async () => {
+    const payload = { country: 'España' };
+
+    const assertion = assertContractRequest({
+      path: '/api/v1/locations/11111111-1111-4111-8111-111111111111',
+      method: 'PATCH',
+      headers: { 'If-Match': '"1"' },
+      body: payload
+    });
+
+    await expect(assertion).rejects.toThrow();
   });
 });

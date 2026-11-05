@@ -7,7 +7,11 @@ import { buildFamilyListItem } from '../fixtures/families/buildFamilyListItem';
 import { listFamilyItemsResponse } from '../fixtures/families/listFamilyItems';
 import { renderWithProviders } from '../test-utils/renderWithProviders';
 import { API_URL, lastRequest, stubFetchOk } from '../test-utils/stubFetch';
-import { validateRequest, validateSchema } from './openApiContract';
+import {
+  assertContractRequest,
+  validateRequest,
+  validateSchema
+} from './openApiContract';
 
 const EXPECTED_URL = `${API_URL}/api/v1/families?pagination[page]=1&pagination[limit]=100&sort[name]=asc&fields[families]=name,scientificName`;
 const [firstFamily] = listFamilyItemsResponse.data;
@@ -27,16 +31,16 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('petición del listado de familias conforme al contrato', () => {
+describe('family list request conforms to contract', () => {
   it.each([
     [
-      '/plants (selector de familia)',
+      '/plants (family selector)',
       <PlantFilters key="plants" />,
       '/plants',
       () => screen.findByRole('option', { name: 'Amarilidáceas' })
     ],
     [
-      '/families (listado)',
+      '/families (list)',
       <FamilyList key="families" />,
       '/families',
       () =>
@@ -49,19 +53,22 @@ describe('petición del listado de familias conforme al contrato', () => {
 
     expect(url).toBe(EXPECTED_URL);
     expect(validateRequest('get', url)).toEqual([]);
+    await expect(
+      assertContractRequest({ url, method: 'GET', strictParameters: true })
+    ).resolves.toBeUndefined();
   });
 });
 
-describe('las familias parciales del listado cumplen FamilyFieldset', () => {
-  it.each(listFamilyItemsResponse.data)('familia $name', (item) => {
+describe('partial families in listing conform to FamilyFieldset', () => {
+  it.each(listFamilyItemsResponse.data)('family $name', (item) => {
     expect(validateSchema('FamilyFieldset', item)).toEqual([]);
   });
 
-  it('factoría', () => {
+  it('factory', () => {
     expect(validateSchema('FamilyFieldset', buildFamilyListItem())).toEqual([]);
   });
 
-  it('rechaza una propiedad que el contrato no declara', () => {
+  it('rejects a property not declared in contract', () => {
     const item = { ...buildFamilyListItem(), foo: 'bar' };
 
     expect(validateSchema('FamilyFieldset', item)).not.toEqual([]);

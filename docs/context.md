@@ -224,6 +224,7 @@ No hay analítica, Sentry, feature flags, CDN de fuentes ni service worker. Las 
 - **Imports**: rutas relativas (sin alias `@/`). Se usa `import type` (lo exige `verbatimModuleSyntax`).
 - **Hooks de datos**: `queryKey` en forma de array. El listado usa la factoría `plantKeys.list(request)` (`src/shared/reactQuery/plantKeys.ts`) → `['plants', 'list', request]`, con la petición ya saneada, y el detalle `plantKeys.detail(id)` → `['plants', 'detail', id]`; las plantas de una familia usan `plantKeys.family(familyId)` → `['plants', 'family', familyId]`. Las familias usan `familyKeys` (`src/shared/reactQuery/familyKeys.ts`, feature 008): `familyKeys.list()` → `['families', 'list']`, compartida por `FamilySelect` y `FamilyList`, y `familyKeys.detail(idOrSlug)` → `['families', 'detail', idOrSlug]`, distinta para que la ficha nunca lea los datos parciales del listado.
 - **`data-testid`** se usa ampliamente en componentes interactivos.
+- **Idioma de los tests**: las suites (`describe`), casos de prueba (`it`/`test`) y aserciones se redactan en inglés, manteniendo consistencia técnica con el código y tooling (a diferencia de la UI, que es íntegramente en español).
 - **Formato**: Prettier con `printWidth: 80`, `singleQuote: true`, `semi: true`, `trailingComma: 'none'` y `arrowParens: 'always'`.
 - **Commits**: Conventional Commits con scope por feature (`feat(plants): …`), validados por commitlint en local (husky) y en los PR. 42 commits en el historial.
 

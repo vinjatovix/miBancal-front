@@ -11,7 +11,11 @@ import {
   buildUserBookmarksResponse
 } from '../fixtures/bookmarks/buildBookmark';
 import { API_URL, lastRequest, stubFetchOk } from '../test-utils/stubFetch';
-import { validateRequest, validateSchema } from './openApiContract';
+import {
+  assertContractRequest,
+  validateRequest,
+  validateSchema
+} from './openApiContract';
 
 const PLANT_ID = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 
@@ -20,16 +24,16 @@ describe('OpenAPI bookmarks contract', () => {
     ['get', '/api/v1/bookmarks'],
     ['post', '/api/v1/bookmarks/plants'],
     ['delete', `/api/v1/bookmarks/plants/${PLANT_ID}`]
-  ] as const)('valida la ruta del contrato para %s %s', (method, path) => {
+  ] as const)('validates contract route for %s %s', (method, path) => {
     expect(validateRequest(method, path)).toEqual([]);
   });
 
-  describe('fixtures frente a los schemas', () => {
-    it('FavoritePlantItem cumple el schema', () => {
+  describe('fixtures against schemas', () => {
+    it('FavoritePlantItem conforms to schema', () => {
       expect(validateSchema('FavoritePlantItem', buildBookmark())).toEqual([]);
     });
 
-    it('UserBookmarksResponse cumple el schema', () => {
+    it('UserBookmarksResponse conforms to schema', () => {
       expect(
         validateSchema('UserBookmarksResponse', buildUserBookmarksResponse())
       ).toEqual([]);
@@ -37,7 +41,7 @@ describe('OpenAPI bookmarks contract', () => {
   });
 
   describe('getBookmarkedPlantIds', () => {
-    it('hace GET /api/v1/bookmarks sin query include', async () => {
+    it('performs GET /api/v1/bookmarks without include query', async () => {
       const fetchMock = stubFetchOk(buildUserBookmarksResponse());
 
       await getBookmarkedPlantIds();
@@ -45,12 +49,20 @@ describe('OpenAPI bookmarks contract', () => {
       const { url, init } = lastRequest(fetchMock);
       expect(url).toBe(`${API_URL}/api/v1/bookmarks`);
       expect(init?.method ?? 'GET').toBe('GET');
-      expect(validateRequest('get', url)).toEqual([]);
+      await expect(
+        assertContractRequest({
+          req: {
+            url,
+            method: init?.method ?? 'GET',
+            headers: init?.headers
+          }
+        })
+      ).resolves.toBeUndefined();
     });
   });
 
   describe('addPlantBookmark', () => {
-    it('hace POST /api/v1/bookmarks/plants con { plantId } y Content-Type json', async () => {
+    it('performs POST /api/v1/bookmarks/plants with { plantId } and JSON Content-Type', async () => {
       const fetchMock = stubFetchOk(buildBookmark({ plantId: PLANT_ID }));
 
       await addPlantBookmark(PLANT_ID);
@@ -62,12 +74,21 @@ describe('OpenAPI bookmarks contract', () => {
       expect((init?.headers as Record<string, string>)['Content-Type']).toBe(
         'application/json'
       );
-      expect(validateRequest('post', url)).toEqual([]);
+      await expect(
+        assertContractRequest({
+          req: {
+            url,
+            method: init?.method,
+            headers: init?.headers,
+            body: init?.body
+          }
+        })
+      ).resolves.toBeUndefined();
     });
   });
 
   describe('removePlantBookmark', () => {
-    it('hace DELETE /api/v1/bookmarks/plants/{plantId}', async () => {
+    it('performs DELETE /api/v1/bookmarks/plants/{plantId}', async () => {
       const fetchMock = stubFetchOk(undefined, { 'content-length': '0' });
 
       await removePlantBookmark(PLANT_ID);
@@ -75,7 +96,15 @@ describe('OpenAPI bookmarks contract', () => {
       const { url, init } = lastRequest(fetchMock);
       expect(url).toBe(`${API_URL}/api/v1/bookmarks/plants/${PLANT_ID}`);
       expect(init?.method).toBe('DELETE');
-      expect(validateRequest('delete', url)).toEqual([]);
+      await expect(
+        assertContractRequest({
+          req: {
+            url,
+            method: init?.method,
+            headers: init?.headers
+          }
+        })
+      ).resolves.toBeUndefined();
     });
   });
 });

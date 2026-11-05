@@ -4,7 +4,11 @@ import {
   buildPlantRelation,
   buildPlantSummary
 } from '../fixtures/plantRelations/buildPlantRelation';
-import { validateRequest, validateSchema } from './openApiContract';
+import {
+  assertContractRequest,
+  validateRequest,
+  validateSchema
+} from './openApiContract';
 
 const PLANT_ID = '11111111-1111-4111-8111-111111111111';
 const TARGET_PLANT_ID = '22222222-2222-4222-8222-222222222222';
@@ -88,7 +92,7 @@ describe('OpenAPI plant relations contract', () => {
       expect(violations).toEqual([]);
     });
 
-    it('validates CreatePlantRelation schema when client assigns id', () => {
+    it('validates CreatePlantRelation schema when client assigns id', async () => {
       const payload = {
         id: '0192e201-0000-7000-8000-000000000001',
         sourcePlantId: PLANT_ID,
@@ -101,9 +105,13 @@ describe('OpenAPI plant relations contract', () => {
           'El aroma de la albahaca enmascara los compuestos volátiles del tomate.'
       };
 
-      const violations = validateSchema('CreatePlantRelation', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/plant-relations',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
 
     it.each([
@@ -121,23 +129,30 @@ describe('OpenAPI plant relations contract', () => {
           target: { scope: 'all' }
         }
       ]
-    ])('validates CreatePlantRelation with scoped %s', (_label, scopes) => {
-      const payload = {
-        id: '0192e201-0000-7000-8000-000000000001',
-        ...scopes,
-        type: 'detrimental',
-        mechanism: 'allelopathy',
-        strength: 3,
-        proximity: { minDistanceCm: 0, maxDistanceCm: null },
-        reason: 'Inhibe el crecimiento de las plantas cercanas.'
-      };
+    ])(
+      'validates CreatePlantRelation with scoped %s',
+      async (_label, scopes) => {
+        const payload = {
+          id: '0192e201-0000-7000-8000-000000000001',
+          ...scopes,
+          type: 'detrimental',
+          mechanism: 'allelopathy',
+          strength: 3,
+          proximity: { minDistanceCm: 0, maxDistanceCm: null },
+          reason: 'Inhibe el crecimiento de las plantas cercanas.'
+        };
 
-      const violations = validateSchema('CreatePlantRelation', payload);
+        const assertion = assertContractRequest({
+          path: '/api/v1/plant-relations',
+          method: 'POST',
+          body: payload
+        });
 
-      expect(violations).toEqual([]);
-    });
+        await expect(assertion).resolves.toBeUndefined();
+      }
+    );
 
-    it('reports violation when CreatePlantRelation is missing client-assigned id', () => {
+    it('reports violation when CreatePlantRelation is missing client-assigned id', async () => {
       const payloadWithoutId = {
         sourcePlantId: PLANT_ID,
         targetPlantId: TARGET_PLANT_ID,
@@ -149,17 +164,13 @@ describe('OpenAPI plant relations contract', () => {
           'El aroma de la albahaca enmascara los compuestos volátiles del tomate.'
       };
 
-      const violations = validateSchema(
-        'CreatePlantRelation',
-        payloadWithoutId
-      );
+      const assertion = assertContractRequest({
+        path: '/api/v1/plant-relations',
+        method: 'POST',
+        body: payloadWithoutId
+      });
 
-      expect(violations).not.toEqual([]);
-      expect(
-        violations.some((v) =>
-          v.message.includes("must have required property 'id'")
-        )
-      ).toBe(true);
+      await expect(assertion).rejects.toThrow();
     });
   });
 });

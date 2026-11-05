@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateRequest, validateSchema } from './openApiContract';
+import {
+  assertContractRequest,
+  validateRequest,
+  validateSchema
+} from './openApiContract';
 
 describe('OpenAPI catalog mutations contract', () => {
   it.each([
@@ -23,7 +27,7 @@ describe('OpenAPI catalog mutations contract', () => {
   });
 
   describe('CreatePlant schema', () => {
-    it('accepts a valid plant creation payload', () => {
+    it('accepts a valid plant creation payload', async () => {
       const payload = {
         id: '678efda2-ac3d-4623-81cd-fc1d0ab80315',
         identity: {
@@ -67,12 +71,16 @@ describe('OpenAPI catalog mutations contract', () => {
         }
       };
 
-      const violations = validateSchema('CreatePlant', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/plants',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
 
-    it('accepts plant creation payload with full model including videos, articles, notes and ecology', () => {
+    it('accepts plant creation payload with full model including videos, articles, notes and ecology', async () => {
       const payload = {
         id: '678efda2-ac3d-4623-81cd-fc1d0ab80315',
         identity: {
@@ -159,12 +167,16 @@ describe('OpenAPI catalog mutations contract', () => {
         }
       };
 
-      const violations = validateSchema('CreatePlant', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/plants',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
 
-    it('rejects creation payload with invalid uuid format', () => {
+    it('rejects creation payload with invalid uuid format', async () => {
       const payload = {
         id: 'not-a-valid-uuid',
         identity: {
@@ -205,27 +217,50 @@ describe('OpenAPI catalog mutations contract', () => {
         }
       };
 
-      const violations = validateSchema('CreatePlant', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/plants',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations.length).toBeGreaterThan(0);
+      await expect(assertion).rejects.toThrow();
     });
   });
 
   describe('UpdatePlant schema', () => {
-    it('accepts partial update patch', () => {
+    it('accepts partial update patch', async () => {
       const payload = {
         identity: { name: { primary: 'Tomate nuevo' } },
         traits: { size: { height: { min: 120 } } }
       };
 
-      const violations = validateSchema('UpdatePlant', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/plants/678efda2-ac3d-4623-81cd-fc1d0ab80315',
+        method: 'PATCH',
+        headers: { 'If-Match': '"1"' },
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
+    });
+
+    it('rejects patch request missing required If-Match header', async () => {
+      const payload = {
+        identity: { name: { primary: 'Tomate nuevo' } }
+      };
+
+      const assertion = assertContractRequest({
+        path: '/api/v1/plants/678efda2-ac3d-4623-81cd-fc1d0ab80315',
+        method: 'PATCH',
+        body: payload
+      });
+
+      await expect(assertion).rejects.toThrow();
     });
   });
 
   describe('CreateFamily schema', () => {
-    it('accepts a valid family creation payload', () => {
+    it('accepts a valid family creation payload', async () => {
       const payload = {
         id: '678efda2-ac3d-4623-81cd-fc1d0ab80315',
         name: 'Solanáceas',
@@ -237,12 +272,16 @@ describe('OpenAPI catalog mutations contract', () => {
         extra: { order: 'Solanales', speciesCount: 2700 }
       };
 
-      const violations = validateSchema('CreateFamily', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/families',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
 
-    it('rejects family creation payload missing required name', () => {
+    it('rejects family creation payload missing required name', async () => {
       const payload = {
         id: '678efda2-ac3d-4623-81cd-fc1d0ab80315',
         scientificName: 'Solanaceae',
@@ -251,26 +290,35 @@ describe('OpenAPI catalog mutations contract', () => {
         highlights: ['Alcaloides']
       };
 
-      const violations = validateSchema('CreateFamily', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/families',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations.length).toBeGreaterThan(0);
+      await expect(assertion).rejects.toThrow();
     });
   });
 
   describe('UpdateFamily schema', () => {
-    it('accepts partial family update payload', () => {
+    it('accepts partial family update payload', async () => {
       const payload = {
         name: 'Solanáceas modificadas'
       };
 
-      const violations = validateSchema('UpdateFamily', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/families/solanaceae',
+        method: 'PATCH',
+        headers: { 'If-Match': '"1"' },
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
   });
 
   describe('CreateAnomaly schema', () => {
-    it('accepts an anomaly creation payload with resources and confusedWith', () => {
+    it('accepts an anomaly creation payload with resources and confusedWith', async () => {
       const payload = {
         id: '4f0f9a2e-7a0b-4a0e-9d52-2d6a8d1c0a11',
         slug: 'pulgon-verde',
@@ -300,12 +348,16 @@ describe('OpenAPI catalog mutations contract', () => {
         confusedWith: ['pulgon-negro', 'mosca-blanca']
       };
 
-      const violations = validateSchema('CreateAnomaly', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/anomalies',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
 
-    it('rejects an anomaly creation payload with invalid resource url format', () => {
+    it('rejects an anomaly creation payload with invalid resource url format', async () => {
       const payload = {
         id: '4f0f9a2e-7a0b-4a0e-9d52-2d6a8d1c0a11',
         slug: 'pulgon-verde',
@@ -319,12 +371,16 @@ describe('OpenAPI catalog mutations contract', () => {
         ]
       };
 
-      const violations = validateSchema('CreateAnomaly', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/anomalies',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations.length).toBeGreaterThan(0);
+      await expect(assertion).rejects.toThrow();
     });
 
-    it('rejects an anomaly creation payload with invalid confusedWith slug format', () => {
+    it('rejects an anomaly creation payload with invalid confusedWith slug format', async () => {
       const payload = {
         id: '4f0f9a2e-7a0b-4a0e-9d52-2d6a8d1c0a11',
         slug: 'pulgon-verde',
@@ -333,14 +389,18 @@ describe('OpenAPI catalog mutations contract', () => {
         confusedWith: ['Invalid Slug!']
       };
 
-      const violations = validateSchema('CreateAnomaly', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/anomalies',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations.length).toBeGreaterThan(0);
+      await expect(assertion).rejects.toThrow();
     });
   });
 
   describe('UpdateAnomaly schema', () => {
-    it('accepts partial update patch with updated resources and confusedWith', () => {
+    it('accepts partial update patch with updated resources and confusedWith', async () => {
       const payload = {
         name: 'Pulgón verde común',
         resources: [
@@ -352,25 +412,35 @@ describe('OpenAPI catalog mutations contract', () => {
         confusedWith: ['cochinilla-algodonosa']
       };
 
-      const violations = validateSchema('UpdateAnomaly', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/anomalies/pulgon-verde',
+        method: 'PATCH',
+        headers: { 'If-Match': '"1"' },
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
 
-    it('accepts clearing resources and confusedWith with null', () => {
+    it('accepts clearing resources and confusedWith with null', async () => {
       const payload = {
         resources: null,
         confusedWith: null
       };
 
-      const violations = validateSchema('UpdateAnomaly', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/anomalies/pulgon-verde',
+        method: 'PATCH',
+        headers: { 'If-Match': '"1"' },
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
   });
 
   describe('CreateGardenInput schema', () => {
-    it('accepts a valid garden input creation payload with recipe', () => {
+    it('accepts a valid garden input creation payload with recipe', async () => {
       const payload = {
         id: '7b8e5c3e-3242-4f35-9f5b-1c5c163b2f90',
         slug: 'purin-ortiga',
@@ -396,12 +466,16 @@ describe('OpenAPI catalog mutations contract', () => {
         ]
       };
 
-      const violations = validateSchema('CreateGardenInput', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/garden-inputs',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
 
-    it('rejects a garden input creation payload with invalid category', () => {
+    it('rejects a garden input creation payload with invalid category', async () => {
       const payload = {
         id: '7b8e5c3e-3242-4f35-9f5b-1c5c163b2f90',
         slug: 'purin-ortiga',
@@ -409,12 +483,16 @@ describe('OpenAPI catalog mutations contract', () => {
         category: 'invalid_category'
       };
 
-      const violations = validateSchema('CreateGardenInput', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/garden-inputs',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations.length).toBeGreaterThan(0);
+      await expect(assertion).rejects.toThrow();
     });
 
-    it('rejects a garden input creation payload with invalid slug format', () => {
+    it('rejects a garden input creation payload with invalid slug format', async () => {
       const payload = {
         id: '7b8e5c3e-3242-4f35-9f5b-1c5c163b2f90',
         slug: 'Purin Ortiga!',
@@ -422,35 +500,49 @@ describe('OpenAPI catalog mutations contract', () => {
         category: 'fertilizer'
       };
 
-      const violations = validateSchema('CreateGardenInput', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/garden-inputs',
+        method: 'POST',
+        body: payload
+      });
 
-      expect(violations.length).toBeGreaterThan(0);
+      await expect(assertion).rejects.toThrow();
     });
   });
 
   describe('UpdateGardenInput schema', () => {
-    it('accepts partial garden input update payload', () => {
+    it('accepts partial garden input update payload', async () => {
       const payload = {
         name: 'Purín de ortiga concentrado',
         category: 'biostimulant',
         actions: ['biostimulant', 'rooting']
       };
 
-      const violations = validateSchema('UpdateGardenInput', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/garden-inputs/purin-ortiga',
+        method: 'PATCH',
+        headers: { 'If-Match': '"1"' },
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
 
-    it('accepts clearing optional fields with null in garden input update', () => {
+    it('accepts clearing optional fields with null in garden input update', async () => {
       const payload = {
         description: null,
         actions: null,
         recipes: null
       };
 
-      const violations = validateSchema('UpdateGardenInput', payload);
+      const assertion = assertContractRequest({
+        path: '/api/v1/garden-inputs/purin-ortiga',
+        method: 'PATCH',
+        headers: { 'If-Match': '"1"' },
+        body: payload
+      });
 
-      expect(violations).toEqual([]);
+      await expect(assertion).resolves.toBeUndefined();
     });
   });
 
