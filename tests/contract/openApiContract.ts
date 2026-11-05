@@ -1,8 +1,172 @@
 import { Ajv, type ErrorObject, type ValidateFunction } from 'ajv';
 import addFormats from 'ajv-formats';
+import {
+  assertRequestMatchesOpenApi,
+  assertResponseMatchesOpenApi,
+  type OpenAPIValidatorInput
+} from 'pure-openapi-assert';
 import { parse } from 'yaml';
 import source from '../../contracts/openapi.yaml?raw';
 import { convertBooleanExclusiveBounds } from './booleanExclusiveBounds';
+
+export const SPEC_PATH = 'contracts/openapi.yaml';
+
+export type ContractRequestInput =
+  | {
+      readonly path?: string;
+      readonly url?: string;
+      readonly method?: string;
+      readonly body?: unknown;
+      readonly query?: Record<string, unknown> | URLSearchParams | string;
+      readonly pathParams?: Record<string, string>;
+      readonly headers?: Record<string, string | string[]>;
+      readonly strictParameters?: boolean;
+    }
+  | {
+      readonly req: {
+        readonly url?: string;
+        readonly method?: string;
+        readonly headers?: HeadersInit;
+        readonly body?: unknown;
+      };
+      readonly strictParameters?: boolean;
+    }
+  | {
+      readonly request: Request;
+      readonly strictParameters?: boolean;
+    };
+
+export type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+  ? Omit<T, K>
+  : never;
+
+export type ContractResponseInput = DistributiveOmit<
+  OpenAPIValidatorInput,
+  'specPath'
+>;
+
+let nodeContextLock: Promise<void> = Promise.resolve();
+
+async function runWithNodeContext<T>(fn: () => Promise<T>): Promise<T> {
+  const previousLock = nodeContextLock;
+  let releaseLock: () => void = () => {};
+  nodeContextLock = new Promise<void>((resolve) => {
+    releaseLock = resolve;
+  });
+
+  await previousLock.catch(() => {});
+  const originalWindow = globalThis.window;
+  if (originalWindow) {
+    Reflect.deleteProperty(globalThis, 'window');
+  }
+  try {
+    return await fn();
+  } finally {
+    if (originalWindow) {
+      globalThis.window = originalWindow;
+    }
+    releaseLock();
+  }
+}
+
+export async function assertContractRequest(
+  input: ContractRequestInput
+): Promise<void> {
+  return runWithNodeContext(async () => {
+    if ('req' in input) {
+      let headers: Record<string, string | string[]> | undefined;
+      if (input.req.headers) {
+        if (input.req.headers instanceof Headers) {
+          headers = Object.fromEntries(input.req.headers.entries());
+        } else if (Array.isArray(input.req.headers)) {
+          headers = Object.fromEntries(input.req.headers);
+        } else {
+          headers = input.req.headers;
+        }
+      }
+
+      await assertRequestMatchesOpenApi({
+        specPath: SPEC_PATH,
+        req: {
+          url: input.req.url,
+          method: input.req.method,
+          headers,
+          body: input.req.body
+        },
+        strictParameters: input.strictParameters
+      });
+      return;
+    }
+
+    if ('request' in input) {
+      await assertRequestMatchesOpenApi({
+        specPath: SPEC_PATH,
+        request: input.request,
+        strictParameters: input.strictParameters
+      });
+      return;
+    }
+
+    await assertRequestMatchesOpenApi({
+      specPath: SPEC_PATH,
+      path: input.path,
+      url: input.url,
+      method: input.method ?? 'GET',
+      body: input.body,
+      query: input.query,
+      pathParams: input.pathParams,
+      headers: input.headers,
+      strictParameters: input.strictParameters
+    });
+  });
+}
+
+export async function assertContractResponse(
+  input: ContractResponseInput
+): Promise<void> {
+  return runWithNodeContext(async () => {
+    if ('response' in input && input.response) {
+      await assertResponseMatchesOpenApi({
+        specPath: SPEC_PATH,
+        path: input.path,
+        method: input.method,
+        response: input.response,
+        status: input.status,
+        body: input.body,
+        headers: input.headers,
+        contentType: input.contentType,
+        customFormats: input.customFormats
+      });
+      return;
+    }
+
+    if ('res' in input && input.res) {
+      await assertResponseMatchesOpenApi({
+        specPath: SPEC_PATH,
+        path: input.path,
+        method: input.method,
+        res: input.res,
+        status: input.status,
+        body: input.body,
+        headers: input.headers,
+        contentType: input.contentType,
+        customFormats: input.customFormats
+      });
+      return;
+    }
+
+    await assertResponseMatchesOpenApi({
+      specPath: SPEC_PATH,
+      path: input.path,
+      method: input.method,
+      status: input.status,
+      body: input.body,
+      headers: input.headers,
+      contentType: input.contentType,
+      customFormats: input.customFormats
+    });
+  });
+}
 
 export type ContractViolation = {
   readonly location: string;

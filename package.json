@@ -84,6 +84,7 @@
     "lint-staged": "^16.4.0",
     "postcss": "^8.5.32",
     "prettier": "^3.8.3",
+    "pure-openapi-assert": "^2.2.0",
     "sharp": "^0.35.5",
     "skott": "^0.35.11",
     "typescript": "~6.0.2",
