@@ -1,0 +1,43 @@
+@import '@fontsource/manrope/latin-400.css';
+@import '@fontsource/manrope/latin-600.css';
+@import '@fontsource/manrope/latin-700.css';
+@import '@fontsource/newsreader/latin-500.css';
+@import '@fontsource/newsreader/latin-600.css';
+@import '@fontsource/newsreader/latin-400-italic.css';
+@import '@fontsource/newsreader/latin-600-italic.css';
+
+@font-face {
+  font-family: 'Manrope Fallback';
+  src: local('Arial'), local('ArialMT');
+  ascent-override: 103.3095%;
+  descent-override: 29.074%;
+  line-gap-override: 0%;
+  size-adjust: 103.1851%;
+}
+
+@font-face {
+  font-family: 'Manrope Fallback Android';
+  src: local('Roboto Regular'), local('Roboto-Regular');
+  ascent-override: 103.0832%;
+  descent-override: 29.0103%;
+  line-gap-override: 0%;
+  size-adjust: 103.4116%;
+}
+
+@font-face {
+  font-family: 'Newsreader Fallback';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT');
+  ascent-override: 69.6835%;
+  descent-override: 25.124%;
+  line-gap-override: 0%;
+  size-adjust: 105.4769%;
+}
+
+@font-face {
+  font-family: 'Newsreader Fallback Android';
+  src: local('Noto Serif Regular'), local('NotoSerif-Regular');
+  ascent-override: 82.5053%;
+  descent-override: 29.7468%;
+  line-gap-override: 0%;
+  size-adjust: 89.0852%;
+}

@@ -1,0 +1,30 @@
+.catalog-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.catalog-tabs__tab {
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-surface);
+  color: var(--color-fg);
+  font: var(--type-label-lg);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fade) ease,
+    border-color var(--motion-fade) ease,
+    color var(--motion-fade) ease;
+}
+
+.catalog-tabs__tab:hover {
+  background: var(--color-bg-hover);
+}
+
+.catalog-tabs__tab--active {
+  background: var(--color-selected-bg);
+  border: 2px solid var(--color-selected-indicator);
+  color: var(--color-on-selected);
+  font-weight: 700;
+}

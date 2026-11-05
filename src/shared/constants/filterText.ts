@@ -1,0 +1,1 @@
+export const FILTER_TEXT_MAX_LENGTH = 200;

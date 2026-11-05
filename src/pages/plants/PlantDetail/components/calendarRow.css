@@ -1,0 +1,19 @@
+.calendar-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.calendar-row__label {
+  font: var(--type-label-md);
+  letter-spacing: var(--tracking-label-md);
+  color: var(--color-on-surface-variant);
+}
+
+.calendar-row__value {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}

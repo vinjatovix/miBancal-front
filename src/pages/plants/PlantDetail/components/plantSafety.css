@@ -1,0 +1,27 @@
+.plant-safety__row--warning {
+  padding-inline: var(--space-sm);
+  border-radius: var(--radius-default);
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+}
+
+.plant-safety__row--warning .info-row__label,
+.plant-safety__row--warning .info-row__label::after {
+  color: inherit;
+}
+
+.plant-safety__subtitle {
+  margin: 0 0 var(--space-xs);
+  font: var(--type-headline-sm);
+  color: var(--color-on-surface);
+}
+
+.plant-safety__notes {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.plant-safety__source {
+  font: var(--type-body-md);
+  color: var(--color-on-surface-variant);
+}

@@ -1,0 +1,462 @@
+.rain-loader {
+  width: 140px;
+  height: 170px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  margin: 0 auto;
+}
+
+.cloud {
+  position: absolute;
+  top: 10px;
+  width: 60px;
+  height: 25px;
+  background: var(--color-surface-dim);
+  border-radius: 20px;
+  animation: cloudCycle 8s infinite;
+}
+
+.cloud::before,
+.cloud::after {
+  content: '';
+  position: absolute;
+  background: var(--color-surface-dim);
+  border-radius: 50%;
+}
+
+.cloud::before {
+  width: 25px;
+  height: 25px;
+  left: -10px;
+  top: -10px;
+}
+
+.cloud::after {
+  width: 30px;
+  height: 30px;
+  right: -10px;
+  top: -15px;
+}
+
+@keyframes cloudCycle {
+  0%,
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  55%,
+  90% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sun {
+  position: absolute;
+  top: 10px;
+  width: 28px;
+  height: 28px;
+  background: var(--color-tertiary-fixed-dim);
+  border-radius: 50%;
+  opacity: 0;
+  animation: sunCycle 8s infinite;
+}
+
+@keyframes sunCycle {
+  0%,
+  35% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  45%,
+  85% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+.rain {
+  position: absolute;
+  top: 45px;
+  width: 70px;
+  height: 40px;
+  animation: rainCycle 8s infinite;
+}
+
+@keyframes rainCycle {
+  0%,
+  30% {
+    opacity: 1;
+  }
+  40%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.rain span {
+  position: absolute;
+  width: 2px;
+  height: 10px;
+  background: var(--color-secondary-fixed-dim);
+  opacity: 0.7;
+  animation: drop 1s infinite linear;
+}
+
+.rain span:nth-child(1) {
+  left: 10%;
+}
+.rain span:nth-child(2) {
+  left: 30%;
+  animation-delay: 0.2s;
+}
+.rain span:nth-child(3) {
+  left: 50%;
+  animation-delay: 0.4s;
+}
+.rain span:nth-child(4) {
+  left: 70%;
+  animation-delay: 0.1s;
+}
+.rain span:nth-child(5) {
+  left: 90%;
+  animation-delay: 0.3s;
+}
+
+@keyframes drop {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+
+.soil {
+  width: 70px;
+  height: 10px;
+  background: var(--color-tertiary-container);
+  border-radius: 6px;
+  position: absolute;
+  bottom: 0;
+}
+
+.plant {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 70px;
+}
+
+.seed {
+  width: 6px;
+  height: 6px;
+  background: var(--color-on-tertiary-fixed-variant);
+  border-radius: 50%;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  animation: seedGrow 8s infinite;
+}
+
+@keyframes seedGrow {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+
+  20% {
+    opacity: 1;
+    bottom: 8px;
+  }
+
+  30% {
+    bottom: 0px;
+    left: 40%;
+  }
+
+  35% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.7);
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.stem {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 4px;
+  height: 0;
+  background: var(--color-secondary);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  animation: grow 8s infinite;
+}
+
+@keyframes grow {
+  0% {
+    height: 0;
+  }
+  45% {
+    height: 40px;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    height: 40px;
+    opacity: 0;
+  }
+}
+
+.leaf {
+  width: 14px;
+  height: 14px;
+  background: var(--color-surface-tint);
+  position: absolute;
+  opacity: 0;
+  border-radius: 0 100% 0 100%;
+}
+
+.leaf.left {
+  animation: leafLeft 8s infinite;
+}
+
+@keyframes leafLeft {
+  0% {
+    opacity: 0;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%) rotate(-30deg) scale(0);
+  }
+
+  25% {
+    opacity: 0.8;
+  }
+
+  45% {
+    opacity: 1;
+    left: -2px;
+    bottom: 24px;
+    transform: rotate(-30deg) scale(1);
+  }
+
+  85% {
+    opacity: 1;
+    left: -2px;
+    bottom: 24px;
+    transform: rotate(-30deg) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    left: -1px;
+    bottom: 8px;
+    transform: rotate(25deg) scale(0.8);
+  }
+}
+
+.leaf.right {
+  animation: leafRight 8s infinite;
+}
+
+@keyframes leafRight {
+  0% {
+    opacity: 0;
+    right: 50%;
+    bottom: 0;
+    transform: translateX(50%) rotate(120deg) scale(0);
+  }
+
+  25% {
+    opacity: 0.8;
+    background: var(--color-surface-tint);
+  }
+
+  45% {
+    opacity: 1;
+    right: -2px;
+    bottom: 15px;
+    transform: rotate(120deg) scale(1);
+    background: var(--color-tertiary-fixed-dim);
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    right: -2px;
+    bottom: 0;
+    transform: rotate(180deg) scale(0.8);
+    background: var(--color-tertiary-container);
+  }
+}
+
+.flower {
+  position: absolute;
+  left: 48%;
+  bottom: 44px;
+  transform: translateX(-50%) scale(0);
+  opacity: 0;
+  animation: bloom 8s infinite;
+}
+
+@keyframes bloom {
+  0%,
+  45% {
+    opacity: 0;
+    bottom: 40px;
+    transform: translateX(-50%) scale(0);
+  }
+  55% {
+    opacity: 1;
+    transform: translateX(-50%) scale(0.25);
+  }
+  90% {
+    opacity: 1;
+    bottom: 50px;
+    transform: translateX(-50%) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.6);
+  }
+}
+
+.petal {
+  position: absolute;
+  width: 10px;
+  height: 14px;
+  background: var(--color-tertiary-fixed);
+  border-radius: 50%;
+}
+
+.p1 {
+  transform: rotate(0deg) translateY(-8px);
+}
+.p2 {
+  transform: rotate(90deg) translateY(-8px);
+}
+.p3 {
+  transform: rotate(180deg) translateY(-8px);
+}
+.p4 {
+  transform: rotate(270deg) translateY(-8px);
+}
+.p5 {
+  transform: rotate(45deg) translateY(-8px);
+}
+.p6 {
+  transform: rotate(135deg) translateY(-8px);
+}
+.p7 {
+  transform: rotate(225deg) translateY(-8px);
+}
+.p8 {
+  transform: rotate(315deg) translateY(-8px);
+}
+
+.center {
+  width: 8px;
+  height: 8px;
+  background: var(--color-tertiary-fixed-dim);
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+}
+
+.falling-seed {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--color-on-tertiary-fixed-variant);
+  border-radius: 50%;
+  left: 50%;
+  bottom: 46px;
+  opacity: 0;
+  transform: translateX(-50%);
+  animation: dropSeed 8s infinite;
+}
+
+@keyframes dropSeed {
+  0%,
+  82% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(0);
+  }
+  85% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(45px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rain-loader *,
+  .rain-loader *::before,
+  .rain-loader *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .cloud,
+  .soil,
+  .stem,
+  .leaf,
+  .flower {
+    opacity: 1;
+  }
+
+  .stem {
+    height: 40px;
+  }
+
+  .leaf.left {
+    left: -2px;
+    bottom: 24px;
+    transform: rotate(-30deg);
+  }
+
+  .leaf.right {
+    right: -2px;
+    bottom: 15px;
+    transform: rotate(120deg);
+  }
+
+  .flower {
+    bottom: 50px;
+    transform: translateX(-50%) scale(1);
+  }
+
+  .rain,
+  .sun,
+  .seed,
+  .falling-seed {
+    display: none;
+  }
+}

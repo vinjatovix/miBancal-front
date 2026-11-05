@@ -1,0 +1,33 @@
+.garden-input-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-md);
+}
+
+.garden-input-detail__recipes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.garden-input-detail__recipes-heading {
+  margin: 0;
+  font: var(--type-headline-sm);
+  color: var(--color-on-surface);
+}
+
+.garden-input-detail__no-recipes {
+  margin: 0;
+  font: var(--type-body-md);
+  color: var(--color-on-surface-variant);
+  font-style: italic;
+}
+
+.garden-input-detail__recipes-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}

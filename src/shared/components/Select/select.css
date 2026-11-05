@@ -1,0 +1,58 @@
+.app-select {
+  display: inline-block;
+  max-width: 100%;
+  font: var(--type-body-md);
+  color: var(--color-fg);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-default);
+  padding: var(--space-sm) 2.25rem var(--space-sm) var(--space-sm);
+  background-image: var(--icon-select-chevron);
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem 1rem;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-sizing: border-box;
+  transition:
+    border-color var(--motion-fade) ease,
+    background-color var(--motion-fade) ease,
+    color var(--motion-fade) ease;
+}
+
+.app-select::-ms-expand {
+  display: none;
+}
+
+.app-select:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.app-select--sm {
+  padding: var(--space-2xs) 1.75rem var(--space-2xs) var(--space-xs);
+  font: var(--type-body-sm);
+}
+
+.app-select--md {
+  padding: var(--space-sm) 2.25rem var(--space-sm) var(--space-sm);
+  font: var(--type-body-md);
+}
+
+.app-select--lg {
+  padding: var(--space-md) 2.5rem var(--space-md) var(--space-md);
+  font: var(--type-body-lg);
+}
+
+.app-select:disabled,
+.app-select--disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.app-select[aria-invalid='true'],
+.app-select--invalid {
+  border: 2px solid var(--color-error-border);
+}
