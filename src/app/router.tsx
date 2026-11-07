@@ -216,6 +216,72 @@ export function createRoutes(isDevTools = IS_DEV_TOOLS): RouteObject[] {
               }
             },
             {
+              path: '/beds',
+              lazy: async () => {
+                const [{ default: BedsPage }] = await Promise.all([
+                  import('../pages/beds/BedsPage'),
+                  import('../i18n/messages/beds'),
+                  import('../i18n/messages/locations')
+                ]);
+                return {
+                  Component: () => (
+                    <ProtectedRoute requireAdmin={false}>
+                      <BedsPage />
+                    </ProtectedRoute>
+                  )
+                };
+              }
+            },
+            {
+              path: '/beds/:id',
+              lazy: async () => {
+                const [{ default: BedDetailRedirect }] = await Promise.all([
+                  import('../pages/beds/BedDetailRedirect/BedDetailRedirect'),
+                  import('../i18n/messages/beds')
+                ]);
+                return {
+                  Component: () => (
+                    <ProtectedRoute requireAdmin={false}>
+                      <BedDetailRedirect />
+                    </ProtectedRoute>
+                  )
+                };
+              }
+            },
+            {
+              path: '/locations',
+              lazy: async () => {
+                const [{ default: LocationsPage }] = await Promise.all([
+                  import('../pages/settings/locations/LocationsPage'),
+                  import('../i18n/messages/locations')
+                ]);
+                return {
+                  Component: () => (
+                    <ProtectedRoute requireAdmin={false}>
+                      <LocationsPage />
+                    </ProtectedRoute>
+                  )
+                };
+              }
+            },
+            {
+              path: '/locations/:id/layout',
+              lazy: async () => {
+                const [{ default: LocationLayoutPage }] = await Promise.all([
+                  import('../pages/locations/LocationLayoutPage/LocationLayoutPage'),
+                  import('../i18n/messages/beds'),
+                  import('../i18n/messages/locations')
+                ]);
+                return {
+                  Component: () => (
+                    <ProtectedRoute requireAdmin={false}>
+                      <LocationLayoutPage />
+                    </ProtectedRoute>
+                  )
+                };
+              }
+            },
+            {
               path: '/login',
               lazy: async () => ({
                 Component: (await import('../pages/auth/Login')).default

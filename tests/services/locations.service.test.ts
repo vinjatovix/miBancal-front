@@ -4,7 +4,9 @@ import {
   createLocation,
   deleteLocation,
   getLocationForEdit,
+  getLocationLayout,
   getLocationList,
+  updateBedsLayout,
   updateLocation
 } from '../../src/services/locations.service';
 import {
@@ -17,7 +19,9 @@ import type {
   CreateLocationRequest,
   UpdateLocationRequest
 } from '../../src/types/Location/Location';
+import type { BedLayoutPlacementInput } from '../../src/types/Location/LocationLayout';
 import { buildLocation } from '../fixtures/locations/buildLocation';
+import { buildLocationLayout } from '../fixtures/locations/buildLocationLayout';
 import { listLocationsResponse } from '../fixtures/locations/listLocations';
 import { validateRequest } from '../contract/openApiContract';
 import {
@@ -181,6 +185,111 @@ describe('updateLocation', () => {
     stubFetchError(412, { message: 'Precondition failed' });
 
     const error = await updateLocation('loc-1', {}, '"1"').catch(
+      (caught: unknown) => caught
+    );
+
+    expect(error).toBeInstanceOf(PreconditionFailedError);
+    expect((error as PreconditionFailedError).status).toBe(412);
+  });
+});
+
+describe('getLocationLayout', () => {
+  it('does a GET on the layout path and extracts the ETag', async () => {
+    const layout = buildLocationLayout();
+    const fetchMock = stubFetchOk(layout, { ETag: 'W/"7"' });
+
+    const result = await getLocationLayout('loc-1');
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/locations/loc-1/layout`);
+    expect(init).toEqual({ cache: 'no-store', headers: JSON_HEADERS });
+    expect(result).toEqual({ layout, etag: '"7"' });
+    expect(validateRequest('get', url)).toEqual([]);
+  });
+
+  it('returns an empty etag when the header is missing', async () => {
+    const layout = buildLocationLayout();
+    stubFetchOk(layout);
+
+    const result = await getLocationLayout('loc-1');
+
+    expect(result).toEqual({ layout, etag: '' });
+  });
+
+  it('rejects with ApiError on a 404', async () => {
+    stubFetchError(404, { message: 'Not found' });
+
+    const error = await getLocationLayout('loc-1').catch(
+      (caught: unknown) => caught
+    );
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect((error as ApiError).status).toBe(404);
+  });
+});
+
+describe('updateBedsLayout', () => {
+  const PLACEMENTS: readonly BedLayoutPlacementInput[] = [
+    {
+      id: '22222222-2222-4222-8222-222222222221',
+      position: { x: 10, y: 20 },
+      rotation: 90
+    },
+    { id: '33333333-3333-4333-8333-333333333331', position: null }
+  ];
+
+  it('does a PATCH with If-Match, an array body and returns the new ETag', async () => {
+    const fetchMock = stubFetchOk(undefined, { ETag: '"9"' });
+
+    const result = await updateBedsLayout('loc-1', PLACEMENTS, '"7"');
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/locations/loc-1/beds-layout`);
+    expect(init?.method).toBe('PATCH');
+    expect(init?.headers).toMatchObject({
+      'Content-Type': 'application/json',
+      'If-Match': '"7"'
+    });
+    expect(JSON.parse(init?.body as string)).toEqual(PLACEMENTS);
+    expect(result).toEqual({ etag: '"9"' });
+    expect(validateRequest('patch', url)).toEqual([]);
+  });
+
+  it('does not parse a body on a 204 response', async () => {
+    const fetchMock = stubFetchError(204, undefined, { ETag: '"9"' });
+    fetchMock.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 204,
+        statusText: '',
+        headers: new Headers({ ETag: '"9"' }),
+        json: () => Promise.reject(new Error('body must not be read'))
+      })
+    );
+
+    const result = await updateBedsLayout('loc-1', PLACEMENTS, '"7"');
+
+    expect(result).toEqual({ etag: '"9"' });
+  });
+
+  it.each([400, 401, 404, 409, 428])(
+    'maps a %s response to an ApiError',
+    async (status) => {
+      stubFetchError(status, { message: 'error' });
+
+      const error = await updateBedsLayout('loc-1', PLACEMENTS, '"7"').catch(
+        (caught: unknown) => caught
+      );
+
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(status);
+    }
+  );
+
+  it('maps a 412 response to a PreconditionFailedError', async () => {
+    stubFetchError(412, { message: 'Precondition failed' });
+
+    const error = await updateBedsLayout('loc-1', PLACEMENTS, '"7"').catch(
       (caught: unknown) => caught
     );
 

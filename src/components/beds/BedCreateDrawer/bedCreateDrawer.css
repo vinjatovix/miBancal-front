@@ -1,0 +1,111 @@
+.bed-create-drawer__dialog {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.bed-create-drawer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border-decor);
+}
+
+.bed-create-drawer__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.bed-create-drawer__title {
+  margin: 0;
+  font-size: var(--font-size-xl, 1.25rem);
+  font-weight: 700;
+  color: var(--color-fg);
+}
+
+.bed-create-drawer__subtitle {
+  margin: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-fg-muted);
+}
+
+.bed-create-drawer__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-lg);
+  flex: 1;
+}
+
+.bed-create-drawer__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.bed-create-drawer__label {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--color-fg);
+}
+
+.bed-create-drawer__input,
+.bed-create-drawer__select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-border-decor);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-surface);
+  color: var(--color-fg);
+  font-size: var(--font-size-md, 1rem);
+  transition: border-color var(--motion-fade, 0.15s) ease;
+}
+
+.bed-create-drawer__input:focus,
+.bed-create-drawer__select:focus {
+  outline: 2px solid var(--color-action-bg);
+  outline-offset: 1px;
+}
+
+.bed-create-drawer__input--error,
+.bed-create-drawer__select--error {
+  border-color: var(--color-danger-bg);
+}
+
+.bed-create-drawer__error-text {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-danger-bg);
+}
+
+.bed-create-drawer__location-actions {
+  display: flex;
+  align-items: center;
+  margin-top: var(--space-2xs);
+}
+
+.bed-create-drawer__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  margin-top: auto;
+  border-top: 1px solid var(--color-border-decor);
+}
+
+@media (max-width: 640px) {
+  .bed-create-drawer__footer {
+    flex-direction: column-reverse;
+  }
+
+  .bed-create-drawer__footer > * {
+    width: 100%;
+  }
+}

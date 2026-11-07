@@ -1,0 +1,34 @@
+.layout-scale-bar {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.layout-scale-bar__ruler {
+  position: absolute;
+  left: var(--space-sm);
+  bottom: var(--space-sm);
+  height: 0.5rem;
+  min-width: 1.5rem;
+  box-sizing: border-box;
+  border: 2px solid var(--color-fg);
+  border-top: none;
+}
+
+.layout-scale-bar__label {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 var(--space-2xs);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--color-fg);
+  background-color: var(--color-bg-surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elevation-1);
+}

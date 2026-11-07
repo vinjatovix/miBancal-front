@@ -25,7 +25,8 @@ export const locationsMessages = {
       latitude: 'Latitud',
       longitude: 'Longitud',
       edit: 'Editar',
-      delete: 'Eliminar'
+      delete: 'Eliminar',
+      view_layout: 'Ver disposición'
     },
     form: {
       title_create: 'Nueva ubicación',

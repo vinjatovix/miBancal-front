@@ -1,0 +1,59 @@
+.location-layout-canvas__svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.location-layout-canvas__svg--dragging {
+  cursor: grabbing;
+}
+
+.location-layout-canvas__floor-dot {
+  fill: var(--color-border-strong);
+  opacity: 0.85;
+}
+
+.location-layout-canvas__rect {
+  fill: var(--color-bg-surface);
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.location-layout-canvas__bed {
+  cursor: inherit;
+}
+
+.location-layout-canvas__bed[role='button'] {
+  cursor: move;
+}
+
+.location-layout-canvas__bed[role='button']:focus-visible {
+  outline: none;
+}
+
+.location-layout-canvas__bed[role='button']:focus-visible
+  .location-layout-canvas__rect {
+  stroke: var(--color-focus);
+  stroke-width: 3;
+}
+
+.location-layout-canvas__bed--selected .location-layout-canvas__rect {
+  fill: var(--color-primary-container);
+  stroke: var(--color-primary);
+  stroke-width: 3;
+}
+
+.location-layout-canvas__name {
+  fill: var(--color-on-surface);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  pointer-events: none;
+}
+
+.location-layout-canvas__bed--selected .location-layout-canvas__name {
+  fill: var(--color-on-primary-container);
+}

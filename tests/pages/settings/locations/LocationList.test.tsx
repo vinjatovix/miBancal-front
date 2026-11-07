@@ -1,13 +1,19 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import LocationList from '../../../../src/pages/settings/locations/LocationList';
 import { buildLocation } from '../../../fixtures/locations/buildLocation';
 
+function renderWithRouter(ui: ReactNode) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
+
 describe('LocationList', () => {
   it('muestra el loader en estado de carga', () => {
-    render(
+    renderWithRouter(
       <LocationList
         isLoading={true}
         error={null}
@@ -33,7 +39,7 @@ describe('LocationList', () => {
   it('muestra el estado de error y permite reintentar', async () => {
     const user = userEvent.setup();
     const handleRetry = vi.fn();
-    render(
+    renderWithRouter(
       <LocationList
         isLoading={false}
         error={new Error('Network error')}
@@ -63,7 +69,7 @@ describe('LocationList', () => {
   it('muestra estado vacío con botón para crear la primera ubicación', async () => {
     const user = userEvent.setup();
     const handleCreateNew = vi.fn();
-    render(
+    renderWithRouter(
       <LocationList
         isLoading={false}
         error={null}
@@ -100,7 +106,7 @@ describe('LocationList', () => {
       buildLocation({ id: 'loc-2', name: 'Huerto Sur' })
     ];
 
-    render(
+    renderWithRouter(
       <LocationList
         isLoading={false}
         error={null}
@@ -127,7 +133,7 @@ describe('LocationList', () => {
   it('no muestra el paginador si solo hay 1 página', () => {
     const locations = [buildLocation({ id: 'loc-1', name: 'Huerto' })];
 
-    render(
+    renderWithRouter(
       <LocationList
         isLoading={false}
         error={null}
@@ -153,7 +159,7 @@ describe('LocationList', () => {
   it('muestra el paginador cuando hay más de una página', () => {
     const locations = [buildLocation({ id: 'loc-1', name: 'Huerto' })];
 
-    render(
+    renderWithRouter(
       <LocationList
         isLoading={false}
         error={null}

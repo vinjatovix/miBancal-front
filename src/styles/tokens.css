@@ -120,6 +120,11 @@
   --color-on-selected: #10301e;
   --color-selected-indicator: #2c6a48;
 
+  --bed-grid-sfg: #2c6a48;
+  --bed-grid-intermediate: #4a9c6d;
+  --bed-grid-decimeters: #8a5a2e;
+  --bed-grid-fine: #1d6390;
+
   --color-earth-bg: #f5e8da;
   --color-on-earth: #4f2e10;
   --color-earth-accent: #8a5a2e;

@@ -1,9 +1,16 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AppNavRail from '../../../src/components/layout/AppNavRail/AppNavRail';
+import { clearStoredToken } from '../../../src/shared/auth/session';
+import { VALID_TEST_TOKEN } from '../../fixtures/auth/authFixtures';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
+
+beforeEach(() => {
+  clearStoredToken();
+  sessionStorage.clear();
+});
 
 describe('AppNavRail', () => {
   it('renders navigation landmark with accessible label', () => {
@@ -16,16 +23,33 @@ describe('AppNavRail', () => {
     expect(nav).toBeInTheDocument();
   });
 
-  it('renders links for all navigation items', () => {
+  it('renders public navigation items when unauthenticated', () => {
     renderWithProviders(<AppNavRail isExpanded={true} onToggle={vi.fn()} />);
 
-    const plantsLink = screen.getByRole('link', { name: /Plantas/i });
-    const familiesLink = screen.getByRole('link', { name: /Familias/i });
-    const relationsLink = screen.getByRole('link', { name: /Relaciones/i });
+    expect(screen.getByRole('link', { name: /Plantas/i })).toHaveAttribute(
+      'href',
+      '/plants'
+    );
+    expect(screen.getByRole('link', { name: /Familias/i })).toHaveAttribute(
+      'href',
+      '/families'
+    );
+    expect(screen.getByRole('link', { name: /Relaciones/i })).toHaveAttribute(
+      'href',
+      '/plant-relations'
+    );
+    expect(screen.queryByRole('link', { name: /Localizaciones/i })).toBeNull();
+  });
 
-    expect(plantsLink).toHaveAttribute('href', '/plants');
-    expect(familiesLink).toHaveAttribute('href', '/families');
-    expect(relationsLink).toHaveAttribute('href', '/plant-relations');
+  it('renders authenticated-only locations navigation item when user is logged in', () => {
+    renderWithProviders(<AppNavRail isExpanded={true} onToggle={vi.fn()} />, {
+      initialToken: VALID_TEST_TOKEN
+    });
+
+    const locationsLink = screen.getByRole('link', {
+      name: /Localizaciones/i
+    });
+    expect(locationsLink).toHaveAttribute('href', '/locations');
   });
 
   it('does not render home link in rail', () => {
@@ -112,7 +136,7 @@ describe('AppNavRail', () => {
       expect(onToggle).toHaveBeenCalledTimes(1);
     });
 
-    it('renders tooltip elements with role="tooltip" for items in collapsed mode', () => {
+    it('renders tooltip elements with role="tooltip" for public items in collapsed mode', () => {
       renderWithProviders(<AppNavRail isExpanded={false} onToggle={vi.fn()} />);
 
       const tooltips = screen.getAllByRole('tooltip');
@@ -123,6 +147,20 @@ describe('AppNavRail', () => {
       expect(tooltips[2]).toHaveTextContent('Anomalías');
       expect(tooltips[3]).toHaveTextContent('Insumos');
       expect(tooltips[4]).toHaveTextContent('Relaciones');
+    });
+
+    it('renders tooltip for locations when authenticated in collapsed mode', () => {
+      renderWithProviders(
+        <AppNavRail isExpanded={false} onToggle={vi.fn()} />,
+        {
+          initialToken: VALID_TEST_TOKEN
+        }
+      );
+
+      const tooltips = screen.getAllByRole('tooltip');
+
+      expect(tooltips).toHaveLength(6);
+      expect(tooltips[5]).toHaveTextContent('Localizaciones');
     });
 
     it('does not render tooltip roles in expanded mode', () => {

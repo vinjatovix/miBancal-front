@@ -7,6 +7,7 @@ export interface NavigationItem {
   readonly path: string;
   readonly icon: IconName;
   readonly isMatch: (pathname: string) => boolean;
+  readonly requiresAuth?: boolean;
 }
 
 const isPlantsMatch = (pathname: string): boolean =>
@@ -23,6 +24,9 @@ const isGardenInputsMatch = (pathname: string): boolean =>
 
 const isPlantRelationsMatch = (pathname: string): boolean =>
   pathname === '/plant-relations' || pathname.startsWith('/plant-relations/');
+
+const isLocationsMatch = (pathname: string): boolean =>
+  pathname === '/locations' || pathname.startsWith('/locations/');
 
 export const NAVIGATION_ITEMS: readonly NavigationItem[] = [
   {
@@ -59,5 +63,13 @@ export const NAVIGATION_ITEMS: readonly NavigationItem[] = [
     path: '/plant-relations',
     icon: 'plant_relations',
     isMatch: isPlantRelationsMatch
+  },
+  {
+    id: 'locations',
+    labelKey: 'app.nav.locations',
+    path: '/locations',
+    icon: 'yard',
+    isMatch: isLocationsMatch,
+    requiresAuth: true
   }
 ] as const;

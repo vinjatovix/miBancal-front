@@ -44,4 +44,12 @@ describe('locationKeys', () => {
       undefined
     ]);
   });
+
+  it('layout includes the location id', () => {
+    expect(locationKeys.layout('loc-1')).toEqual([
+      'locations',
+      'layout',
+      'loc-1'
+    ]);
+  });
 });

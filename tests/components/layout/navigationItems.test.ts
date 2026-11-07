@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { NAVIGATION_ITEMS } from '../../../src/components/layout/navigationItems';
 
 describe('navigationItems', () => {
-  it('contains at least one navigation item and plants, families, anomalies, gardenInputs, and plantRelations in order', () => {
+  it('contains at least one navigation item and plants, families, anomalies, gardenInputs, plantRelations, and locations in order', () => {
     const ids = NAVIGATION_ITEMS.map((item) => item.id);
 
     expect(ids).toEqual([
@@ -11,7 +11,8 @@ describe('navigationItems', () => {
       'families',
       'anomalies',
       'gardenInputs',
-      'plantRelations'
+      'plantRelations',
+      'locations'
     ]);
   });
 
@@ -30,7 +31,8 @@ describe('navigationItems', () => {
       'app.nav.plantRelations',
       '/plant-relations',
       'plant_relations'
-    ]
+    ],
+    ['locations', 'app.nav.locations', '/locations', 'yard']
   ] as const)(
     'configures %s with correct labelKey, path, and icon',
     (id, expectedLabelKey, expectedPath, expectedIcon) => {
@@ -157,6 +159,32 @@ describe('navigationItems', () => {
         );
 
         const result = plantRelationsItem?.isMatch(pathname);
+
+        expect(result).toBe(expectedResult);
+      }
+    );
+
+    it.each([
+      ['/locations', true],
+      ['/locations/', true],
+      ['/locations/123-abc', true],
+      ['/locations/123-abc/layout', true],
+      ['/', false],
+      ['/plants', false],
+      ['/families', false],
+      ['/anomalies', false],
+      ['/garden-inputs', false],
+      ['/plant-relations', false],
+      ['/settings/locations', false],
+      ['/locations-other', false]
+    ] as const)(
+      'evaluates locations.isMatch(%s) to %s',
+      (pathname, expectedResult) => {
+        const locationsItem = NAVIGATION_ITEMS.find(
+          (item) => item.id === 'locations'
+        );
+
+        const result = locationsItem?.isMatch(pathname);
 
         expect(result).toBe(expectedResult);
       }

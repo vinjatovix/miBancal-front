@@ -1,9 +1,16 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import AppBottomNav from '../../../src/components/layout/AppBottomNav/AppBottomNav';
+import { clearStoredToken } from '../../../src/shared/auth/session';
+import { VALID_TEST_TOKEN } from '../../fixtures/auth/authFixtures';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
+
+beforeEach(() => {
+  clearStoredToken();
+  sessionStorage.clear();
+});
 
 describe('AppBottomNav', () => {
   it('renders navigation landmark with accessible label for bottom nav', () => {
@@ -16,7 +23,7 @@ describe('AppBottomNav', () => {
     expect(nav).toBeInTheDocument();
   });
 
-  it('renders navigation links for all items with stacked icon and label', () => {
+  it('renders navigation links for public items with stacked icon and label', () => {
     renderWithProviders(<AppBottomNav />);
 
     const plantsLink = screen.getByRole('link', { name: /Plantas/i });
@@ -24,6 +31,18 @@ describe('AppBottomNav', () => {
 
     expect(plantsLink).toHaveAttribute('href', '/plants');
     expect(familiesLink).toHaveAttribute('href', '/families');
+    expect(screen.queryByRole('link', { name: /Localizaciones/i })).toBeNull();
+  });
+
+  it('renders locations navigation link when user is authenticated', () => {
+    renderWithProviders(<AppBottomNav />, {
+      initialToken: VALID_TEST_TOKEN
+    });
+
+    const locationsLink = screen.getByRole('link', {
+      name: /Localizaciones/i
+    });
+    expect(locationsLink).toHaveAttribute('href', '/locations');
   });
 
   it('does not render home link in bottom nav', () => {
