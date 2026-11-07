@@ -1,4 +1,5 @@
 import type { anomalyMessages } from '../messages/anomaly';
+import type { bedsMessages } from '../messages/beds';
 import type { coreMessages } from '../messages/core';
 import type { designSystemMessages } from '../messages/designSystem';
 import type { familyMessages } from '../messages/family';
@@ -20,7 +21,8 @@ export type Dictionary = typeof coreMessages &
   typeof themeMessages &
   typeof glossaryMessages &
   typeof designSystemMessages &
-  typeof locationsMessages;
+  typeof locationsMessages &
+  typeof bedsMessages;
 
 type Join<K, P> = K extends string
   ? P extends string

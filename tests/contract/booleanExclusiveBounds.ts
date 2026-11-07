@@ -20,6 +20,20 @@ function convertBound(
   delete node[inclusive];
 }
 
+function convertNullableRef(node: Record<string, unknown>): void {
+  if (node.nullable !== true) return;
+  if (!node.type && typeof node.$ref === 'string') {
+    const ref = node.$ref;
+    delete node.$ref;
+    delete node.nullable;
+    node.anyOf = [{ $ref: ref }, { type: 'null' }];
+    return;
+  }
+  if (!node.type) {
+    delete node.nullable;
+  }
+}
+
 export function convertBooleanExclusiveBounds(node: unknown): void {
   if (Array.isArray(node)) {
     node.forEach(convertBooleanExclusiveBounds);
@@ -30,4 +44,5 @@ export function convertBooleanExclusiveBounds(node: unknown): void {
   EXCLUSIVE_BOUNDS.forEach(([exclusive, inclusive]) =>
     convertBound(node, exclusive, inclusive)
   );
+  convertNullableRef(node);
 }

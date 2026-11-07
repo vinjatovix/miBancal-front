@@ -1172,11 +1172,23 @@ paths:
       tags: [Beds]
       summary: Get user beds
       description: >
-        List of beds. Unknown query parameters are rejected (400).
-        With `include=plantInstances`, full crops are embedded; otherwise a UUID array.
+        Returns list of beds belonging to the authenticated user.
+        Supports filtering by locationId and eager embedding of plantInstances and location.
       security:
         - bearerAuth: []
       parameters:
+        - in: query
+          name: filter[locationId]
+          description: Filter beds located at this Location UUID. Non-matching or foreign UUID returns [].
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: filter[locationId][eq]
+          description: Canonical filter syntax for filtering beds by location UUID.
+          schema:
+            type: string
+            format: uuid
         - $ref: '#/components/parameters/BedInclude'
       responses:
         '200':
@@ -1199,7 +1211,7 @@ paths:
       summary: Create bed
       description: >
         No query parameters are accepted. Unknown body fields (`userId`,
-        `plantInstances`…) → 400.
+        `plantInstances`…) → 400. `locationId` is mandatory and must reference an existing active location owned by user.
       security:
         - bearerAuth: []
       requestBody:
@@ -1222,6 +1234,8 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
         '409':
           $ref: '#/components/responses/ConflictError'
         '500':
@@ -1231,6 +1245,8 @@ paths:
     get:
       tags: [Beds]
       summary: Get bed by id
+      description: >
+        Bed details. ETag is omitted when `include` is present.
       security:
         - bearerAuth: []
       parameters:
@@ -1261,7 +1277,9 @@ paths:
     patch:
       tags: [Beds]
       summary: Update bed
-      description: Check order — authentication, If-Match, then request validation.
+      description: >
+        Partial update. Check order — authentication, If-Match, then request validation.
+        `locationId` can be replaced with another valid location UUID, but setting `locationId: null` is rejected (400).
       security:
         - bearerAuth: []
       parameters:
@@ -1413,6 +1431,13 @@ paths:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/LocationId'
+        - in: query
+          name: include
+          description: When include=beds, embeds all active beds belonging to this location.
+          required: false
+          schema:
+            type: string
+            enum: [beds]
       responses:
         '200':
           description: Location
@@ -1496,6 +1521,78 @@ paths:
           $ref: '#/components/responses/PreconditionFailedError'
         '428':
           $ref: '#/components/responses/PreconditionRequiredError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/locations/{id}/beds-layout:
+    patch:
+      tags: [Locations]
+      summary: Batch update bed spatial coordinates and rotations within a location canvas
+      description: >
+        Applies batch placement or relocation of beds in a single optimistic concurrency transaction.
+        Enforces 2D boundary clamping and spatial non-collision (Axis-Aligned Bounding Box overlap detection).
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LocationId'
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BedLayoutPlacementInput'
+      responses:
+        '204':
+          description: Layout successfully updated.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '412':
+          $ref: '#/components/responses/PreconditionFailedError'
+        '428':
+          $ref: '#/components/responses/PreconditionRequiredError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/locations/{id}/layout:
+    get:
+      tags: [Locations]
+      summary: Retrieve complete spatial layout and companion graph for a location
+      description: >
+        Returns the site canvas dimensions, all placed beds with their absolute positions and solar orientation,
+        unplaced beds, and the directed cross-bed and intra-bed companion affinity graph edges.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LocationId'
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: Comprehensive garden layout model.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ReadETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationLayoutResponse'
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -2566,12 +2663,18 @@ components:
       name: include
       description: >
         JSON:API include, comma-separated. `plantInstances` embeds active crops in full
-        instead of UUIDs. Any other relation or empty string answers 400.
+        instead of UUIDs; `location` embeds the LocationSummary. Valid combinations:
+        `plantInstances`, `location`, `plantInstances,location`, `location,plantInstances`.
+        Any other relation or empty string answers 400.
         When present, the response carries no ETag and never answers 304.
       required: false
       schema:
         type: string
-        enum: [plantInstances]
+        enum:
+          - plantInstances
+          - location
+          - 'plantInstances,location'
+          - 'location,plantInstances'
 
     IfMatch:
       name: If-Match
@@ -2700,19 +2803,25 @@ components:
       maximum: 180.0
       example: -3.7038
 
+    LocationSummary:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+
     Location:
       type: object
-      required:
-        [
-          id,
-          name,
-          latitude,
-          longitude,
-          createdAt,
-          createdBy,
-          updatedAt,
-          updatedBy
-        ]
+      required: [id, name, createdAt, createdBy, updatedAt, updatedBy]
       properties:
         id:
           type: string
@@ -2720,9 +2829,21 @@ components:
         name:
           $ref: '#/components/schemas/RequiredShortText'
         latitude:
-          $ref: '#/components/schemas/Latitude'
+          type: number
+          nullable: true
+          minimum: -90.0
+          maximum: 90.0
         longitude:
-          $ref: '#/components/schemas/Longitude'
+          type: number
+          nullable: true
+          minimum: -180.0
+          maximum: 180.0
+        northAngle:
+          type: integer
+          minimum: 0
+          maximum: 359
+          nullable: true
+          example: 45
         createdAt:
           type: string
           format: date-time
@@ -2733,6 +2854,11 @@ components:
           format: date-time
         updatedBy:
           type: string
+        beds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationBedSummary'
+          description: Present only when `include=beds` is requested.
         version:
           type: integer
           minimum: 0
@@ -2741,7 +2867,7 @@ components:
     CreateLocation:
       type: object
       additionalProperties: false
-      required: [id, name, latitude, longitude]
+      required: [id, name]
       properties:
         id:
           type: string
@@ -2752,11 +2878,16 @@ components:
           $ref: '#/components/schemas/Latitude'
         longitude:
           $ref: '#/components/schemas/Longitude'
+        northAngle:
+          type: integer
+          minimum: 0
+          maximum: 359
+          example: 45
 
     UpdateLocation:
       description: >
-        Partial update (JSON Merge Patch). `name` cannot be null. If coordinates
-        are updated, both `latitude` and `longitude` must be provided together.
+        Partial update (JSON Merge Patch). `name` cannot be null. Coordinates can
+        be updated as a pair or cleared by setting both latitude and longitude to null.
         Legacy fields (postalCode, country, timezone, hemisphere) are rejected.
       type: object
       additionalProperties: false
@@ -2764,9 +2895,20 @@ components:
         name:
           $ref: '#/components/schemas/RequiredShortText'
         latitude:
-          $ref: '#/components/schemas/Latitude'
+          type: number
+          nullable: true
+          minimum: -90.0
+          maximum: 90.0
         longitude:
-          $ref: '#/components/schemas/Longitude'
+          type: number
+          nullable: true
+          minimum: -180.0
+          maximum: 180.0
+        northAngle:
+          type: integer
+          minimum: 0
+          maximum: 359
+          nullable: true
 
     UserProfileView:
       type: object
@@ -4875,6 +5017,7 @@ components:
         [
           id,
           userId,
+          locationId,
           name,
           width,
           height,
@@ -4890,6 +5033,11 @@ components:
           format: uuid
         userId:
           type: string
+        locationId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Associated location UUID (null only for legacy unlinked beds).
         name:
           $ref: '#/components/schemas/RequiredShortText'
         width:
@@ -4904,6 +5052,22 @@ components:
         longitude:
           $ref: '#/components/schemas/Longitude'
           description: Snapshotted longitude from the referenced location at create/update time.
+        position:
+          $ref: '#/components/schemas/BedPosition'
+          nullable: true
+          description: Coordinate position of bed origin (0, 0). Null indicates unplaced bed.
+        rotation:
+          type: integer
+          minimum: 0
+          maximum: 359
+          description: Clockwise rotation in degrees around bed origin.
+          example: 90
+        netOrientation:
+          type: integer
+          minimum: 0
+          maximum: 359
+          description: Net solar orientation (location.northAngle + rotation) % 360.
+          example: 135
         plantInstances:
           description: >
             Flat array of active crop UUIDs by default; full PlantInstance objects
@@ -4914,6 +5078,10 @@ components:
               - type: string
                 format: uuid
               - $ref: '#/components/schemas/PlantInstanceResponse'
+        location:
+          $ref: '#/components/schemas/LocationSummary'
+          nullable: true
+          description: Present only when `include=location` is requested. Null if associated location was soft-deleted or locationId is null.
         metadata:
           $ref: '#/components/schemas/Metadata'
         deleted:
@@ -4935,7 +5103,7 @@ components:
     CreateBed:
       type: object
       additionalProperties: false
-      required: [id, name, width, height, depth]
+      required: [id, name, width, height, depth, locationId]
       properties:
         id:
           type: string
@@ -4952,18 +5120,17 @@ components:
           type: string
           format: uuid
           description: >
-            Resolved to an owned active location whose provided geographic
+            Mandatory reference to an active owned Location whose provided geographic
             fields are copied into the bed as a static snapshot. Unknown or
-            non-owned id → 404 before the bed is persisted. Absent → no
-            geographic context.
+            non-owned id → 404 before the bed is persisted.
 
     UpdateBed:
       description: >
         Partial update. `name`/dimensions are optional and none can be
         cleared (`null` → 400). `{}` is a no-op: 200, version unchanged.
-        `locationId` re-snapshots (uuid), clears the snapshot (`null`) or
-        leaves it unchanged (omitted). Raw geographic fields are never
-        accepted here. Plants are never placed by patching the bed.
+        `locationId` can be replaced with another valid location UUID to relocate,
+        but setting `locationId: null` is rejected (400).
+        Raw geographic fields are never accepted here. Plants are never placed by patching the bed.
       type: object
       additionalProperties: false
       properties:
@@ -4977,11 +5144,21 @@ components:
           $ref: '#/components/schemas/BedDimension'
         locationId:
           type: string
-          nullable: true
           format: uuid
           description: >
-            A uuid re-snapshots from that owned location (replace); `null`
-            clears the snapshot; omitted leaves it unchanged.
+            Relocates bed to another owned active location. Null is rejected (400).
+            Omitted leaves location and snapshot unchanged.
+        position:
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/BedPosition'
+            - type: 'null'
+          description: Coordinate position of bed origin, or null to unplace.
+        rotation:
+          type: integer
+          minimum: 0
+          maximum: 359
+          description: Clockwise rotation in degrees around bed origin.
 
     #  ================= PLANT INSTANCES =================
 
@@ -5512,6 +5689,214 @@ components:
             $ref: '#/components/schemas/PlantRelation'
         pagination:
           $ref: '#/components/schemas/PaginationResponse'
+
+    BedPosition:
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          type: number
+          description: X coordinate in centimeters, representing horizontal displacement from an unbounded relative reference origin (0, 0).
+          example: 150
+        y:
+          type: number
+          description: Y coordinate in centimeters, representing vertical displacement from an unbounded relative reference origin (0, 0).
+          example: 200
+
+    BedLayoutPlacementInput:
+      type: object
+      required: [id, position]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifier of the bed belonging to this location.
+        position:
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/BedPosition'
+            - type: 'null'
+          description: Coordinate position of the bed origin (0, 0). Null indicates an unplaced bed.
+        rotation:
+          type: integer
+          minimum: 0
+          maximum: 359
+          default: 0
+          description: Clockwise rotation in degrees around the bed origin.
+          example: 90
+
+    PlacedBedSummary:
+      type: object
+      required: [id, name, width, height, position, rotation, netOrientation]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Tomato Bed 1
+        width:
+          type: number
+          example: 120
+        height:
+          type: number
+          example: 240
+        position:
+          $ref: '#/components/schemas/BedPosition'
+        rotation:
+          type: integer
+          minimum: 0
+          maximum: 359
+          example: 90
+        netOrientation:
+          type: integer
+          minimum: 0
+          maximum: 359
+          example: 135
+
+    UnplacedBedSummary:
+      type: object
+      required: [id, name, width, height, position, rotation]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Auxiliary Nursery Bed
+        width:
+          type: number
+          example: 80
+        height:
+          type: number
+          example: 120
+        position:
+          type: object
+          nullable: true
+          required: [x, y]
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+          example: null
+        rotation:
+          type: integer
+          default: 0
+          example: 0
+
+    CompanionGraphEdge:
+      type: object
+      required:
+        [
+          sourcePlantInstanceId,
+          targetPlantInstanceId,
+          sourceBedId,
+          targetBedId,
+          relationType,
+          mechanism,
+          strength,
+          distanceCm,
+          scope
+        ]
+      properties:
+        sourcePlantInstanceId:
+          type: string
+          format: uuid
+          description: Influencer crop instance.
+        targetPlantInstanceId:
+          type: string
+          format: uuid
+          description: Affected crop instance.
+        sourceBedId:
+          type: string
+          format: uuid
+        targetBedId:
+          type: string
+          format: uuid
+        relationType:
+          type: string
+          enum: [beneficial, detrimental]
+        mechanism:
+          type: string
+          example: pest_repellent
+        strength:
+          type: number
+          example: 80
+        distanceCm:
+          type: number
+          example: 45.5
+        scope:
+          type: string
+          enum: [intra_bed, cross_bed]
+        reason:
+          type: string
+          example: Marigold repels tomato root-knot nematodes.
+
+    LocationLayoutResponse:
+      type: object
+      required: [location, placedBeds, unplacedBeds, companionGraph]
+      properties:
+        location:
+          type: object
+          required: [id, name]
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            northAngle:
+              type: integer
+              minimum: 0
+              maximum: 359
+              nullable: true
+              example: 45
+        placedBeds:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlacedBedSummary'
+        unplacedBeds:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnplacedBedSummary'
+        companionGraph:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanionGraphEdge'
+
+    LocationBedSummary:
+      type: object
+      required: [id, name, width, height, depth, position, rotation]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        width:
+          type: number
+        height:
+          type: number
+        depth:
+          type: number
+        position:
+          type: object
+          nullable: true
+          required: [x, y]
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+        rotation:
+          type: integer
+          minimum: 0
+          maximum: 359
+        netOrientation:
+          type: integer
+          minimum: 0
+          maximum: 359
 
   responses:
     UnprocessableEntityError:

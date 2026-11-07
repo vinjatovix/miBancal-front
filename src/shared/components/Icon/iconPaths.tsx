@@ -1284,6 +1284,32 @@ const chevron_rightGlyph = (
   </>
 );
 
+const chevron_upGlyph = (
+  <>
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="m10 22 8-8 8 8"
+    />
+  </>
+);
+
+const chevron_downGlyph = (
+  <>
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="m10 14 8 8 8-8"
+    />
+  </>
+);
+
 const favoriteGlyph = (
   <>
     <path
@@ -1471,6 +1497,69 @@ const visibility_offGlyph = (
   </>
 );
 
+const zoom_inGlyph = (
+  <>
+    <circle
+      cx="15"
+      cy="15"
+      r="9"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+    />
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      d="m21.5 21.5 8 8M15 11v8M11 15h8"
+    />
+  </>
+);
+
+const zoom_outGlyph = (
+  <>
+    <circle
+      cx="15"
+      cy="15"
+      r="9"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+    />
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      d="m21.5 21.5 8 8M11 15h8"
+    />
+  </>
+);
+
+const fit_screenGlyph = (
+  <>
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 6H6v6M24 6h6v6M6 24v6h6M30 24v6h-6"
+    />
+    <rect
+      x="12"
+      y="12"
+      width="12"
+      height="12"
+      rx="1.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+  </>
+);
+
 export const ICON_GLYPHS = {
   admin_panel_settings: admin_panel_settingsGlyph,
   arrow_forward: arrow_forwardGlyph,
@@ -1483,8 +1572,10 @@ export const ICON_GLYPHS = {
   calendar_today: calendar_todayGlyph,
   check: checkGlyph,
   check_circle: check_circleGlyph,
+  chevron_down: chevron_downGlyph,
   chevron_left: chevron_leftGlyph,
   chevron_right: chevron_rightGlyph,
+  chevron_up: chevron_upGlyph,
   clear_all: clear_allGlyph,
   close: closeGlyph,
   computer: computerGlyph,
@@ -1508,6 +1599,7 @@ export const ICON_GLYPHS = {
   extension: extensionGlyph,
   favorite: favoriteGlyph,
   favorite_filled: favorite_filledGlyph,
+  fit_screen: fit_screenGlyph,
   grain: grainGlyph,
   herb: ecoGlyph,
   hourglass_top: hourglass_topGlyph,
@@ -1559,7 +1651,9 @@ export const ICON_GLYPHS = {
   visibility_off: visibility_offGlyph,
   warning: warningGlyph,
   water_drop: water_dropGlyph,
-  yard: yardGlyph
+  yard: yardGlyph,
+  zoom_in: zoom_inGlyph,
+  zoom_out: zoom_outGlyph
 } as const;
 
 export type IconName = keyof typeof ICON_GLYPHS;

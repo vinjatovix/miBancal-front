@@ -1,6 +1,7 @@
 .app-nav-rail {
   position: sticky;
   top: var(--app-header-height);
+  z-index: 900;
   height: calc(
     100dvh - var(--app-header-height) - var(--dev-banner-height, 0px)
   );

@@ -5,5 +5,6 @@ export const locationKeys = {
   list: (userId: string, request: LocationListRequest) =>
     [...locationKeys.all(userId), 'list', request] as const,
   detail: (userId: string, id?: string) =>
-    [...locationKeys.all(userId), 'detail', id] as const
+    [...locationKeys.all(userId), 'detail', id] as const,
+  layout: (id: string) => ['locations', 'layout', id] as const
 };

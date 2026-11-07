@@ -33,6 +33,8 @@ export const coreMessages = {
       anomalies: 'Anomalías',
       gardenInputs: 'Insumos',
       plantRelations: 'Relaciones',
+      beds: 'Bancales',
+      locations: 'Localizaciones',
       menu: 'Menú de navegación',
       menu_title: 'Menú',
       close: 'Cerrar',

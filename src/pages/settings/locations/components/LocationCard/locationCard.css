@@ -40,8 +40,37 @@
 
 .location-card__actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
   border-top: 1px solid var(--color-border-decor);
   padding-top: 10px;
+}
+
+.location-card__layout-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.location-card__layout-link:hover {
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+}
+
+.location-card__layout-link:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+.location-card__secondary-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }

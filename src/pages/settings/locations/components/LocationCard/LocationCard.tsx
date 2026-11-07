@@ -1,8 +1,11 @@
+import { Link } from 'react-router-dom';
+
 import { t } from '../../../../../i18n/core/t';
 import {
   DeleteButton,
   EditButton
 } from '../../../../../shared/components/ActionButtons';
+import Icon from '../../../../../shared/components/Icon/Icon';
 import type { Location } from '../../../../../types/Location/Location';
 
 import './locationCard.css';
@@ -34,14 +37,23 @@ export default function LocationCard({
       </div>
 
       <footer className="location-card__actions">
-        <EditButton
-          ariaLabel={t('location.open_edit', { name: location.name })}
-          onClick={() => onEdit(location)}
-        />
-        <DeleteButton
-          ariaLabel={t('location.open_delete', { name: location.name })}
-          onClick={() => onDelete(location)}
-        />
+        <Link
+          to={`/locations/${location.id}/layout`}
+          className="location-card__layout-link"
+        >
+          <Icon name="explore" decorative />
+          <span>{t('location.card.view_layout')}</span>
+        </Link>
+        <div className="location-card__secondary-actions">
+          <EditButton
+            ariaLabel={t('location.open_edit', { name: location.name })}
+            onClick={() => onEdit(location)}
+          />
+          <DeleteButton
+            ariaLabel={t('location.open_delete', { name: location.name })}
+            onClick={() => onDelete(location)}
+          />
+        </div>
       </footer>
     </article>
   );

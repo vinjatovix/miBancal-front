@@ -82,6 +82,10 @@ export const CUSTOM_GLYPHS: Record<string, string> = {
     '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="m22 10-8 8 8 8"/>',
   chevron_right:
     '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="m14 10 8 8-8 8"/>',
+  chevron_up:
+    '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="m10 22 8-8 8 8"/>',
+  chevron_down:
+    '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="m10 14 8 8 8-8"/>',
   favorite:
     '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" d="M18 32.03l-2.18-1.98C8.1 23.04 3 18.42 3 12.75 3 8.13 6.63 4.5 11.25 4.5c2.61 0 5.12 1.22 6.75 3.14C19.64 5.72 22.14 4.5 24.75 4.5 29.37 4.5 33 8.13 33 12.75c0 5.67-5.1 10.29-12.83 17.31L18 32.03z"/>',
   favorite_filled:
@@ -106,7 +110,13 @@ export const CUSTOM_GLYPHS: Record<string, string> = {
   visibility:
     '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="M4 18C7.5 11 12.5 8 18 8s10.5 3 14 10c-3.5 7-8.5 10-14 10S7.5 25 4 18Z"/><circle cx="18" cy="18" r="4.5" fill="none" stroke="currentColor" strokeWidth="2.5"/>',
   visibility_off:
-    '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="M4 18C7.5 11 12.5 8 18 8s10.5 3 14 10c-3.5 7-8.5 10-14 10S7.5 25 4 18Z"/><circle cx="18" cy="18" r="4.5" fill="none" stroke="currentColor" strokeWidth="2.5"/><path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" d="m6 6 24 24"/>'
+    '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="M4 18C7.5 11 12.5 8 18 8s10.5 3 14 10c-3.5 7-8.5 10-14 10S7.5 25 4 18Z"/><circle cx="18" cy="18" r="4.5" fill="none" stroke="currentColor" strokeWidth="2.5"/><path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" d="m6 6 24 24"/>',
+  zoom_in:
+    '<circle cx="15" cy="15" r="9" fill="none" stroke="currentColor" strokeWidth="2.5"/><path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" d="m21.5 21.5 8 8M15 11v8M11 15h8"/>',
+  zoom_out:
+    '<circle cx="15" cy="15" r="9" fill="none" stroke="currentColor" strokeWidth="2.5"/><path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" d="m21.5 21.5 8 8M11 15h8"/>',
+  fit_screen:
+    '<path fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="M12 6H6v6M24 6h6v6M6 24v6h6M30 24v6h-6"/><rect x="12" y="12" width="12" height="12" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2"/>'
 };
 
 export const TWEMOJI_MAPPING: Record<string, string> = {

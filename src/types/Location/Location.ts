@@ -13,8 +13,8 @@ export interface Location {
 export interface CreateLocationRequest {
   readonly id: string;
   readonly name: string;
-  readonly latitude: number;
-  readonly longitude: number;
+  readonly latitude?: number | null;
+  readonly longitude?: number | null;
 }
 
 export interface UpdateLocationRequest {

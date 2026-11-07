@@ -1,0 +1,279 @@
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import LocationLayoutPage from '../../../../src/pages/locations/LocationLayoutPage/LocationLayoutPage';
+import {
+  createBed,
+  deleteBed,
+  getBedForEdit
+} from '../../../../src/services/beds.service';
+import { getLocationLayout } from '../../../../src/services/locations.service';
+import { ApiError } from '../../../../src/shared/errors/ApiError';
+import { locationKeys } from '../../../../src/shared/reactQuery/locationKeys';
+import { VALID_TEST_TOKEN } from '../../../fixtures/auth/authFixtures';
+import { buildBed } from '../../../fixtures/beds/buildBed';
+import {
+  buildLocationLayout,
+  buildLocationLayoutSummary
+} from '../../../fixtures/locations/buildLocationLayout';
+import { renderWithProviders } from '../../../test-utils/renderWithProviders';
+
+vi.mock('../../../../src/services/locations.service', () => ({
+  getLocationLayout: vi.fn(),
+  getLocationList: vi.fn().mockResolvedValue({
+    data: [],
+    pagination: { page: 1, limit: 100, totalPages: 1, totalItems: 0 }
+  })
+}));
+
+vi.mock('../../../../src/services/beds.service', () => ({
+  createBed: vi.fn(),
+  deleteBed: vi.fn(),
+  getBedForEdit: vi.fn(),
+  getBedList: vi.fn(),
+  updateBed: vi.fn()
+}));
+
+const mockedGetLocationLayout = vi.mocked(getLocationLayout);
+const mockedDeleteBed = vi.mocked(deleteBed);
+const mockedGetBedForEdit = vi.mocked(getBedForEdit);
+const mockedCreateBed = vi.mocked(createBed);
+
+const PATH = '/locations/:id/layout';
+const ROUTE = '/locations/loc-1/layout';
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe('LocationLayoutPage', () => {
+  it('shows the loader while the layout is loading', () => {
+    mockedGetLocationLayout.mockReturnValueOnce(new Promise(() => {}));
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('renders the canvas on success', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    await waitFor(() => {
+      expect(screen.getByRole('img')).toBeInTheDocument();
+    });
+  });
+
+  it('renders the layout with a create action when the location has no beds', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout({
+        location: buildLocationLayoutSummary(),
+        placedBeds: [],
+        unplacedBeds: [],
+        companionGraph: []
+      }),
+      etag: '"1"'
+    });
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    expect(
+      await screen.findByRole('button', { name: 'Nuevo bancal' })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('No hay bancales sin colocar.')
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows an error state without throwing', async () => {
+    mockedGetLocationLayout.mockRejectedValueOnce(new ApiError('Boom', 500));
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+  });
+
+  it('renders not found for a not found error', async () => {
+    mockedGetLocationLayout.mockRejectedValueOnce(new ApiError('Missing', 404));
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Localización no encontrada')
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('renders not found when the id param is missing without throwing', () => {
+    renderWithProviders(<LocationLayoutPage />, {
+      path: '/locations/layout',
+      route: '/locations/layout'
+    });
+
+    expect(screen.getByText('Localización no encontrada')).toBeInTheDocument();
+    expect(mockedGetLocationLayout).not.toHaveBeenCalled();
+  });
+
+  it('reveals grid layers and plant management when selecting a bed in read mode', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    const bed = await screen.findByRole('button', {
+      name: /Bancal Tomates 1/
+    });
+    fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
+
+    expect(
+      await screen.findByRole('button', {
+        name: 'Gestionar plantas de Bancal Tomates 1'
+      })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', {
+        name: 'Gestionar plantas de Bancal Tomates 1'
+      })
+    ).toBeNull();
+    expect(
+      screen.getByText('Capas de cuadrícula agronómica')
+    ).toBeInTheDocument();
+  });
+
+  it('asks for confirmation when leaving position mode with pending changes', async () => {
+    mockedGetLocationLayout.mockResolvedValue({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    await waitFor(() => {
+      expect(screen.getByRole('img')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Posición' }));
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Colocar el bancal Bancal Vivero Auxiliar en el plano'
+      })
+    );
+    await user.click(screen.getByRole('button', { name: 'Vista' }));
+
+    expect(
+      await screen.findByText('¿Descartar los cambios?')
+    ).toBeInTheDocument();
+  });
+
+  it('deletes selected bed and invalidates layout query', async () => {
+    const layout = buildLocationLayout();
+    mockedGetLocationLayout.mockResolvedValue({
+      layout,
+      etag: '"1"'
+    });
+    const placedBed = layout.placedBeds[0]!;
+    mockedGetBedForEdit.mockResolvedValue({
+      bed: buildBed({
+        id: placedBed.id,
+        name: placedBed.name,
+        plantInstances: []
+      }),
+      etag: '"bed-etag-1"'
+    });
+    mockedDeleteBed.mockResolvedValue(undefined);
+    const user = userEvent.setup();
+
+    const { queryClient } = renderWithProviders(<LocationLayoutPage />, {
+      path: PATH,
+      route: ROUTE,
+      initialToken: VALID_TEST_TOKEN
+    });
+
+    const bed = await screen.findByRole('button', {
+      name: new RegExp(placedBed.name)
+    });
+    fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
+
+    const deleteBtn = await screen.findByRole('button', {
+      name: `Eliminar el bancal ${placedBed.name}`
+    });
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await user.click(deleteBtn);
+
+    const confirmModal = await screen.findByRole('alertdialog', {
+      name: '¿Eliminar el bancal?'
+    });
+    const confirmBtn = within(confirmModal).getByRole('button', {
+      name: 'Eliminar'
+    });
+    await user.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(mockedDeleteBed).toHaveBeenCalledWith(
+        placedBed.id,
+        '"bed-etag-1"'
+      );
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: locationKeys.layout('loc-1')
+    });
+  });
+
+  it('invalidates layout query when a new bed is created', async () => {
+    mockedGetLocationLayout.mockResolvedValue({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const createdBed = buildBed({
+      id: 'bed-new-999',
+      name: 'Bancal Zanahorias'
+    });
+    mockedCreateBed.mockResolvedValue({
+      bed: createdBed,
+      etag: '"new-etag"'
+    });
+    const user = userEvent.setup();
+
+    const { queryClient } = renderWithProviders(<LocationLayoutPage />, {
+      path: PATH,
+      route: ROUTE
+    });
+
+    const newBedButton = await screen.findByRole('button', {
+      name: 'Nuevo bancal'
+    });
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await user.click(newBedButton);
+
+    const nameInput = await screen.findByLabelText('Nombre del bancal');
+    await user.type(nameInput, 'Bancal Zanahorias');
+    await user.type(screen.getByLabelText('Ancho (cm)'), '100');
+    await user.type(screen.getByLabelText('Largo (cm)'), '200');
+    await user.type(
+      screen.getByLabelText('Profundidad de sustrato (cm)'),
+      '30'
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Crear bancal' }));
+
+    await waitFor(() => {
+      expect(mockedCreateBed).toHaveBeenCalled();
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: locationKeys.layout('loc-1')
+    });
+  });
+});

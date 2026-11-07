@@ -23,11 +23,12 @@ describe('listed locations conform to Location schema', () => {
     expect(validateSchema('Location', withoutName)).not.toEqual([]);
   });
 
-  it('rejects a location without latitude or longitude (required fields)', () => {
-    const withoutLat: Record<string, unknown> = { ...buildLocation() };
-    delete withoutLat.latitude;
+  it('accepts a location without latitude or longitude (optional fields)', () => {
+    const withoutCoords: Record<string, unknown> = { ...buildLocation() };
+    delete withoutCoords.latitude;
+    delete withoutCoords.longitude;
 
-    expect(validateSchema('Location', withoutLat)).not.toEqual([]);
+    expect(validateSchema('Location', withoutCoords)).toEqual([]);
   });
 });
 
@@ -44,7 +45,7 @@ describe('creation requests conform to CreateLocation', () => {
     await expect(assertion).resolves.toBeUndefined();
   });
 
-  it('rejects creation without coordinates', async () => {
+  it('accepts creation without coordinates', async () => {
     const payload = {
       id: '11111111-1111-4111-8111-111111111111',
       name: 'Huerto'
@@ -56,7 +57,7 @@ describe('creation requests conform to CreateLocation', () => {
       body: payload
     });
 
-    await expect(assertion).rejects.toThrow();
+    await expect(assertion).resolves.toBeUndefined();
   });
 
   it('rejects latitude out of range (-90 to 90)', async () => {

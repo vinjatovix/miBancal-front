@@ -24,7 +24,7 @@ export interface LocationFormModalProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
   readonly locationIdToEdit?: string | null;
-  readonly onSaved?: () => void;
+  readonly onSaved?: (locationId?: string) => void;
 }
 
 const EMPTY_VALUES: LocationFormValues = {
@@ -39,7 +39,7 @@ interface LocationFormBodyProps {
   readonly isEditMode: boolean;
   readonly locationIdToEdit?: string | null;
   readonly onClose: () => void;
-  readonly onSaved?: () => void;
+  readonly onSaved?: (locationId?: string) => void;
   readonly onConflict: () => void;
 }
 
@@ -130,16 +130,18 @@ function LocationFormBody({
           });
         }
         showSuccessToast(t('location.form.success_edit'));
+        onSaved?.(locationIdToEdit);
       } else {
-        await create.mutateAsync({
-          id: crypto.randomUUID(),
+        const newLocationId = crypto.randomUUID();
+        const created = await create.mutateAsync({
+          id: newLocationId,
           name: values.name.trim(),
           latitude: Number(values.latitude.trim()),
           longitude: Number(values.longitude.trim())
         });
         showSuccessToast(t('location.form.success_create'));
+        onSaved?.(created?.location?.id ?? newLocationId);
       }
-      onSaved?.();
       onClose();
     } catch (err) {
       handleApiError(err);
