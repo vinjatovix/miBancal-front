@@ -8,11 +8,15 @@ import {
   deleteBed,
   getBedForEdit
 } from '../../../../src/services/beds.service';
-import { getLocationLayout } from '../../../../src/services/locations.service';
+import {
+  getLocationLayout,
+  updateLocation
+} from '../../../../src/services/locations.service';
 import { ApiError } from '../../../../src/shared/errors/ApiError';
 import { locationKeys } from '../../../../src/shared/reactQuery/locationKeys';
 import { VALID_TEST_TOKEN } from '../../../fixtures/auth/authFixtures';
 import { buildBed } from '../../../fixtures/beds/buildBed';
+import { buildLocation } from '../../../fixtures/locations/buildLocation';
 import {
   buildLocationLayout,
   buildLocationLayoutSummary
@@ -24,7 +28,8 @@ vi.mock('../../../../src/services/locations.service', () => ({
   getLocationList: vi.fn().mockResolvedValue({
     data: [],
     pagination: { page: 1, limit: 100, totalPages: 1, totalItems: 0 }
-  })
+  }),
+  updateLocation: vi.fn()
 }));
 
 vi.mock('../../../../src/services/beds.service', () => ({
@@ -36,6 +41,7 @@ vi.mock('../../../../src/services/beds.service', () => ({
 }));
 
 const mockedGetLocationLayout = vi.mocked(getLocationLayout);
+const mockedUpdateLocation = vi.mocked(updateLocation);
 const mockedDeleteBed = vi.mocked(deleteBed);
 const mockedGetBedForEdit = vi.mocked(getBedForEdit);
 const mockedCreateBed = vi.mocked(createBed);
@@ -275,5 +281,216 @@ describe('LocationLayoutPage', () => {
     expect(invalidateSpy).toHaveBeenCalledWith({
       queryKey: locationKeys.layout('loc-1')
     });
+  });
+
+  it('updates live azimuth and heading in compass hud when rotating a bed', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    const modeToggle = await screen.findByRole('button', {
+      name: 'Posición'
+    });
+    await user.click(modeToggle);
+
+    const bed = await screen.findByRole('button', {
+      name: /Bancal Tomates 1/
+    });
+    fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
+
+    const rotationInput = screen.getByRole('spinbutton', {
+      name: 'Rotación en grados'
+    });
+    await user.click(rotationInput);
+    await user.keyboard('{ArrowUp}');
+
+    expect(
+      await screen.findByText('Rumbo del bancal: 136° Sureste')
+    ).toBeInTheDocument();
+  });
+
+  it('calibrates terrain north and saves with toast feedback when no bed is selected', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    mockedUpdateLocation.mockResolvedValueOnce({
+      location: buildLocation({ id: 'loc-1', northAngle: 60 }),
+      etag: '"etag-2"'
+    });
+    const user = userEvent.setup();
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    const modeToggle = await screen.findByRole('button', {
+      name: 'Posición'
+    });
+    await user.click(modeToggle);
+
+    const compassDial = await screen.findByRole('spinbutton', {
+      name: 'Norte del terreno: 45°'
+    });
+    await user.click(compassDial);
+    await user.keyboard('{Shift>}{ArrowUp}{/Shift}');
+
+    expect(
+      await screen.findByText('Norte del terreno: 60°')
+    ).toBeInTheDocument();
+
+    const saveNorthBtn = screen.getByRole('button', {
+      name: 'Guardar'
+    });
+    await user.click(saveNorthBtn);
+
+    await waitFor(() => {
+      expect(mockedUpdateLocation).toHaveBeenCalledWith(
+        'loc-1',
+        { northAngle: 60 },
+        '"1"'
+      );
+    });
+
+    expect(
+      await screen.findByText(
+        'Orientación Norte de la localización guardada correctamente'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('renders viewport controls above the compass HUD in the layout hud container', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    const compass = await screen.findByRole('region', {
+      name: 'Brújula y orientación cardinal'
+    });
+    const viewportControls = screen.getByRole('toolbar', {
+      name: 'Controles del plano'
+    });
+    const hudContainer = compass.parentElement;
+
+    expect(hudContainer).toContainElement(viewportControls);
+    expect(hudContainer).toContainElement(compass);
+    expect(viewportControls.compareDocumentPosition(compass)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+  });
+
+  it('calibrates terrain north when dragging compass dial in position mode', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout({
+        location: buildLocationLayoutSummary({ id: 'loc-1', northAngle: 0 })
+      }),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    const modeToggle = await screen.findByRole('button', {
+      name: 'Posición'
+    });
+    await user.click(modeToggle);
+
+    const compassDial = await screen.findByRole('spinbutton', {
+      name: 'Norte estándar del plano (0°)'
+    });
+    vi.spyOn(compassDial, 'getBoundingClientRect').mockReturnValue({
+      left: 100,
+      top: 100,
+      width: 100,
+      height: 100,
+      right: 200,
+      bottom: 200,
+      x: 100,
+      y: 100,
+      toJSON: () => {}
+    });
+
+    fireEvent.pointerDown(compassDial, {
+      clientX: 150,
+      clientY: 150,
+      button: 0
+    });
+    fireEvent.pointerMove(compassDial, {
+      clientX: 200,
+      clientY: 150
+    });
+
+    expect(
+      await screen.findByText('Norte del terreno: 90°')
+    ).toBeInTheDocument();
+  });
+
+  it('hides cardinal edge badges when toggling orientation button off without hiding compass HUD', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+
+    const { container } = renderWithProviders(<LocationLayoutPage />, {
+      path: PATH,
+      route: ROUTE
+    });
+
+    const bed = await screen.findByRole('button', {
+      name: /Bancal Tomates 1/
+    });
+    fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
+
+    const toggleCardinalBtn = screen.getByRole('button', {
+      name: 'Mostrar orientación cardinal'
+    });
+    await user.click(toggleCardinalBtn);
+
+    expect(toggleCardinalBtn).toHaveAttribute('aria-pressed', 'false');
+    expect(
+      container.querySelectorAll('.layout-bed-cardinal-labels__badge')
+    ).toHaveLength(0);
+    expect(
+      screen.getByRole('region', { name: 'Brújula y orientación cardinal' })
+    ).toBeInTheDocument();
+  });
+
+  it('restores cardinal edge badges when toggling orientation button back on', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+
+    const { container } = renderWithProviders(<LocationLayoutPage />, {
+      path: PATH,
+      route: ROUTE
+    });
+
+    const bed = await screen.findByRole('button', {
+      name: /Bancal Tomates 1/
+    });
+    fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
+
+    const toggleCardinalBtn = screen.getByRole('button', {
+      name: 'Mostrar orientación cardinal'
+    });
+    await user.click(toggleCardinalBtn);
+    expect(
+      container.querySelectorAll('.layout-bed-cardinal-labels__badge')
+    ).toHaveLength(0);
+
+    await user.click(toggleCardinalBtn);
+
+    expect(toggleCardinalBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      container.querySelectorAll('.layout-bed-cardinal-labels__badge')
+    ).toHaveLength(4);
   });
 });

@@ -1,19 +1,12 @@
-import { useEffect, useState, type JSX } from 'react';
+import { useCallback, useEffect, useState, type JSX } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
-import BedCreateDrawer from '../../../components/beds/BedCreateDrawer/BedCreateDrawer';
-import BedEditDrawer from '../../../components/beds/BedEditDrawer/BedEditDrawer';
-import DeleteBedModal from '../../../components/beds/DeleteBedModal/DeleteBedModal';
-import BedRotationControl from '../../../components/beds/layout/BedRotationControl';
-import LayoutModeToggle from '../../../components/beds/layout/LayoutModeToggle';
-import LayoutSaveBar from '../../../components/beds/layout/LayoutSaveBar';
+import BedCompassHud from '../../../components/beds/layout/BedCompassHud';
 import LayoutScaleBar from '../../../components/beds/layout/LayoutScaleBar';
 import LayoutViewportControls from '../../../components/beds/layout/LayoutViewportControls';
 import LocationLayoutCanvas from '../../../components/beds/layout/LocationLayoutCanvas';
-import SnapToggle from '../../../components/beds/layout/SnapToggle';
 import UnplacedBedsTray from '../../../components/beds/layout/UnplacedBedsTray';
-import BedGridControls from '../../../components/beds/visualizer/BedGridControls';
 import {
   DEFAULT_ACTIVE_GRID_LAYERS,
   type ActiveGridLayers,
@@ -24,14 +17,17 @@ import { t } from '../../../i18n/core/t';
 import { useBedForEdit } from '../../beds/hooks/useBedForEdit';
 import { useBedMutations } from '../../beds/hooks/useBedMutations';
 import Button from '../../../shared/components/Button/Button';
-import DeleteButton from '../../../shared/components/ActionButtons/DeleteButton';
-import EditButton from '../../../shared/components/ActionButtons/EditButton';
-import { CancelConfirmModal } from '../../../shared/components/Modal/CancelConfirmModal';
-import { UnsavedChangesGuard } from '../../../shared/components/UnsavedChangesGuard/UnsavedChangesGuard';
 import { locationKeys } from '../../../shared/reactQuery/locationKeys';
 import { useToast } from '../../../shared/toast/useToast';
 import type { LocationLayoutResponse } from '../../../types/Location/LocationLayout';
+import {
+  calculateNetAzimuth,
+  normalizeAngle
+} from '../../../components/beds/layout/utils/cardinalGeometry';
+import LocationLayoutDialogs from './components/LocationLayoutDialogs';
+import LocationLayoutToolbar from './components/LocationLayoutToolbar';
 import { useLayoutEditor } from './hooks/useLayoutEditor';
+import { useNorthAngleMutation } from './hooks/useNorthAngleMutation';
 
 import './locationLayoutPage.css';
 
@@ -47,6 +43,7 @@ export default function LocationLayoutView({
   layout
 }: LocationLayoutViewProps): JSX.Element {
   const editor = useLayoutEditor(id, etag, layout);
+  const northAngleMutation = useNorthAngleMutation({ locationId: id, etag });
   const viewport = useBedViewport();
   const queryClient = useQueryClient();
   const { showSuccessToast, showErrorToast } = useToast();
@@ -60,12 +57,27 @@ export default function LocationLayoutView({
   );
   const [showBedNames, setShowBedNames] = useState(true);
   const [showDimensions, setShowDimensions] = useState(true);
+  const [showCardinalOrientation, setShowCardinalOrientation] = useState(true);
+  const [calibratedNorth, setCalibratedNorth] = useState<number | null>(null);
 
   const isPosition = editor.mode === 'position';
   const selectedBed = editor.placedBeds.find(
     (bed) => bed.id === editor.selectedId
   );
   const selectedBedId = selectedBed?.id ?? null;
+  const effectiveNorthAngle = calibratedNorth ?? layout.location.northAngle;
+  const bedAzimuth = selectedBed
+    ? calculateNetAzimuth(effectiveNorthAngle, editor.selectedRotation)
+    : null;
+
+  const { setSelectedRotation } = editor;
+  const handleBedRotationChange = useCallback(
+    (newAzimuth: number): void => {
+      const rotation = normalizeAngle(newAzimuth - (effectiveNorthAngle ?? 0));
+      setSelectedRotation(rotation);
+    },
+    [setSelectedRotation, effectiveNorthAngle]
+  );
 
   const { bed: selectedBedDetail, etag: selectedBedEtag } = useBedForEdit(
     !isPosition ? selectedBedId : null
@@ -112,25 +124,29 @@ export default function LocationLayoutView({
     );
   };
 
-  const handleBedUpdated = (): void => {
-    void queryClient.invalidateQueries({ queryKey: locationKeys.layout(id) });
-  };
-
   const handleConfirmDelete = async (): Promise<void> => {
     if (!selectedBedId || !selectedBedEtag) return;
-    const bedName = selectedBed?.name ?? '';
     try {
       await remove.mutateAsync({
         id: selectedBedId,
         etag: selectedBedEtag,
         locationId: id
       });
-      showSuccessToast(t('bed.delete.success', { name: bedName }));
+      showSuccessToast(
+        t('bed.delete.success', { name: selectedBed?.name ?? '' })
+      );
       setIsDeleteOpen(false);
       handleDeselectBed();
     } catch (error) {
       showErrorToast(error, t('bed.delete.error'));
     }
+  };
+
+  const handleSaveNorth = (): void => {
+    if (effectiveNorthAngle === null) return;
+    northAngleMutation.mutate(effectiveNorthAngle, {
+      onSuccess: () => setCalibratedNorth(null)
+    });
   };
 
   return (
@@ -149,94 +165,36 @@ export default function LocationLayoutView({
         </Button>
       </header>
 
-      <div
-        className="location-layout-page__toolbar"
-        role="toolbar"
-        aria-label={t('bed.layout.mode_group_label')}
-      >
-        <LayoutModeToggle active={isPosition} onToggle={editor.toggleMode} />
-        <span
-          className="location-layout-page__toolbar-divider"
-          aria-hidden="true"
-        />
-        {isPosition ? (
-          <>
-            <div className="location-layout-page__toolbar-group">
-              <SnapToggle
-                enabled={editor.gridSnapEnabled}
-                onToggle={editor.toggleGridSnap}
-                label={t('bed.layout.grid_snap_label')}
-              />
-              <SnapToggle
-                enabled={editor.neighborSnapEnabled}
-                onToggle={editor.toggleNeighborSnap}
-                label={t('bed.layout.neighbor_snap_label')}
-              />
-              <BedRotationControl
-                value={editor.selectedRotation}
-                onChange={editor.setSelectedRotation}
-                disabled={!editor.selectedId}
-              />
-              {selectedBed && (
-                <Button variant="neutral" onClick={editor.unplaceSelected}>
-                  {t('bed.layout.unplace_action', { name: selectedBed.name })}
-                </Button>
-              )}
-            </div>
-            <div className="location-layout-page__toolbar-spacer" />
-            <LayoutSaveBar
-              dirty={editor.dirty}
-              saving={editor.saving}
-              onSave={editor.save}
-              onDiscard={editor.discard}
-            />
-          </>
-        ) : (
-          <>
-            <BedGridControls
-              activeLayers={activeGridLayers}
-              onToggleLayer={handleToggleGridLayer}
-            />
-            <div className="location-layout-page__toolbar-group">
-              <SnapToggle
-                enabled={showBedNames}
-                onToggle={() => setShowBedNames((prev) => !prev)}
-                label={t('bed.layout.show_names_label')}
-              />
-              <SnapToggle
-                enabled={showDimensions}
-                onToggle={() => setShowDimensions((prev) => !prev)}
-                label={t('bed.layout.show_dimensions_label')}
-              />
-            </div>
-            {selectedBed && (
-              <>
-                <div className="location-layout-page__toolbar-spacer" />
-                <div className="location-layout-page__bed-actions">
-                  <Button variant="secondary">
-                    {t('bed.layout.manage_plants', { name: selectedBed.name })}
-                  </Button>
-                  <EditButton
-                    ariaLabel={t('bed.layout.edit_bed', {
-                      name: selectedBed.name
-                    })}
-                    onClick={() => setIsEditOpen(true)}
-                  />
-                  {canDeleteSelectedBed && (
-                    <DeleteButton
-                      ariaLabel={t('bed.layout.delete_bed', {
-                        name: selectedBed.name
-                      })}
-                      isDeleting={remove.isPending}
-                      onClick={() => setIsDeleteOpen(true)}
-                    />
-                  )}
-                </div>
-              </>
-            )}
-          </>
-        )}
-      </div>
+      <LocationLayoutToolbar
+        isPosition={isPosition}
+        onToggleMode={editor.toggleMode}
+        gridSnapEnabled={editor.gridSnapEnabled}
+        onToggleGridSnap={editor.toggleGridSnap}
+        neighborSnapEnabled={editor.neighborSnapEnabled}
+        onToggleNeighborSnap={editor.toggleNeighborSnap}
+        selectedRotation={editor.selectedRotation}
+        onRotationChange={editor.setSelectedRotation}
+        selectedBed={selectedBed}
+        onUnplaceSelected={editor.unplaceSelected}
+        dirty={editor.dirty}
+        saving={editor.saving}
+        onSave={editor.save}
+        onDiscard={editor.discard}
+        activeGridLayers={activeGridLayers}
+        onToggleGridLayer={handleToggleGridLayer}
+        showBedNames={showBedNames}
+        onToggleShowNames={() => setShowBedNames((prev) => !prev)}
+        showDimensions={showDimensions}
+        onToggleShowDimensions={() => setShowDimensions((prev) => !prev)}
+        showCardinalOrientation={showCardinalOrientation}
+        onToggleShowCardinalOrientation={() =>
+          setShowCardinalOrientation((prev) => !prev)
+        }
+        onOpenEdit={() => setIsEditOpen(true)}
+        canDeleteSelectedBed={canDeleteSelectedBed}
+        isDeletingBed={remove.isPending}
+        onOpenDelete={() => setIsDeleteOpen(true)}
+      />
 
       <div className="location-layout-page__workspace">
         <div className="location-layout-page__canvas">
@@ -252,6 +210,8 @@ export default function LocationLayoutView({
             gridLayers={isPosition ? null : activeGridLayers}
             showNames={showBedNames}
             showDimensions={showDimensions}
+            northAngle={effectiveNorthAngle}
+            showCardinalOrientation={showCardinalOrientation}
             floorWidth={layout.location.width}
             floorHeight={layout.location.height}
             onSelectBed={editor.selectBed}
@@ -260,8 +220,17 @@ export default function LocationLayoutView({
             onBedRotate={editor.rotateBedBy}
           />
           <LayoutScaleBar viewBox={editor.viewBox} zoom={viewport.zoom} />
-          <div className="location-layout-page__viewport">
+          <div className="location-layout-page__hud">
             <LayoutViewportControls viewport={viewport} />
+            <BedCompassHud
+              northAngle={effectiveNorthAngle}
+              bedAzimuth={bedAzimuth}
+              mode={editor.mode}
+              onBedRotationChange={handleBedRotationChange}
+              onNorthAngleChange={setCalibratedNorth}
+              onSaveNorthAngle={handleSaveNorth}
+              isSavingNorth={northAngleMutation.isPending}
+            />
           </div>
         </div>
         {editor.unplacedBeds.length > 0 && (
@@ -273,42 +242,28 @@ export default function LocationLayoutView({
         )}
       </div>
 
-      <BedCreateDrawer
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onCreated={handleBedCreated}
-        initialLocationId={id}
-      />
-
-      <BedEditDrawer
-        isOpen={isEditOpen}
-        bedId={selectedBedId}
-        onClose={() => setIsEditOpen(false)}
-        onSaved={handleBedUpdated}
-      />
-
-      <DeleteBedModal
-        isOpen={isDeleteOpen}
-        bedName={selectedBed?.name ?? ''}
+      <LocationLayoutDialogs
+        locationId={id}
+        selectedBedId={selectedBedId}
+        selectedBedName={selectedBed?.name ?? ''}
+        isCreateOpen={isCreateOpen}
+        isEditOpen={isEditOpen}
+        isDeleteOpen={isDeleteOpen}
         isDeleting={remove.isPending}
-        onClose={() => setIsDeleteOpen(false)}
-        onConfirm={() => {
-          void handleConfirmDelete();
-        }}
-      />
-
-      <CancelConfirmModal
-        isOpen={editor.discardOpen}
-        onConfirm={editor.confirmDiscard}
-        onCancel={editor.cancelDiscard}
-        title={t('bed.layout.discard_title')}
-        prompt={t('bed.layout.discard_message')}
-        confirmText={t('bed.layout.discard_confirm')}
-        cancelText={t('bed.layout.discard_cancel')}
-      />
-      <UnsavedChangesGuard
-        when={editor.dirty}
-        prompt={t('bed.layout.discard_message')}
+        discardOpen={editor.discardOpen}
+        dirty={editor.dirty}
+        onCloseCreate={() => setIsCreateOpen(false)}
+        onCloseEdit={() => setIsEditOpen(false)}
+        onCloseDelete={() => setIsDeleteOpen(false)}
+        onCreated={handleBedCreated}
+        onUpdated={() =>
+          void queryClient.invalidateQueries({
+            queryKey: locationKeys.layout(id)
+          })
+        }
+        onConfirmDelete={() => void handleConfirmDelete()}
+        onConfirmDiscard={editor.confirmDiscard}
+        onCancelDiscard={editor.cancelDiscard}
       />
     </main>
   );

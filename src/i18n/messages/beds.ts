@@ -173,6 +173,7 @@ export const bedsMessages = {
       neighbor_snap_label: 'Ajustar a bancales vecinos',
       show_names_label: 'Mostrar nombres de bancales',
       show_dimensions_label: 'Mostrar líneas de cota',
+      show_cardinal_label: 'Mostrar orientación cardinal',
       rotation_label: 'Rotación en grados',
       rotation_hint: 'Entero entre 0 y 359 grados.',
       save: 'Guardar disposición',
@@ -195,6 +196,31 @@ export const bedsMessages = {
         'Tienes cambios de disposición sin guardar. Si continúas, se perderán.',
       discard_confirm: 'Descartar',
       discard_cancel: 'Seguir editando'
+    },
+    cardinal: {
+      compass_hud_label: 'Brújula y orientación cardinal',
+      compass_drag_hint: 'Arrastra para girar',
+      terrain_north_title: 'Norte del terreno: {angle}°',
+      terrain_north_default: 'Norte estándar del plano (0°)',
+      bed_heading_title: 'Rumbo del bancal: {angle}° {wind}',
+      calibrate_north_action: 'Guardar',
+      calibrating_north: 'Guardando...',
+      point_north: 'N',
+      point_east: 'E',
+      point_south: 'S',
+      point_west: 'O',
+      wind_north: 'Norte',
+      wind_northeast: 'Noreste',
+      wind_east: 'Este',
+      wind_southeast: 'Sureste',
+      wind_south: 'Sur',
+      wind_southwest: 'Suroeste',
+      wind_west: 'Oeste',
+      wind_northwest: 'Noroeste',
+      edge_north_label: 'Lado orientado al Norte',
+      edge_east_label: 'Lado orientado al Este',
+      edge_south_label: 'Lado orientado al Sur',
+      edge_west_label: 'Lado orientado al Oeste'
     }
   }
 };

@@ -1,6 +1,7 @@
-import { useId, type ChangeEvent, type JSX } from 'react';
+import { useId, type ChangeEvent, type JSX, type KeyboardEvent } from 'react';
 
 import { t } from '../../../i18n/core/t';
+import { normalizeAngle } from './utils/cardinalGeometry';
 
 import './layoutControls.css';
 
@@ -20,7 +21,18 @@ export default function BedRotationControl({
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const parsed = Number(event.target.value);
     if (Number.isNaN(parsed)) return;
-    onChange(parsed);
+    onChange(normalizeAngle(parsed));
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
+    const isStepUp = event.key === 'ArrowUp' || event.key === 'ArrowRight';
+    const isStepDown = event.key === 'ArrowDown' || event.key === 'ArrowLeft';
+    if (!isStepUp && !isStepDown) return;
+
+    event.preventDefault();
+    const step = event.shiftKey ? 15 : 1;
+    const delta = isStepUp ? step : -step;
+    onChange(normalizeAngle(value + delta));
   };
 
   return (
@@ -39,6 +51,7 @@ export default function BedRotationControl({
         value={value}
         disabled={disabled}
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
       />
     </div>
   );

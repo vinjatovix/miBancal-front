@@ -190,4 +190,64 @@ describe('LocationLayoutCanvas', () => {
       expect(onBedRotate).toHaveBeenCalledWith('bed-1', expectedDelta);
     }
   );
+
+  it('renders cardinal edge labels only for the selected bed when enabled', () => {
+    const { container } = render(
+      <LocationLayoutCanvas
+        beds={BEDS}
+        viewBox="0 0 400 400"
+        label="Layout"
+        mode="read"
+        selectedId="bed-1"
+        northAngle={0}
+        showCardinalOrientation={true}
+        viewport={buildViewport()}
+      />
+    );
+
+    const badges = container.querySelectorAll(
+      '.layout-bed-cardinal-labels__badge'
+    );
+    expect(badges).toHaveLength(4);
+  });
+
+  it('does not render cardinal edge labels when no bed is selected', () => {
+    const { container } = render(
+      <LocationLayoutCanvas
+        beds={BEDS}
+        viewBox="0 0 400 400"
+        label="Layout"
+        mode="read"
+        selectedId={null}
+        northAngle={0}
+        showCardinalOrientation={true}
+        viewport={buildViewport()}
+      />
+    );
+
+    const badges = container.querySelectorAll(
+      '.layout-bed-cardinal-labels__badge'
+    );
+    expect(badges).toHaveLength(0);
+  });
+
+  it('does not render cardinal edge labels when cardinal orientation is disabled even if a bed is selected', () => {
+    const { container } = render(
+      <LocationLayoutCanvas
+        beds={BEDS}
+        viewBox="0 0 400 400"
+        label="Layout"
+        mode="read"
+        selectedId="bed-1"
+        northAngle={0}
+        showCardinalOrientation={false}
+        viewport={buildViewport()}
+      />
+    );
+
+    const badges = container.querySelectorAll(
+      '.layout-bed-cardinal-labels__badge'
+    );
+    expect(badges).toHaveLength(0);
+  });
 });

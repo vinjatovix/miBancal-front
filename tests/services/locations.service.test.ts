@@ -42,7 +42,7 @@ afterEach(() => {
 });
 
 describe('getLocationList', () => {
-  it('pide la lista con paginación y orden por defecto', async () => {
+  it('requests the list with default pagination and sort', async () => {
     const fetchMock = stubFetchOk(listLocationsResponse);
 
     await getLocationList(DEFAULT_REQUEST);
@@ -60,7 +60,7 @@ describe('getLocationList', () => {
     ['name', 'desc'],
     ['createdAt', 'asc'],
     ['createdAt', 'desc']
-  ] as const)('ordena por sort[%s]=%s', async (field, direction) => {
+  ] as const)('sorts by sort[%s]=%s', async (field, direction) => {
     const fetchMock = stubFetchOk(listLocationsResponse);
 
     await getLocationList({ ...DEFAULT_REQUEST, sort: { field, direction } });
@@ -72,7 +72,7 @@ describe('getLocationList', () => {
     expect(validateRequest('get', url)).toEqual([]);
   });
 
-  it('devuelve los datos y la paginación', async () => {
+  it('returns data and pagination', async () => {
     stubFetchOk(listLocationsResponse);
 
     await expect(getLocationList(DEFAULT_REQUEST)).resolves.toEqual(
@@ -80,7 +80,7 @@ describe('getLocationList', () => {
     );
   });
 
-  it('rechaza con ApiError ante un error de la API', async () => {
+  it('rejects with ApiError on an API error', async () => {
     stubFetchError(401, { message: 'Unauthorized' });
 
     const error = await getLocationList(DEFAULT_REQUEST).catch(
@@ -93,7 +93,7 @@ describe('getLocationList', () => {
 });
 
 describe('getLocationForEdit', () => {
-  it('hace GET completo y extrae el ETag', async () => {
+  it('performs full GET and extracts ETag', async () => {
     const location = buildLocation({ id: 'loc-1' });
     const fetchMock = stubFetchOk(location, { ETag: '"1"' });
 
@@ -105,7 +105,7 @@ describe('getLocationForEdit', () => {
     expect(result).toEqual({ location, etag: '"1"' });
   });
 
-  it('devuelve etag vacío cuando falta la cabecera', async () => {
+  it('returns empty etag when the header is missing', async () => {
     const location = buildLocation({ id: 'loc-1' });
     stubFetchOk(location);
 
@@ -116,7 +116,7 @@ describe('getLocationForEdit', () => {
 });
 
 describe('createLocation', () => {
-  it('hace POST, devuelve la ubicación y su ETag', async () => {
+  it('performs POST, returns location and its ETag', async () => {
     const created = buildLocation({ id: 'new-id' });
     const input: CreateLocationRequest = {
       id: 'new-id',
@@ -136,7 +136,7 @@ describe('createLocation', () => {
     expect(result).toEqual({ location: created, etag: '"1"' });
   });
 
-  it('genera el id con crypto.randomUUID cuando falta', async () => {
+  it('generates id with crypto.randomUUID when missing', async () => {
     const created = buildLocation();
     const fetchMock = stubFetchOk(created, { ETag: '"1"' });
     vi.spyOn(crypto, 'randomUUID').mockReturnValue(
@@ -156,10 +156,31 @@ describe('createLocation', () => {
     expect(body.longitude).toBe(-3.7038);
     vi.restoreAllMocks();
   });
+
+  it('serializes and transmits northAngle when provided in creation payload', async () => {
+    const created = buildLocation({ id: 'new-id', northAngle: 45 });
+    const input: CreateLocationRequest = {
+      id: 'new-id',
+      name: 'Huerto orientado',
+      latitude: 40.4168,
+      longitude: -3.7038,
+      northAngle: 45
+    };
+    const fetchMock = stubFetchOk(created, { ETag: '"1"' });
+
+    const result = await createLocation(input);
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/locations`);
+    expect(init?.method).toBe('POST');
+    expect(JSON.parse(init?.body as string)).toEqual(input);
+    expect(result).toEqual({ location: created, etag: '"1"' });
+    expect(validateRequest('post', url)).toEqual([]);
+  });
 });
 
 describe('updateLocation', () => {
-  it('hace PATCH con If-Match y devuelve el nuevo ETag', async () => {
+  it('performs PATCH with If-Match and returns new ETag', async () => {
     const updated = buildLocation({ id: 'loc-1', name: 'Renombrada' });
     const patch: UpdateLocationRequest = {
       name: 'Renombrada',
@@ -181,7 +202,28 @@ describe('updateLocation', () => {
     expect(result).toEqual({ location: updated, etag: '"2"' });
   });
 
-  it('propaga PreconditionFailedError ante un 412', async () => {
+  it('serializes and transmits northAngle in PATCH body with If-Match', async () => {
+    const updated = buildLocation({ id: 'loc-1', northAngle: 120 });
+    const patch: UpdateLocationRequest = {
+      northAngle: 120
+    };
+    const fetchMock = stubFetchOk(updated, { ETag: '"3"' });
+
+    const result = await updateLocation('loc-1', patch, '"2"');
+
+    const { url, init } = lastRequest(fetchMock);
+    expect(url).toBe(`${API_URL}/api/v1/locations/loc-1`);
+    expect(init?.method).toBe('PATCH');
+    expect(init?.headers).toMatchObject({
+      'Content-Type': 'application/json',
+      'If-Match': '"2"'
+    });
+    expect(JSON.parse(init?.body as string)).toEqual(patch);
+    expect(result).toEqual({ location: updated, etag: '"3"' });
+    expect(validateRequest('patch', url)).toEqual([]);
+  });
+
+  it('propagates PreconditionFailedError on a 412', async () => {
     stubFetchError(412, { message: 'Precondition failed' });
 
     const error = await updateLocation('loc-1', {}, '"1"').catch(
@@ -299,7 +341,7 @@ describe('updateBedsLayout', () => {
 });
 
 describe('deleteLocation', () => {
-  it('hace DELETE con If-Match y sin cuerpo', async () => {
+  it('performs DELETE with If-Match and no body', async () => {
     const fetchMock = stubFetchOk(undefined);
 
     await deleteLocation('loc-1', '"etag-1"');
@@ -311,7 +353,7 @@ describe('deleteLocation', () => {
     expect(init?.body).toBeUndefined();
   });
 
-  it('propaga PreconditionFailedError ante un 412', async () => {
+  it('propagates PreconditionFailedError on a 412', async () => {
     stubFetchError(412, { message: 'Precondition failed' });
 
     const error = await deleteLocation('loc-1', '"stale"').catch(
