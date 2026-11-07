@@ -2,6 +2,11 @@ import { useRef, type JSX, type KeyboardEvent, type PointerEvent } from 'react';
 
 import { t } from '../../../i18n/core/t';
 import LayoutBedDimensions from './LayoutBedDimensions';
+import LayoutBedCardinalEdgeLabels from './LayoutBedCardinalEdgeLabels';
+import {
+  calculateNetAzimuth,
+  getBedEdgeCardinals
+} from './utils/cardinalGeometry';
 import BedGridLayers from '../visualizer/BedGridLayers';
 import type { BedViewportState } from '../visualizer/hooks/useBedViewport';
 import type { ActiveGridLayers } from '../visualizer/utils/bedGridConfig';
@@ -26,6 +31,8 @@ export interface LocationLayoutCanvasProps {
   readonly gridLayers?: ActiveGridLayers | null;
   readonly showNames?: boolean;
   readonly showDimensions?: boolean;
+  readonly northAngle?: number | null;
+  readonly showCardinalOrientation?: boolean;
   readonly floorWidth?: number | null;
   readonly floorHeight?: number | null;
   readonly onSelectBed?: (id: string) => void;
@@ -95,6 +102,8 @@ export default function LocationLayoutCanvas({
   gridLayers = null,
   showNames = true,
   showDimensions = true,
+  northAngle = null,
+  showCardinalOrientation = true,
   floorWidth = null,
   floorHeight = null,
   onSelectBed,
@@ -294,6 +303,22 @@ export default function LocationLayoutCanvas({
             <LayoutBedDimensions
               width={selectedBed.width}
               height={selectedBed.height}
+            />
+          </g>
+        )}
+        {selectedBed && showCardinalOrientation && (
+          <g
+            className="location-layout-canvas__cardinal-labels"
+            transform={`translate(${selectedBed.position.x} ${selectedBed.position.y}) rotate(${selectedBed.rotation})`}
+            pointerEvents="none"
+          >
+            <LayoutBedCardinalEdgeLabels
+              width={selectedBed.width}
+              height={selectedBed.height}
+              cardinals={getBedEdgeCardinals(
+                calculateNetAzimuth(northAngle, selectedBed.rotation)
+              )}
+              zoom={viewport.zoom}
             />
           </g>
         )}

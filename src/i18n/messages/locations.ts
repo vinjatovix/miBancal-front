@@ -84,6 +84,12 @@ export const locationsMessages = {
       conflict_title: 'Conflicto al eliminar',
       conflict_message:
         'Esta ubicación se ha modificado en otro sitio. Hemos recargado los datos; vuelve a intentarlo.'
+    },
+    layout: {
+      north_angle_saved:
+        'Orientación Norte de la localización guardada correctamente',
+      north_angle_save_error:
+        'Error al guardar la orientación Norte de la localización'
     }
   }
 } as const;

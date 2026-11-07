@@ -39,4 +39,35 @@ describe('BedRotationControl', () => {
       screen.getByRole('spinbutton', { name: 'Rotación en grados' })
     ).toBeDisabled();
   });
+
+  it.each([
+    ['ArrowUp', false, 45, 46],
+    ['ArrowRight', false, 45, 46],
+    ['ArrowDown', false, 45, 44],
+    ['ArrowLeft', false, 45, 44],
+    ['ArrowUp', true, 45, 60],
+    ['ArrowRight', true, 45, 60],
+    ['ArrowDown', true, 45, 30],
+    ['ArrowLeft', true, 45, 30],
+    ['ArrowUp', false, 359, 0],
+    ['ArrowDown', false, 0, 359],
+    ['ArrowUp', true, 350, 5],
+    ['ArrowDown', true, 10, 355]
+  ])(
+    'handles key %s with shift=%s from %i to %i',
+    async (key, shiftKey, initialValue, expectedValue) => {
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+
+      render(<BedRotationControl value={initialValue} onChange={onChange} />);
+
+      const field = screen.getByRole('spinbutton', {
+        name: 'Rotación en grados'
+      });
+      await user.click(field);
+      await user.keyboard(shiftKey ? `{Shift>}{${key}}{/Shift}` : `{${key}}`);
+
+      expect(onChange).toHaveBeenCalledWith(expectedValue);
+    }
+  );
 });

@@ -31,7 +31,8 @@ function buildCreateBody(input: CreateLocationRequest): CreateLocationRequest {
     id: input.id || crypto.randomUUID(),
     name: input.name,
     latitude: input.latitude,
-    longitude: input.longitude
+    longitude: input.longitude,
+    northAngle: input.northAngle
   };
 }
 
