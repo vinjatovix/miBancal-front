@@ -6,6 +6,11 @@ import {
   type WheelEvent
 } from 'react';
 
+import {
+  animateViewportTransition,
+  type ViewportCoordinates
+} from '../../layout/utils/viewportTransition';
+
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 5.0;
 const DEFAULT_ZOOM = 1.0;
@@ -16,6 +21,7 @@ export interface BedViewportState {
   readonly panX: number;
   readonly panY: number;
   readonly isDragging: boolean;
+  readonly zoomPercent: number;
   readonly zoomIn: () => void;
   readonly zoomOut: () => void;
   readonly resetZoom: () => void;
@@ -30,6 +36,14 @@ export interface BedViewportState {
     fillFactor?: number
   ) => void;
   readonly panBy: (dx: number, dy: number) => void;
+  readonly animateTo: (
+    target: ViewportCoordinates,
+    durationMs?: number
+  ) => void;
+  readonly compensateWidthChange: (
+    prevWidth: number,
+    nextWidth: number
+  ) => void;
   readonly onPointerDown: (e: PointerEvent<SVGSVGElement>) => void;
   readonly onPointerMove: (e: PointerEvent<SVGSVGElement>) => void;
   readonly onPointerUp: (e: PointerEvent<SVGSVGElement>) => void;
@@ -42,28 +56,74 @@ export function useBedViewport(): BedViewportState {
   const [panY, setPanY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
+  const cancelAnimationRef = useRef<(() => void) | null>(null);
   const dragStartRef = useRef<{
     readonly x: number;
     readonly y: number;
   } | null>(null);
+  const activePointersRef = useRef<Map<number, { x: number; y: number }>>(
+    new Map()
+  );
+  const initialPinchDistanceRef = useRef<number | null>(null);
+
+  const cancelActiveAnimation = useCallback(() => {
+    if (cancelAnimationRef.current) {
+      cancelAnimationRef.current();
+      cancelAnimationRef.current = null;
+    }
+  }, []);
 
   const zoomIn = useCallback(() => {
+    cancelActiveAnimation();
     setZoom((prev) =>
       Math.min(MAX_ZOOM, Number((prev * ZOOM_FACTOR).toFixed(4)))
     );
-  }, []);
+  }, [cancelActiveAnimation]);
 
   const zoomOut = useCallback(() => {
+    cancelActiveAnimation();
     setZoom((prev) =>
       Math.max(MIN_ZOOM, Number((prev / ZOOM_FACTOR).toFixed(4)))
     );
-  }, []);
+  }, [cancelActiveAnimation]);
 
   const resetZoom = useCallback(() => {
+    cancelActiveAnimation();
     setZoom(DEFAULT_ZOOM);
     setPanX(0);
     setPanY(0);
-  }, []);
+  }, [cancelActiveAnimation]);
+
+  const animateTo = useCallback(
+    (target: ViewportCoordinates, durationMs?: number) => {
+      cancelActiveAnimation();
+      cancelAnimationRef.current = animateViewportTransition(
+        { zoom, panX, panY },
+        target,
+        {
+          durationMs,
+          onUpdate: (coords) => {
+            setZoom(coords.zoom);
+            setPanX(coords.panX);
+            setPanY(coords.panY);
+          },
+          onComplete: () => {
+            cancelAnimationRef.current = null;
+          }
+        }
+      );
+    },
+    [zoom, panX, panY, cancelActiveAnimation]
+  );
+
+  const compensateWidthChange = useCallback(
+    (prevWidth: number, nextWidth: number) => {
+      if (prevWidth <= 0 || nextWidth <= 0 || prevWidth === nextWidth) return;
+      const deltaX = (nextWidth - prevWidth) / 2;
+      setPanX((prev) => Number((prev + deltaX).toFixed(2)));
+    },
+    []
+  );
 
   const fitToBounds = useCallback(
     (
@@ -76,6 +136,7 @@ export function useBedViewport(): BedViewportState {
       viewBox: string,
       fillFactor = 0.85
     ) => {
+      cancelActiveAnimation();
       const [vx, vy, vw, vh] = viewBox.split(/\s+/).map(Number);
       if ([vx, vy, vw, vh].some((value) => !Number.isFinite(value))) return;
       const boundsWidth = bounds.maxX - bounds.minX;
@@ -102,7 +163,7 @@ export function useBedViewport(): BedViewportState {
       setPanX(nextZoom * (viewCenterX - boundsCenterX));
       setPanY(nextZoom * (viewCenterY - boundsCenterY));
     },
-    []
+    [cancelActiveAnimation]
   );
 
   const panBy = useCallback((dx: number, dy: number) => {
@@ -110,14 +171,54 @@ export function useBedViewport(): BedViewportState {
     setPanY((prev) => prev + dy);
   }, []);
 
-  const onPointerDown = useCallback((e: PointerEvent<SVGSVGElement>) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragStartRef.current = { x: e.clientX, y: e.clientY };
-    setIsDragging(true);
-  }, []);
+  const onPointerDown = useCallback(
+    (e: PointerEvent<SVGSVGElement>) => {
+      cancelActiveAnimation();
+      e.currentTarget.setPointerCapture(e.pointerId);
+      activePointersRef.current.set(e.pointerId, {
+        x: e.clientX,
+        y: e.clientY
+      });
+
+      if (activePointersRef.current.size === 2) {
+        const [p1, p2] = Array.from(activePointersRef.current.values());
+        initialPinchDistanceRef.current = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+        dragStartRef.current = null;
+        return;
+      }
+
+      dragStartRef.current = { x: e.clientX, y: e.clientY };
+      setIsDragging(true);
+    },
+    [cancelActiveAnimation]
+  );
 
   const onPointerMove = useCallback(
     (e: PointerEvent<SVGSVGElement>) => {
+      activePointersRef.current.set(e.pointerId, {
+        x: e.clientX,
+        y: e.clientY
+      });
+
+      if (
+        activePointersRef.current.size === 2 &&
+        initialPinchDistanceRef.current !== null &&
+        initialPinchDistanceRef.current > 0
+      ) {
+        const [p1, p2] = Array.from(activePointersRef.current.values());
+        const currentDistance = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+        const ratio = currentDistance / initialPinchDistanceRef.current;
+        initialPinchDistanceRef.current = currentDistance;
+
+        setZoom((prev) =>
+          Math.min(
+            MAX_ZOOM,
+            Math.max(MIN_ZOOM, Number((prev * ratio).toFixed(4)))
+          )
+        );
+        return;
+      }
+
       if (!dragStartRef.current) return;
       const dx = e.clientX - dragStartRef.current.x;
       const dy = e.clientY - dragStartRef.current.y;
@@ -131,17 +232,41 @@ export function useBedViewport(): BedViewportState {
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
+    activePointersRef.current.delete(e.pointerId);
+    if (activePointersRef.current.size < 2) {
+      initialPinchDistanceRef.current = null;
+    }
     dragStartRef.current = null;
     setIsDragging(false);
   }, []);
 
   const onWheel = useCallback((e: WheelEvent<SVGSVGElement>) => {
     e.preventDefault();
-    if (e.deltaY < 0) {
-      setZoom((prev) => Math.min(MAX_ZOOM, Number((prev * 1.1).toFixed(4))));
-    } else if (e.deltaY > 0) {
-      setZoom((prev) => Math.max(MIN_ZOOM, Number((prev / 1.1).toFixed(4))));
-    }
+    const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+
+    setZoom((prevZoom) => {
+      const nextZoom = Math.min(
+        MAX_ZOOM,
+        Math.max(MIN_ZOOM, Number((prevZoom * factor).toFixed(4)))
+      );
+      if (nextZoom === prevZoom) return prevZoom;
+
+      const svg = e.currentTarget;
+      if (svg && typeof svg.getBoundingClientRect === 'function') {
+        const rect = svg.getBoundingClientRect();
+        const cursorX = e.clientX - (rect.left + rect.width / 2);
+        const cursorY = e.clientY - (rect.top + rect.height / 2);
+        const ratio = nextZoom / prevZoom;
+        setPanX((prevPanX) =>
+          Number((cursorX * (1 - ratio) + prevPanX * ratio).toFixed(2))
+        );
+        setPanY((prevPanY) =>
+          Number((cursorY * (1 - ratio) + prevPanY * ratio).toFixed(2))
+        );
+      }
+
+      return nextZoom;
+    });
   }, []);
 
   return {
@@ -149,11 +274,14 @@ export function useBedViewport(): BedViewportState {
     panX,
     panY,
     isDragging,
+    zoomPercent: Math.round(zoom * 100),
     zoomIn,
     zoomOut,
     resetZoom,
     fitToBounds,
     panBy,
+    animateTo,
+    compensateWidthChange,
     onPointerDown,
     onPointerMove,
     onPointerUp,

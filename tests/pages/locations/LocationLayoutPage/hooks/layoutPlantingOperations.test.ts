@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   batchCreateCrops,
   batchDeleteCrops,
-  batchDuplicateCrops,
   batchUpdateCrops,
+  computeDuplicatePlacements,
   evaluateStoredPlacement
 } from '../../../../../src/pages/locations/LocationLayoutPage/hooks/layoutPlantingOperations';
 import {
@@ -199,86 +199,118 @@ describe('batchUpdateCrops', () => {
   });
 });
 
-describe('batchDuplicateCrops', () => {
-  it('places duplicates offset from their original positions within bed limits', async () => {
-    mockedBatchPlace.mockResolvedValue({ data: [] });
+describe('computeDuplicatePlacements', () => {
+  it('places a duplicate clear of its original using a radius-based offset', () => {
     const crops = [
       buildCropPlacementItem({
         id: 'crop-1',
         bedId: BED_ID,
         plantId: 'plant-tomato',
-        position: { x: 20, y: 20 }
+        position: { x: 20, y: 20 },
+        vitalRadius: 25
       })
     ];
 
-    await batchDuplicateCrops(crops, BED_DIMENSIONS, { x: 15, y: 15 });
+    const result = computeDuplicatePlacements(crops, BED_DIMENSIONS);
 
-    expect(mockedBatchPlace).toHaveBeenCalledTimes(1);
-    expect(mockedBatchPlace).toHaveBeenCalledWith({
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
       bedId: BED_ID,
-      items: [
-        {
-          id: expect.any(String),
-          plantId: 'plant-tomato',
-          position: { x: 35, y: 35 },
-          growthStatus: 'planted'
-        }
-      ]
+      plantId: 'plant-tomato',
+      vitalRadius: 25,
+      position: { x: 71, y: 71 }
     });
   });
 
-  it('omits crops whose duplicated position lands outside bed dimensions', async () => {
-    mockedBatchPlace.mockResolvedValue({ data: [] });
+  it('relocates a duplicate inward when the default offset would leave the bed', () => {
     const crops = [
       buildCropPlacementItem({
         id: 'crop-edge',
         bedId: BED_ID,
-        position: { x: 195, y: 95 }
+        position: { x: 195, y: 95 },
+        vitalRadius: 25
       })
     ];
 
-    await batchDuplicateCrops(crops, BED_DIMENSIONS, { x: 20, y: 20 });
+    const result = computeDuplicatePlacements(crops, BED_DIMENSIONS);
 
-    expect(mockedBatchPlace).not.toHaveBeenCalled();
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ position: { x: 144, y: 95 } });
   });
 
-  it('groups duplicate requests by bed when crops belong to multiple beds', async () => {
-    mockedBatchPlace.mockResolvedValue({ data: [] });
+  it('omits crops when no collision-free position fits inside the bed', () => {
+    const crops = [
+      buildCropPlacementItem({
+        id: 'crop-cramped',
+        bedId: BED_ID,
+        position: { x: 2, y: 2 },
+        vitalRadius: 25
+      })
+    ];
+
+    const result = computeDuplicatePlacements(crops, { width: 5, height: 5 });
+
+    expect(result).toHaveLength(0);
+  });
+
+  it('keeps duplicates of a group from colliding with each other', () => {
+    const crops = [
+      buildCropPlacementItem({
+        id: 'crop-a',
+        bedId: BED_ID,
+        plantId: 'p',
+        position: { x: 40, y: 40 },
+        vitalRadius: 25
+      }),
+      buildCropPlacementItem({
+        id: 'crop-b',
+        bedId: BED_ID,
+        plantId: 'p',
+        position: { x: 60, y: 40 },
+        vitalRadius: 25
+      })
+    ];
+
+    const result = computeDuplicatePlacements(crops, BED_DIMENSIONS, crops);
+
+    expect(result).toHaveLength(2);
+    const [first, second] = result;
+    if (!first || !second) throw new Error('expected two placements');
+    const distance = Math.hypot(
+      first.position.x - second.position.x,
+      first.position.y - second.position.y
+    );
+    expect(distance).toBeGreaterThanOrEqual(50);
+  });
+
+  it('keeps duplicates grouped by bed when crops belong to multiple beds', () => {
     const crops = [
       buildCropPlacementItem({
         id: 'crop-bed-1',
         bedId: 'bed-1',
         plantId: 'p1',
-        position: { x: 10, y: 10 }
+        position: { x: 10, y: 10 },
+        vitalRadius: 25
       }),
       buildCropPlacementItem({
         id: 'crop-bed-2',
         bedId: 'bed-2',
         plantId: 'p2',
-        position: { x: 20, y: 20 }
+        position: { x: 20, y: 20 },
+        vitalRadius: 25
       })
     ];
 
-    await batchDuplicateCrops(crops, BED_DIMENSIONS, { x: 10, y: 10 });
+    const result = computeDuplicatePlacements(crops, BED_DIMENSIONS);
 
-    expect(mockedBatchPlace).toHaveBeenCalledTimes(2);
-    expect(mockedBatchPlace).toHaveBeenCalledWith({
-      bedId: 'bed-1',
-      items: [
-        expect.objectContaining({
-          plantId: 'p1',
-          position: { x: 20, y: 20 }
-        })
-      ]
+    expect(result).toHaveLength(2);
+    expect(result.find((item) => item.bedId === 'bed-1')).toMatchObject({
+      plantId: 'p1',
+      position: { x: 61, y: 61 }
     });
-    expect(mockedBatchPlace).toHaveBeenCalledWith({
-      bedId: 'bed-2',
-      items: [
-        expect.objectContaining({
-          plantId: 'p2',
-          position: { x: 30, y: 30 }
-        })
-      ]
+    expect(result.find((item) => item.bedId === 'bed-2')).toMatchObject({
+      plantId: 'p2',
+      position: { x: 71, y: 71 }
     });
   });
 });

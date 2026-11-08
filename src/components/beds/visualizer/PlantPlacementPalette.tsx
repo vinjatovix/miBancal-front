@@ -1,4 +1,5 @@
 import { useCallback, useState, type DragEvent, type JSX } from 'react';
+import { Link } from 'react-router-dom';
 
 import { t } from '../../../i18n/core/t';
 import Icon from '../../../shared/components/Icon/Icon';
@@ -186,7 +187,15 @@ export default function PlantPlacementPalette({
           !query.isLoading &&
           !query.isError &&
           plants.length === 0 && (
-            <p className="plant-placement-palette__empty">{t(emptyKey)}</p>
+            <div className="plant-placement-palette__empty-state">
+              <p className="plant-placement-palette__empty">{t(emptyKey)}</p>
+              <Link
+                to="/plants/new"
+                className="app-button app-button--secondary app-button--sm"
+              >
+                {t('bed.placement.palette_create_plant')}
+              </Link>
+            </div>
           )}
         <ul className="plant-placement-palette__list">
           {plants.map((plant) => {

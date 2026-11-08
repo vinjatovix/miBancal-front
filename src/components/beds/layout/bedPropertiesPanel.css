@@ -1,0 +1,52 @@
+.bed-properties-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.bed-properties-panel__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-md);
+  color: var(--color-fg);
+}
+
+.bed-properties-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.bed-properties-panel__label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-fg-muted);
+}
+
+.bed-properties-panel__input {
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-bg-sunken);
+  border: 1px solid var(--color-border-decor);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-fg);
+}
+
+.bed-properties-panel__input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.bed-properties-panel__value {
+  font-family: monospace;
+  font-size: var(--font-size-sm);
+  color: var(--color-fg);
+}
+
+.bed-properties-panel__actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: var(--space-xs);
+}

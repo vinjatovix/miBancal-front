@@ -197,6 +197,15 @@
   color: var(--color-fg-muted);
 }
 
+.plant-placement-palette__empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  text-align: center;
+}
+
 @media (max-width: 768px) {
   .plant-placement-palette {
     max-width: 100%;

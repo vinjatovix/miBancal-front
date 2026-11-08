@@ -11,14 +11,13 @@ import type { ResolvedBed } from '../../../../components/beds/layout/utils/layou
 
 export interface UseLocationBedActionsParams {
   readonly locationId: string;
-  readonly isPosition: boolean;
+  readonly isPosition?: boolean;
   readonly selectedBed?: ResolvedBed;
   readonly onDeselectBed: () => void;
 }
 
 export function useLocationBedActions({
   locationId,
-  isPosition,
   selectedBed,
   onDeselectBed
 }: UseLocationBedActionsParams) {
@@ -33,9 +32,8 @@ export function useLocationBedActions({
 
   const selectedBedId = selectedBed?.id ?? null;
 
-  const { bed: selectedBedDetail, etag: selectedBedEtag } = useBedForEdit(
-    !isPosition ? selectedBedId : null
-  );
+  const { bed: selectedBedDetail, etag: selectedBedEtag } =
+    useBedForEdit(selectedBedId);
 
   const canDeleteSelectedBed =
     selectedBedDetail !== undefined &&

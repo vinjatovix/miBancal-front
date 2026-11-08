@@ -5,6 +5,7 @@ import type {
   BrushCandidatePosition,
   BrushDirectrix,
   GroupBoundingBox,
+  GroupMovePreview,
   MarqueeBox
 } from '../../../types/PlantInstance/brushSelectionTypes';
 import type { CropPlacementItem } from '../../../types/PlantInstance/plantPlacementTypes';
@@ -37,6 +38,7 @@ export interface LocationPlacementLayerProps {
   readonly boundingBoxBedId?: string | null;
   readonly marqueeBox?: MarqueeBox | null;
   readonly marqueeBedId?: string | null;
+  readonly groupMovePreview?: GroupMovePreview | null;
   readonly onSelectCrop: (cropId: string) => void;
   readonly onCropClick?: (
     event: MouseEvent<SVGGElement>,
@@ -66,6 +68,7 @@ export default function LocationPlacementLayer({
   boundingBoxBedId = null,
   marqueeBox = null,
   marqueeBedId = null,
+  groupMovePreview = null,
   onSelectCrop,
   onCropClick,
   onCropPointerDown,
@@ -82,9 +85,16 @@ export default function LocationPlacementLayer({
         const crops = cropsByBed.get(bed.id) ?? [];
         const showPreview = preview?.bedId === bed.id;
         const showBrush = isBrushDrawing && brushBedId === bed.id;
-        const showBounding =
+        const groupMove =
+          groupMovePreview && groupMovePreview.bedId === bed.id
+            ? groupMovePreview
+            : null;
+        const showBounding = Boolean(
+          !groupMove &&
           boundingBox &&
-          (boundingBoxBedId === null || boundingBoxBedId === bed.id);
+          boundingBoxBedId &&
+          boundingBoxBedId === bed.id
+        );
         const showMarquee = marqueeBox && marqueeBedId === bed.id;
 
         if (
@@ -92,7 +102,8 @@ export default function LocationPlacementLayer({
           !showPreview &&
           !showBrush &&
           !showBounding &&
-          !showMarquee
+          !showMarquee &&
+          !groupMove
         ) {
           return null;
         }
@@ -192,6 +203,39 @@ export default function LocationPlacementLayer({
                 isDrawing={isBrushDrawing}
               />
             )}
+            {groupMove &&
+              groupMove.items.map((item) => (
+                <g
+                  key={`group-move-${item.id}`}
+                  className={[
+                    'location-placement-layer__preview',
+                    item.hasCollision
+                      ? 'location-placement-layer__preview--collision'
+                      : '',
+                    item.isOutOfBounds
+                      ? 'location-placement-layer__preview--out'
+                      : ''
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  transform={`translate(${item.local.x} ${item.local.y})`}
+                  pointerEvents="none"
+                >
+                  <title>{item.commonName}</title>
+                  <circle
+                    className="location-placement-layer__radius"
+                    cx={0}
+                    cy={0}
+                    r={Math.max(item.vitalRadius, 1)}
+                  />
+                  <circle
+                    className="location-placement-layer__center"
+                    cx={0}
+                    cy={0}
+                    r={2.5}
+                  />
+                </g>
+              ))}
             {showBounding && (
               <BedSelectionBoundingBox boundingBox={boundingBox} />
             )}

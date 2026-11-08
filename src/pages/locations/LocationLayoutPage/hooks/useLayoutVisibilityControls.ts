@@ -55,6 +55,21 @@ export function useLayoutVisibilityControls({
     setActiveGridLayers((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const handleToggleGrids = useCallback((): void => {
+    setActiveGridLayers((prev) => {
+      const anyActive = Object.values(prev).some(Boolean);
+      if (anyActive) {
+        return {
+          sfg: false,
+          intermediate: false,
+          decimeters: false,
+          fine: false
+        };
+      }
+      return DEFAULT_ACTIVE_GRID_LAYERS;
+    });
+  }, []);
+
   const handleSaveNorth = (): void => {
     if (effectiveNorthAngle === null) return;
     northAngleMutation.mutate(effectiveNorthAngle, {
@@ -62,8 +77,11 @@ export function useLayoutVisibilityControls({
     });
   };
 
+  const showGrids = Object.values(activeGridLayers).some(Boolean);
+
   return {
     activeGridLayers,
+    showGrids,
     showBedNames,
     showDimensions,
     showCardinalOrientation,
@@ -72,6 +90,12 @@ export function useLayoutVisibilityControls({
     bedAzimuth,
     isSavingNorth: northAngleMutation.isPending,
     handleToggleGridLayer,
+    handleToggleGrids,
+    handleToggleShowNames: () => setShowBedNames((prev) => !prev),
+    handleToggleShowDimensions: () => setShowDimensions((prev) => !prev),
+    handleToggleShowCardinalOrientation: () =>
+      setShowCardinalOrientation((prev) => !prev),
+    handleToggleShowPlants: () => setShowPlants((prev) => !prev),
     handleBedRotationChange,
     setCalibratedNorth,
     handleSaveNorth,

@@ -1,5 +1,8 @@
 import {
+  useEffect,
+  useMemo,
   useRef,
+  useState,
   type DragEvent,
   type JSX,
   type KeyboardEvent,
@@ -7,6 +10,7 @@ import {
 } from 'react';
 
 import { t } from '../../../i18n/core/t';
+import FloatingObjectActions from './FloatingObjectActions';
 import LayoutBedDimensions from './LayoutBedDimensions';
 import LayoutBedCardinalEdgeLabels from './LayoutBedCardinalEdgeLabels';
 import LocationCropsLayer from './LocationCropsLayer';
@@ -29,12 +33,13 @@ import {
   type Point
 } from './utils/layoutGeometry';
 import { GRID_SPACING_CM } from './utils/snapConfig';
-import type { LayoutMode, ResolvedBed } from './utils/layoutTypes';
+import type { AnchorPoint, LayoutMode, ResolvedBed } from './utils/layoutTypes';
 import type { CropPlacementItem } from '../../../types/PlantInstance/plantPlacementTypes';
 import type {
   BrushCandidatePosition,
   BrushDirectrix,
   GroupBoundingBox,
+  GroupMovePreview,
   MarqueeBox,
   PlantingToolMode
 } from '../../../types/PlantInstance/brushSelectionTypes';
@@ -69,6 +74,7 @@ export interface LocationLayoutCanvasProps {
   readonly boundingBoxBedId?: string | null;
   readonly marqueeBox?: MarqueeBox | null;
   readonly marqueeBedId?: string | null;
+  readonly groupMovePreview?: GroupMovePreview | null;
   readonly onSelectBed?: (id: string) => void;
   readonly onDeselect?: () => void;
   readonly onBedMove?: (id: string, deltaCmX: number, deltaCmY: number) => void;
@@ -96,6 +102,9 @@ export interface LocationLayoutCanvasProps {
   readonly onMarqueePointerDown?: (global: Point, shiftKey: boolean) => void;
   readonly onMarqueePointerMove?: (global: Point, shiftKey: boolean) => void;
   readonly onMarqueePointerUp?: () => void;
+  readonly onBedUnplace?: () => void;
+  readonly onBedEdit?: () => void;
+  readonly onBedDelete?: () => void;
 }
 
 const FINE_STEP_CM = 5;
@@ -177,6 +186,7 @@ export default function LocationLayoutCanvas({
   boundingBoxBedId = null,
   marqueeBox = null,
   marqueeBedId = null,
+  groupMovePreview = null,
   onSelectBed,
   onDeselect,
   onBedMove,
@@ -195,7 +205,10 @@ export default function LocationLayoutCanvas({
   onBrushPointerUp,
   onMarqueePointerDown,
   onMarqueePointerMove,
-  onMarqueePointerUp
+  onMarqueePointerUp,
+  onBedUnplace,
+  onBedEdit,
+  onBedDelete
 }: LocationLayoutCanvasProps): JSX.Element {
   const interactive = mode === 'position';
   const isPlanting = mode === 'plants';
@@ -208,9 +221,67 @@ export default function LocationLayoutCanvas({
   const gridBeds = selectedBed ? [selectedBed] : beds;
   const dragRef = useRef<{ id: string; x: number; y: number } | null>(null);
   const surfaceDownRef = useRef<{ x: number; y: number } | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   const transformGroupRef = useRef<SVGGElement>(null);
   const cropDragActiveRef = useRef(false);
   const surfaceGestureRef = useRef<'brush' | 'select' | 'pan' | null>(null);
+
+  const [containerSize, setContainerSize] = useState<{
+    readonly width: number;
+    readonly height: number;
+  }>({ width: 800, height: 600 });
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg || typeof ResizeObserver === 'undefined') return;
+
+    const update = () => {
+      const rect = svg.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setContainerSize({ width: rect.width, height: rect.height });
+      }
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(svg);
+    return () => observer.disconnect();
+  }, []);
+
+  const bedAnchor = useMemo<AnchorPoint | null>(() => {
+    if (mode !== 'position' || !selectedId) return null;
+    const bed = beds.find((b) => b.id === selectedId);
+    if (!bed) return null;
+
+    const vertices = rotatedRectVertices(bed);
+    const center = centroid(vertices);
+    const vbCenter = viewBoxCenter(viewBox);
+    const bounds = viewBoxBounds(viewBox);
+    const vw = bounds ? bounds.maxX - bounds.minX : 1000;
+
+    const svgWidth = containerSize.width;
+    const svgHeight = containerSize.height;
+    const scale = (svgWidth / vw) * viewport.zoom;
+
+    const screenX =
+      svgWidth / 2 + viewport.panX + (center.x - vbCenter.x) * scale;
+    const screenY =
+      svgHeight / 2 + viewport.panY + (center.y - vbCenter.y) * scale;
+
+    return {
+      x: Math.round(screenX),
+      y: Math.max(30, Math.round(screenY))
+    };
+  }, [
+    mode,
+    selectedId,
+    beds,
+    viewBox,
+    containerSize.width,
+    containerSize.height,
+    viewport.zoom,
+    viewport.panX,
+    viewport.panY
+  ]);
 
   const clientToGlobal = (clientX: number, clientY: number): Point | null => {
     const group = transformGroupRef.current;
@@ -281,6 +352,10 @@ export default function LocationLayoutCanvas({
         startSurfacePan(event);
         return;
       }
+      if (insideBed.id !== selectedId) {
+        onSelectBed?.(insideBed.id);
+        return;
+      }
       if (toolMode === 'brush') {
         surfaceGestureRef.current = 'brush';
         onBrushPointerDown?.(global);
@@ -316,7 +391,15 @@ export default function LocationLayoutCanvas({
       surfaceGestureRef.current = null;
       if (gesture === 'pan') {
         viewport.onPointerUp(event);
+        const panStart = surfaceDownRef.current;
         surfaceDownRef.current = null;
+        if (panStart) {
+          const panDistance = Math.hypot(
+            event.clientX - panStart.x,
+            event.clientY - panStart.y
+          );
+          if (panDistance <= CLICK_MOVE_THRESHOLD_PX) onDeselect?.();
+        }
         return;
       }
       if (toolMode === 'brush') onBrushPointerUp?.();
@@ -334,7 +417,12 @@ export default function LocationLayoutCanvas({
     if (movedDistance > CLICK_MOVE_THRESHOLD_PX) return;
     if (isPlanting) {
       const global = clientToGlobal(event.clientX, event.clientY);
-      if (global) onPlacementTap?.(global);
+      if (global) {
+        const insideBed = findBedAtPoint(beds, global);
+        if (insideBed) onSelectBed?.(insideBed.id);
+        else onDeselect?.();
+        onPlacementTap?.(global);
+      }
       return;
     }
     onDeselect?.();
@@ -405,174 +493,188 @@ export default function LocationLayoutCanvas({
   };
 
   return (
-    <svg
-      className={`location-layout-canvas__svg ${
-        viewport.isDragging ? 'location-layout-canvas__svg--dragging' : ''
-      }`}
-      role="img"
-      aria-label={label}
-      viewBox={viewBox}
-      preserveAspectRatio="xMidYMid meet"
-      onPointerDown={handleSurfacePointerDown}
-      onPointerMove={handleSurfacePointerMove}
-      onPointerUp={handleSurfacePointerUp}
-      onDoubleClick={viewport.resetZoom}
-      onDragOver={isPlanting ? handlePlacementDragOver : undefined}
-      onDragLeave={isPlanting ? onPlacementDragLeave : undefined}
-      onDrop={isPlanting ? handlePlacementDrop : undefined}
-    >
-      {floor && (
-        <defs>
-          <pattern
-            id={FLOOR_DOT_PATTERN_ID}
-            x={0}
-            y={0}
-            width={GRID_SPACING_CM}
-            height={GRID_SPACING_CM}
-            patternUnits="userSpaceOnUse"
-          >
-            <circle
-              className="location-layout-canvas__floor-dot"
-              cx={0}
-              cy={0}
-              r={1.4}
-            />
-          </pattern>
-        </defs>
-      )}
-      <g ref={transformGroupRef} transform={transform}>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <svg
+        ref={svgRef}
+        className={`location-layout-canvas__svg ${
+          viewport.isDragging ? 'location-layout-canvas__svg--dragging' : ''
+        }`}
+        role="img"
+        aria-label={label}
+        viewBox={viewBox}
+        preserveAspectRatio="xMidYMid meet"
+        onPointerDown={handleSurfacePointerDown}
+        onPointerMove={handleSurfacePointerMove}
+        onPointerUp={handleSurfacePointerUp}
+        onDoubleClick={viewport.resetZoom}
+        onDragOver={isPlanting ? handlePlacementDragOver : undefined}
+        onDragLeave={isPlanting ? onPlacementDragLeave : undefined}
+        onDrop={isPlanting ? handlePlacementDrop : undefined}
+      >
         {floor && (
-          <rect
-            className="location-layout-canvas__floor"
-            x={floor.minX}
-            y={floor.minY}
-            width={floor.maxX - floor.minX}
-            height={floor.maxY - floor.minY}
-            fill={`url(#${FLOOR_DOT_PATTERN_ID})`}
-            pointerEvents="none"
-          />
-        )}
-        {beds.map((bed) => {
-          const vertices = rotatedRectVertices(bed);
-          const center = centroid(vertices);
-          const isSelected = bed.id === selectedId;
-          const bedLabel = t('bed.layout.bed_label', {
-            name: bed.name,
-            width: String(bed.width),
-            height: String(bed.height)
-          });
-
-          return (
-            <g
-              key={bed.id}
-              className={`location-layout-canvas__bed ${
-                isSelected ? 'location-layout-canvas__bed--selected' : ''
-              }`}
-              data-bed-id={bed.id}
-              role="button"
-              tabIndex={0}
-              aria-label={bedLabel}
-              aria-pressed={isSelected}
-              onPointerDown={
-                isPlanting
-                  ? undefined
-                  : (event) => handleBedPointerDown(bed.id, event)
-              }
-              onPointerMove={interactive ? handleBedPointerMove : undefined}
-              onPointerUp={interactive ? handleBedPointerUp : undefined}
-              onLostPointerCapture={
-                interactive ? handleLostPointerCapture : undefined
-              }
-              onKeyDown={(event) => handleBedKeyDown(bed.id, event)}
+          <defs>
+            <pattern
+              id={FLOOR_DOT_PATTERN_ID}
+              x={0}
+              y={0}
+              width={GRID_SPACING_CM}
+              height={GRID_SPACING_CM}
+              patternUnits="userSpaceOnUse"
             >
-              <polygon
-                className="location-layout-canvas__rect"
-                points={toPoints(vertices)}
+              <circle
+                className="location-layout-canvas__floor-dot"
+                cx={0}
+                cy={0}
+                r={1.4}
               />
-              {showNames && (
-                <text
-                  className="location-layout-canvas__name"
-                  x={center.x}
-                  y={center.y}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                >
-                  {bed.name}
-                </text>
-              )}
-            </g>
-          );
-        })}
-        {selectedBed && showDimensions && (
-          <g
-            className="location-layout-canvas__dimensions"
-            transform={`translate(${selectedBed.position.x} ${selectedBed.position.y}) rotate(${selectedBed.rotation})`}
-            pointerEvents="none"
-          >
-            <LayoutBedDimensions
-              width={selectedBed.width}
-              height={selectedBed.height}
-            />
-          </g>
+            </pattern>
+          </defs>
         )}
-        {selectedBed && showCardinalOrientation && (
-          <g
-            className="location-layout-canvas__cardinal-labels"
-            transform={`translate(${selectedBed.position.x} ${selectedBed.position.y}) rotate(${selectedBed.rotation})`}
-            pointerEvents="none"
-          >
-            <LayoutBedCardinalEdgeLabels
-              width={selectedBed.width}
-              height={selectedBed.height}
-              cardinals={getBedEdgeCardinals(
-                calculateNetAzimuth(northAngle, selectedBed.rotation)
-              )}
-              zoom={viewport.zoom}
+        <g ref={transformGroupRef} transform={transform}>
+          {floor && (
+            <rect
+              className="location-layout-canvas__floor"
+              x={floor.minX}
+              y={floor.minY}
+              width={floor.maxX - floor.minX}
+              height={floor.maxY - floor.minY}
+              fill={`url(#${FLOOR_DOT_PATTERN_ID})`}
+              pointerEvents="none"
             />
-          </g>
-        )}
-        {showGrid &&
-          gridLayers &&
-          gridBeds.map((bed) => (
+          )}
+          {beds.map((bed) => {
+            const vertices = rotatedRectVertices(bed);
+            const center = centroid(vertices);
+            const isSelected = bed.id === selectedId;
+            const bedLabel = t('bed.layout.bed_label', {
+              name: bed.name,
+              width: String(bed.width),
+              height: String(bed.height)
+            });
+
+            return (
+              <g
+                key={bed.id}
+                className={`location-layout-canvas__bed ${
+                  isSelected ? 'location-layout-canvas__bed--selected' : ''
+                }`}
+                data-bed-id={bed.id}
+                role="button"
+                tabIndex={0}
+                aria-label={bedLabel}
+                aria-pressed={isSelected}
+                onPointerDown={
+                  isPlanting
+                    ? undefined
+                    : (event) => handleBedPointerDown(bed.id, event)
+                }
+                onPointerMove={interactive ? handleBedPointerMove : undefined}
+                onPointerUp={interactive ? handleBedPointerUp : undefined}
+                onLostPointerCapture={
+                  interactive ? handleLostPointerCapture : undefined
+                }
+                onKeyDown={(event) => handleBedKeyDown(bed.id, event)}
+              >
+                <polygon
+                  className="location-layout-canvas__rect"
+                  points={toPoints(vertices)}
+                />
+                {showNames && (
+                  <text
+                    className="location-layout-canvas__name"
+                    x={center.x}
+                    y={center.y}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                  >
+                    {bed.name}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+          {selectedBed && showDimensions && (
             <g
-              key={`grid-${bed.id}`}
-              className="location-layout-canvas__grid-overlay"
-              transform={`translate(${bed.position.x} ${bed.position.y}) rotate(${bed.rotation})`}
+              className="location-layout-canvas__dimensions"
+              transform={`translate(${selectedBed.position.x} ${selectedBed.position.y}) rotate(${selectedBed.rotation})`}
               pointerEvents="none"
             >
-              <BedGridLayers
-                width={bed.width}
-                height={bed.height}
-                activeLayers={gridLayers}
+              <LayoutBedDimensions
+                width={selectedBed.width}
+                height={selectedBed.height}
               />
             </g>
-          ))}
-        {showCrops && cropsByBed && (
-          <LocationCropsLayer beds={beds} cropsByBed={cropsByBed} />
-        )}
-        {showPlacementLayer && cropsByBed && (
-          <LocationPlacementLayer
-            beds={beds}
-            cropsByBed={cropsByBed}
-            selectedCropId={selectedCropId}
-            selectedCropIds={selectedCropIds}
-            preview={placementPreview}
-            brushDirectrix={brushDirectrix}
-            brushCandidates={brushCandidates}
-            isBrushDrawing={isBrushDrawing}
-            brushBedId={brushBedId}
-            boundingBox={boundingBox}
-            boundingBoxBedId={boundingBoxBedId}
-            marqueeBox={marqueeBox}
-            marqueeBedId={marqueeBedId}
-            onSelectCrop={(cropId) => onCropSelect?.(cropId)}
-            onCropClick={onCropClick}
-            onCropPointerDown={handleCropPointerDown}
-            onCropPointerMove={handleCropPointerMove}
-            onCropPointerUp={handleCropPointerUp}
-          />
-        )}
-      </g>
-    </svg>
+          )}
+          {selectedBed && showCardinalOrientation && (
+            <g
+              className="location-layout-canvas__cardinal-labels"
+              transform={`translate(${selectedBed.position.x} ${selectedBed.position.y}) rotate(${selectedBed.rotation})`}
+              pointerEvents="none"
+            >
+              <LayoutBedCardinalEdgeLabels
+                width={selectedBed.width}
+                height={selectedBed.height}
+                cardinals={getBedEdgeCardinals(
+                  calculateNetAzimuth(northAngle, selectedBed.rotation)
+                )}
+                zoom={viewport.zoom}
+              />
+            </g>
+          )}
+          {showGrid &&
+            gridLayers &&
+            gridBeds.map((bed) => (
+              <g
+                key={`grid-${bed.id}`}
+                className="location-layout-canvas__grid-overlay"
+                transform={`translate(${bed.position.x} ${bed.position.y}) rotate(${bed.rotation})`}
+                pointerEvents="none"
+              >
+                <BedGridLayers
+                  width={bed.width}
+                  height={bed.height}
+                  activeLayers={gridLayers}
+                />
+              </g>
+            ))}
+          {showCrops && cropsByBed && (
+            <LocationCropsLayer beds={beds} cropsByBed={cropsByBed} />
+          )}
+          {showPlacementLayer && cropsByBed && (
+            <LocationPlacementLayer
+              beds={beds}
+              cropsByBed={cropsByBed}
+              selectedCropId={selectedCropId}
+              selectedCropIds={selectedCropIds}
+              preview={placementPreview}
+              brushDirectrix={brushDirectrix}
+              brushCandidates={brushCandidates}
+              isBrushDrawing={isBrushDrawing}
+              brushBedId={brushBedId}
+              boundingBox={boundingBox}
+              boundingBoxBedId={boundingBoxBedId}
+              marqueeBox={marqueeBox}
+              marqueeBedId={marqueeBedId}
+              groupMovePreview={groupMovePreview}
+              onSelectCrop={(cropId) => onCropSelect?.(cropId)}
+              onCropClick={onCropClick}
+              onCropPointerDown={handleCropPointerDown}
+              onCropPointerMove={handleCropPointerMove}
+              onCropPointerUp={handleCropPointerUp}
+            />
+          )}
+        </g>
+      </svg>
+      {interactive && selectedId && bedAnchor && (
+        <FloatingObjectActions
+          anchor={bedAnchor}
+          kind="bed"
+          onRotate={() => onBedRotate?.(selectedId, 90)}
+          onUnplace={onBedUnplace}
+          onEdit={onBedEdit}
+          onDelete={onBedDelete}
+        />
+      )}
+    </div>
   );
 }

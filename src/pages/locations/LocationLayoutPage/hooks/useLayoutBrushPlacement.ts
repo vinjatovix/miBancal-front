@@ -26,7 +26,7 @@ import type {
 } from '../../../../types/PlantInstance/brushSelectionTypes';
 import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
 import type { PlantListItem } from '../../../../types/Plants/Plant';
-import { batchCreateCrops } from './layoutPlantingOperations';
+import type { LayoutCreateInput } from './layoutPlantingOperations';
 
 export interface UseLayoutBrushPlacementParams {
   readonly isEnabled: boolean;
@@ -37,7 +37,7 @@ export interface UseLayoutBrushPlacementParams {
   readonly onAnnounceSuccess: (message: string) => void;
   readonly onAnnounceWarning: (message: string) => void;
   readonly onAnnounceError: (message: string) => void;
-  readonly invalidateBed: (bedId: string) => Promise<void>;
+  readonly addCrops: (inputs: readonly LayoutCreateInput[]) => void;
 }
 
 export function useLayoutBrushPlacement({
@@ -49,7 +49,7 @@ export function useLayoutBrushPlacement({
   onAnnounceSuccess,
   onAnnounceWarning,
   onAnnounceError,
-  invalidateBed
+  addCrops
 }: UseLayoutBrushPlacementParams) {
   const [brushPattern, setBrushPattern] =
     useState<BrushPatternType>('single-row');
@@ -139,7 +139,7 @@ export function useLayoutBrushPlacement({
     [isDrawing, strokeBed]
   );
 
-  const handlePointerUp = useCallback(async () => {
+  const handlePointerUp = useCallback(() => {
     if (
       !isDrawing ||
       !strokeBed ||
@@ -168,14 +168,15 @@ export function useLayoutBrushPlacement({
     });
 
     if (result.accepted.length > 0) {
-      await batchCreateCrops(
-        strokeBed.id,
+      addCrops(
         result.accepted.map((pos) => ({
+          bedId: strokeBed.id,
           plantId: activePlant.id,
+          commonName: activePlant.identity.name.primary,
+          vitalRadius,
           position: pos
         }))
       );
-      await invalidateBed(strokeBed.id);
     }
 
     if (result.plantedCount === 0) {
@@ -206,7 +207,7 @@ export function useLayoutBrushPlacement({
     directrix,
     cropsByBed,
     rawPositions,
-    invalidateBed,
+    addCrops,
     onAnnounceSuccess,
     onAnnounceWarning,
     cancelStroke

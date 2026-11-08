@@ -82,4 +82,67 @@ describe('LocationPlacementLayer', () => {
       container.querySelector('.location-placement-layer__preview--collision')
     ).toBeInTheDocument();
   });
+
+  it('only renders bounding box on the bed matching boundingBoxBedId', () => {
+    const secondBed: ResolvedBed = {
+      id: 'bed-2',
+      name: 'B2',
+      width: 90,
+      height: 600,
+      position: { x: 200, y: 20 },
+      rotation: 0
+    };
+    const boundingBox = {
+      minX: 10,
+      minY: 10,
+      maxX: 50,
+      maxY: 50,
+      width: 40,
+      height: 40,
+      center: { x: 30, y: 30 },
+      count: 1
+    };
+
+    const { container } = renderLayer({
+      beds: [bed, secondBed],
+      cropsByBed: new Map([
+        ['bed-1', [crop]],
+        ['bed-2', []]
+      ]),
+      boundingBox,
+      boundingBoxBedId: 'bed-1'
+    });
+
+    const bed1Group = container.querySelector(
+      '[transform*="translate(10 20)"]'
+    );
+
+    const boundingBoxes = container.querySelectorAll(
+      '.bed-selection-bounding-box'
+    );
+    expect(boundingBoxes).toHaveLength(1);
+    expect(
+      bed1Group?.querySelector('.bed-selection-bounding-box')
+    ).toBeInTheDocument();
+  });
+
+  it('does not render bounding box when boundingBoxBedId is null', () => {
+    const boundingBox = {
+      minX: 10,
+      minY: 10,
+      maxX: 50,
+      maxY: 50,
+      width: 40,
+      height: 40,
+      center: { x: 30, y: 30 },
+      count: 1
+    };
+
+    const { container } = renderLayer({
+      boundingBox,
+      boundingBoxBedId: null
+    });
+
+    expect(container.querySelector('.bed-selection-bounding-box')).toBeNull();
+  });
 });

@@ -19,13 +19,14 @@ import {
 import type { Coordinates } from '../../../../types/PlantInstance/PlantInstance';
 import type {
   GroupBoundingBox,
+  GroupMovePreview,
   MarqueeBox
 } from '../../../../types/PlantInstance/brushSelectionTypes';
 import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
 import {
-  batchDeleteCrops,
-  batchDuplicateCrops,
-  batchUpdateCrops
+  computeDuplicatePlacements,
+  evaluateStoredPlacement,
+  type LayoutCreateInput
 } from './layoutPlantingOperations';
 
 export interface UseLayoutMarqueeSelectionParams {
@@ -33,7 +34,13 @@ export interface UseLayoutMarqueeSelectionParams {
   readonly beds: readonly ResolvedBed[];
   readonly cropsByBed: ReadonlyMap<string, readonly CropPlacementItem[]>;
   readonly activeBedId: string | null;
-  readonly invalidateBed: (bedId: string) => Promise<void>;
+  readonly addCrops: (
+    inputs: readonly LayoutCreateInput[]
+  ) => readonly string[];
+  readonly moveCrops: (
+    moves: readonly { readonly id: string; readonly position: Coordinates }[]
+  ) => void;
+  readonly removeCrops: (ids: readonly string[]) => void;
   readonly onAnnounceError: (message: string) => void;
 }
 
@@ -42,7 +49,9 @@ export function useLayoutMarqueeSelection({
   beds,
   cropsByBed,
   activeBedId,
-  invalidateBed,
+  addCrops,
+  moveCrops,
+  removeCrops,
   onAnnounceError
 }: UseLayoutMarqueeSelectionParams) {
   const [selectedCropIds, setSelectedCropIds] = useState<ReadonlySet<string>>(
@@ -128,6 +137,37 @@ export function useLayoutMarqueeSelection({
     return computeMarqueeBox(startPoint, currentPoint);
   }, [startPoint, currentPoint]);
 
+  const groupMovePreview = useMemo((): GroupMovePreview | null => {
+    if (!groupDisplacement || !selectionBed) return null;
+    const bedCrops = cropsByBed.get(selectionBed.id) ?? [];
+    const selectedCrops = bedCrops.filter((crop) =>
+      selectedCropIds.has(crop.id)
+    );
+    if (selectedCrops.length === 0) return null;
+    const fixedCrops = bedCrops.filter((crop) => !selectedCropIds.has(crop.id));
+    const items = selectedCrops.map((crop) => {
+      const local = {
+        x: crop.position.x + groupDisplacement.x,
+        y: crop.position.y + groupDisplacement.y
+      };
+      const { hasCollision, isOutOfBounds } = evaluateStoredPlacement(
+        { width: selectionBed.width, height: selectionBed.height },
+        local,
+        crop.vitalRadius,
+        fixedCrops
+      );
+      return {
+        id: crop.id,
+        local,
+        vitalRadius: crop.vitalRadius,
+        commonName: crop.commonName,
+        hasCollision,
+        isOutOfBounds
+      };
+    });
+    return { bedId: selectionBed.id, items };
+  }, [groupDisplacement, selectionBed, cropsByBed, selectedCropIds]);
+
   const handlePointerDown = useCallback(
     (global: Point, shiftKey = false) => {
       if (!isEnabled) return;
@@ -197,7 +237,7 @@ export function useLayoutMarqueeSelection({
     [isMarqueeActive, marqueeBed, startPoint, cropsByBed]
   );
 
-  const handlePointerUp = useCallback(async () => {
+  const handlePointerUp = useCallback(() => {
     const drag = groupDragRef.current;
     if (drag) {
       groupDragRef.current = null;
@@ -214,14 +254,7 @@ export function useLayoutMarqueeSelection({
         if (!evaluation.isValid) {
           onAnnounceError(t('bed.placement.group_move_conflict'));
         } else {
-          try {
-            await batchUpdateCrops(
-              buildGroupMoves(selectedCropIds, bedCrops, displacement)
-            );
-            await invalidateBed(drag.bed.id);
-          } catch {
-            onAnnounceError(t('bed.placement.save_error'));
-          }
+          moveCrops(buildGroupMoves(selectedCropIds, bedCrops, displacement));
         }
       }
       return;
@@ -234,7 +267,7 @@ export function useLayoutMarqueeSelection({
     groupDisplacement,
     cropsByBed,
     selectedCropIds,
-    invalidateBed,
+    moveCrops,
     onAnnounceError
   ]);
 
@@ -248,54 +281,33 @@ export function useLayoutMarqueeSelection({
     [isEnabled, toggleCropSelection]
   );
 
-  const deleteSelectedCrops = useCallback(async () => {
+  const deleteSelectedCrops = useCallback(() => {
     if (selectedCropIds.size === 0) return;
     const targetCrops = activeCrops.filter((c) => selectedCropIds.has(c.id));
     if (targetCrops.length === 0) return;
-    try {
-      await batchDeleteCrops(targetCrops);
-      const affectedBeds = new Set(targetCrops.map((c) => c.bedId));
-      for (const bedId of affectedBeds) await invalidateBed(bedId);
-      clearSelection();
-    } catch {
-      onAnnounceError(t('bed.placement.save_error'));
-    }
-  }, [
-    selectedCropIds,
-    activeCrops,
-    invalidateBed,
-    clearSelection,
-    onAnnounceError
-  ]);
+    removeCrops(targetCrops.map((c) => c.id));
+    clearSelection();
+  }, [selectedCropIds, activeCrops, removeCrops, clearSelection]);
 
-  const duplicateSelectedCrops = useCallback(async () => {
+  const duplicateSelectedCrops = useCallback(() => {
     if (selectedCropIds.size === 0) return;
     const targetCrops = activeCrops.filter((c) => selectedCropIds.has(c.id));
     if (targetCrops.length === 0) return;
-    try {
-      const affectedBeds = new Set(targetCrops.map((c) => c.bedId));
-      for (const bedId of affectedBeds) {
-        const bed = beds.find((b) => b.id === bedId);
-        if (!bed) continue;
-        const bedCrops = targetCrops.filter((c) => c.bedId === bedId);
-        await batchDuplicateCrops(bedCrops, {
-          width: bed.width,
-          height: bed.height
-        });
-        await invalidateBed(bedId);
-      }
-      clearSelection();
-    } catch {
-      onAnnounceError(t('bed.placement.save_error'));
+    const affectedBeds = new Set(targetCrops.map((c) => c.bedId));
+    const newIds: string[] = [];
+    for (const bedId of affectedBeds) {
+      const bed = beds.find((b) => b.id === bedId);
+      if (!bed) continue;
+      const bedTargets = targetCrops.filter((c) => c.bedId === bedId);
+      const placements = computeDuplicatePlacements(
+        bedTargets,
+        { width: bed.width, height: bed.height },
+        cropsByBed.get(bedId) ?? []
+      );
+      newIds.push(...addCrops(placements));
     }
-  }, [
-    selectedCropIds,
-    activeCrops,
-    beds,
-    invalidateBed,
-    clearSelection,
-    onAnnounceError
-  ]);
+    if (newIds.length > 0) setSelectedCropIds(new Set(newIds));
+  }, [selectedCropIds, activeCrops, beds, cropsByBed, addCrops]);
 
   return {
     selectedCropIds,
@@ -304,6 +316,8 @@ export function useLayoutMarqueeSelection({
     marqueeBedId: marqueeBed?.id ?? null,
     marqueeBox,
     boundingBox,
+    boundingBoxBedId: selectionBed?.id ?? marqueeBed?.id ?? activeBedId ?? null,
+    groupMovePreview,
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,

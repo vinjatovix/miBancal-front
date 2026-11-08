@@ -7,10 +7,6 @@ import {
   globalToBedLocal,
   isLocalPointInsideBed
 } from '../../../../components/beds/layout/utils/plantPlacementGeometry';
-import {
-  getPlantInstance,
-  updatePlantInstance
-} from '../../../../services/plantInstances.service';
 import type { Coordinates } from '../../../../types/PlantInstance/PlantInstance';
 import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
 import type { LayoutPlacementPreview } from './useLayoutPalettePlacement';
@@ -24,10 +20,9 @@ export interface UseLayoutSingleCropDragParams {
     vitalRadius: number,
     ignoreCropId?: string
   ) => { readonly hasCollision: boolean; readonly isOutOfBounds: boolean };
-  readonly invalidateBed: (bedId: string) => Promise<void>;
+  readonly moveCrop: (id: string, position: Coordinates) => void;
   readonly setPreview: (preview: LayoutPlacementPreview | null) => void;
   readonly onSelectSingleCrop: (cropId: string) => void;
-  readonly setIsSaving: (saving: boolean) => void;
   readonly onAnnounceError: (message: string) => void;
 }
 
@@ -35,10 +30,9 @@ export function useLayoutSingleCropDrag({
   bedsById,
   cropsByBed,
   evaluateStored,
-  invalidateBed,
+  moveCrop,
   setPreview,
   onSelectSingleCrop,
-  setIsSaving,
   onAnnounceError
 }: UseLayoutSingleCropDragParams) {
   const cropDragRef = useRef<{
@@ -78,7 +72,7 @@ export function useLayoutSingleCropDrag({
   );
 
   const endCropDrag = useCallback(
-    async (global: Point | null) => {
+    (global: Point | null) => {
       const drag = cropDragRef.current;
       cropDragRef.current = null;
       setPreview(null);
@@ -100,28 +94,14 @@ export function useLayoutSingleCropDrag({
         onAnnounceError(t('bed.placement.announce_collision'));
         return;
       }
-      setIsSaving(true);
-      try {
-        const { etag } = await getPlantInstance(crop.id);
-        await updatePlantInstance(
-          crop.id,
-          { position: local },
-          etag ?? crop.etag ?? ''
-        );
-        await invalidateBed(bed.id);
-      } catch {
-        onAnnounceError(t('bed.placement.save_error'));
-      } finally {
-        setIsSaving(false);
-      }
+      moveCrop(crop.id, local);
     },
     [
       bedsById,
       cropsByBed,
       evaluateStored,
-      invalidateBed,
+      moveCrop,
       setPreview,
-      setIsSaving,
       onAnnounceError
     ]
   );

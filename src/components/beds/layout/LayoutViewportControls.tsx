@@ -1,17 +1,19 @@
 import type { JSX } from 'react';
 
 import { t } from '../../../i18n/core/t';
-import Icon from '../../../shared/components/Icon/Icon';
 import type { BedViewportState } from '../visualizer/hooks/useBedViewport';
+import LayoutGlyph from './LayoutGlyph';
 
 import './layoutControls.css';
 
 export interface LayoutViewportControlsProps {
   readonly viewport: BedViewportState;
+  readonly onFitToView?: () => void;
 }
 
 export default function LayoutViewportControls({
-  viewport
+  viewport,
+  onFitToView
 }: LayoutViewportControlsProps): JSX.Element {
   return (
     <div
@@ -25,24 +27,29 @@ export default function LayoutViewportControls({
         aria-label={t('bed.layout.zoom_in')}
         onClick={viewport.zoomIn}
       >
-        <Icon name="zoom_in" decorative />
+        <LayoutGlyph name="zoom-in" />
       </button>
+      <span className="layout-viewport-controls__percent" aria-live="polite">
+        {t('bed.layout.zoom_percent', {
+          percent: String(viewport.zoomPercent)
+        })}
+      </span>
       <button
         type="button"
         className="layout-viewport-controls__button"
         aria-label={t('bed.layout.zoom_out')}
         onClick={viewport.zoomOut}
       >
-        <Icon name="zoom_out" decorative />
+        <LayoutGlyph name="zoom-out" />
       </button>
       <span className="layout-viewport-controls__divider" aria-hidden="true" />
       <button
         type="button"
         className="layout-viewport-controls__button layout-viewport-controls__recenter"
         aria-label={t('bed.layout.reset_view')}
-        onClick={viewport.resetZoom}
+        onClick={onFitToView ?? viewport.resetZoom}
       >
-        <Icon name="fit_screen" decorative />
+        <LayoutGlyph name="fit" />
       </button>
     </div>
   );

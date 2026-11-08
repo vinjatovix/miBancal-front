@@ -1,23 +1,32 @@
-import { useEffect, useMemo, type JSX } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type JSX
+} from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
-import BedCompassHud from '../../../components/beds/layout/BedCompassHud';
-import LayoutScaleBar from '../../../components/beds/layout/LayoutScaleBar';
-import LayoutViewportControls from '../../../components/beds/layout/LayoutViewportControls';
-import LocationLayoutCanvas from '../../../components/beds/layout/LocationLayoutCanvas';
-import PlantPlacementPalette from '../../../components/beds/visualizer/PlantPlacementPalette';
-import UnplacedBedsTray from '../../../components/beds/layout/UnplacedBedsTray';
+import LayoutBrushPatternBar from '../../../components/beds/layout/LayoutBrushPatternBar';
+import LayoutSelectionActionBar from '../../../components/beds/layout/LayoutSelectionActionBar';
 import { useBedViewport } from '../../../components/beds/visualizer/hooks/useBedViewport';
-import { rotatedRectVertices } from '../../../components/beds/layout/utils/layoutGeometry';
-import type { ResolvedBed } from '../../../components/beds/layout/utils/layoutTypes';
+import type { LayoutMode } from '../../../components/beds/layout/utils/layoutTypes';
 import { t } from '../../../i18n/core/t';
 import Button from '../../../shared/components/Button/Button';
+import { CancelConfirmModal } from '../../../shared/components/Modal/CancelConfirmModal';
+import { UnsavedChangesGuard } from '../../../shared/components/UnsavedChangesGuard/UnsavedChangesGuard';
 import { locationKeys } from '../../../shared/reactQuery/locationKeys';
 import type { LocationLayoutResponse } from '../../../types/Location/LocationLayout';
+import LocationLayoutContextPanel from './components/LocationLayoutContextPanel';
 import LocationLayoutDialogs from './components/LocationLayoutDialogs';
-import LocationLayoutToolbar from './components/LocationLayoutToolbar';
+import LocationLayoutEmptyState from './components/LocationLayoutEmptyState';
+import LocationLayoutTopBar from './components/LocationLayoutTopBar';
+import LocationLayoutWorkspace from './components/LocationLayoutWorkspace';
 import { useLayoutEditor } from './hooks/useLayoutEditor';
+import { useLayoutKeyboardShortcuts } from './hooks/useLayoutKeyboardShortcuts';
+import { useLayoutModeController } from './hooks/useLayoutModeController';
 import { useLayoutPlantPlacement } from './hooks/useLayoutPlantPlacement';
 import { useLayoutVisibilityControls } from './hooks/useLayoutVisibilityControls';
 import { useLocationBedActions } from './hooks/useLocationBedActions';
@@ -31,23 +40,6 @@ export interface LocationLayoutViewProps {
   readonly layout: LocationLayoutResponse;
 }
 
-function computeBedBounds(bed: ResolvedBed): {
-  readonly minX: number;
-  readonly minY: number;
-  readonly maxX: number;
-  readonly maxY: number;
-} {
-  const vertices = rotatedRectVertices(bed);
-  const xs = vertices.map((vertex) => vertex.x);
-  const ys = vertices.map((vertex) => vertex.y);
-  return {
-    minX: Math.min(...xs),
-    minY: Math.min(...ys),
-    maxX: Math.max(...xs),
-    maxY: Math.max(...ys)
-  };
-}
-
 export default function LocationLayoutView({
   id,
   etag,
@@ -57,6 +49,16 @@ export default function LocationLayoutView({
   const editor = useLayoutEditor(id, etag, layout);
   const viewport = useBedViewport();
   const [searchParams] = useSearchParams();
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const prevWidthRef = useRef<number | null>(null);
+
+  const modeController = useLayoutModeController({
+    viewport,
+    beds: editor.placedBeds,
+    viewBox: editor.viewBox,
+    initialMode: editor.mode,
+    onModeChange: editor.setMode
+  });
 
   const isPosition = editor.mode === 'position';
   const isPlanting = editor.mode === 'plants';
@@ -87,7 +89,6 @@ export default function LocationLayoutView({
 
   const bedActions = useLocationBedActions({
     locationId: id,
-    isPosition,
     selectedBed,
     onDeselectBed: editor.deselectBed
   });
@@ -98,36 +99,125 @@ export default function LocationLayoutView({
     if (bedParam) selectBed(bedParam);
   }, [bedParam, selectBed]);
 
-  const handleStartPlanting = (): void => {
-    placement.reset();
-    editor.startPlanting(selectedBedId ?? undefined);
-    if (selectedBed) {
-      viewport.fitToBounds(computeBedBounds(selectedBed), editor.viewBox);
-    }
-  };
-  const handleStopPlanting = (): void => {
-    placement.reset();
-    editor.stopPlanting();
-  };
-
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const activeTag = (document.activeElement?.tagName ?? '').toLowerCase();
-      if (activeTag === 'input' || activeTag === 'textarea') return;
+    const el = canvasContainerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
 
-      if (
-        isPlanting &&
-        (e.key === 'Delete' || e.key === 'Backspace') &&
-        placement.selectedCropCount > 0
-      ) {
-        e.preventDefault();
-        void placement.deleteSelectedCrops();
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const nextWidth = entry.contentRect.width;
+        if (
+          prevWidthRef.current !== null &&
+          prevWidthRef.current !== nextWidth
+        ) {
+          viewport.compensateWidthChange(prevWidthRef.current, nextWidth);
+        }
+        prevWidthRef.current = nextWidth;
       }
-      if (isPlanting && e.key === 'Escape') placement.clearSelection();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlanting, placement]);
+    });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [viewport]);
+
+  const [pendingLeaveMode, setPendingLeaveMode] = useState<LayoutMode | null>(
+    null
+  );
+
+  const performModeChange = useCallback(
+    (nextMode: LayoutMode) => {
+      if (nextMode === 'plants') {
+        placement.reset();
+        modeController.enterPlanting(selectedBedId);
+      } else {
+        if (editor.mode === 'plants') {
+          placement.clearSelection();
+          placement.reset();
+        }
+        modeController.setMode(nextMode);
+      }
+    },
+    [editor.mode, modeController, placement, selectedBedId]
+  );
+
+  const handleModeChange = useCallback(
+    (nextMode: LayoutMode) => {
+      if (
+        editor.mode === 'plants' &&
+        nextMode !== 'plants' &&
+        placement.hasChanges
+      ) {
+        setPendingLeaveMode(nextMode);
+        return;
+      }
+      performModeChange(nextMode);
+    },
+    [editor.mode, placement.hasChanges, performModeChange]
+  );
+
+  const confirmLeavePlanting = useCallback(() => {
+    const nextMode = pendingLeaveMode;
+    setPendingLeaveMode(null);
+    if (!nextMode) return;
+    placement.discardChanges();
+    performModeChange(nextMode);
+  }, [pendingLeaveMode, placement, performModeChange]);
+
+  const cancelLeavePlanting = useCallback(() => setPendingLeaveMode(null), []);
+
+  const [isDiscardPlantingOpen, setIsDiscardPlantingOpen] = useState(false);
+
+  const confirmDiscardPlanting = useCallback(() => {
+    setIsDiscardPlantingOpen(false);
+    placement.discardChanges();
+  }, [placement]);
+
+  const cancelDiscardPlanting = useCallback(
+    () => setIsDiscardPlantingOpen(false),
+    []
+  );
+
+  const handleFitToView = useCallback(() => {
+    viewport.animateTo({ zoom: 1, panX: 0, panY: 0 });
+  }, [viewport]);
+
+  useLayoutKeyboardShortcuts({
+    mode: editor.mode,
+    setMode: handleModeChange,
+    setTool: placement.setToolMode,
+    onRotateSelected: () => {
+      if (isPosition && selectedBedId) {
+        editor.rotateBedBy(selectedBedId, 90);
+      }
+    },
+    onUnplaceSelected: () => {
+      if (isPosition && selectedBedId) {
+        editor.unplaceSelected();
+      }
+    },
+    onDeleteSelected: () => {
+      if (isPlanting && placement.selectedCropCount > 0) {
+        void placement.deleteSelectedCrops();
+      } else if (isPosition && selectedBed) {
+        bedActions.setIsDeleteOpen(true);
+      }
+    },
+    onDuplicateSelected: () => {
+      if (isPlanting && placement.selectedCropCount > 0) {
+        void placement.duplicateSelectedCrops();
+      }
+    },
+    onClearSelection: () => {
+      if (isPlanting) {
+        placement.clearSelection();
+      } else if (isPosition) {
+        editor.deselectBed();
+      }
+    },
+    onFitToView: handleFitToView,
+    onSave: editor.save,
+    canSave: editor.dirty && !editor.saving
+  });
 
   return (
     <main className="location-layout-page">
@@ -148,135 +238,99 @@ export default function LocationLayoutView({
         </Button>
       </header>
 
-      <LocationLayoutToolbar
-        isPosition={isPosition}
+      <LocationLayoutTopBar
+        mode={editor.mode}
+        onModeChange={handleModeChange}
         isPlanting={isPlanting}
-        onToggleMode={editor.toggleMode}
-        onStartPlanting={handleStartPlanting}
-        onStopPlanting={handleStopPlanting}
+        isPosition={isPosition}
         toolMode={placement.toolMode}
-        brushPattern={placement.brushPattern}
         onSelectToolMode={placement.setToolMode}
-        onSelectBrushPattern={placement.setBrushPattern}
-        selectedCropName={placement.selectedCrop?.commonName ?? null}
-        selectedCropCount={placement.selectedCropCount}
-        onRemoveSelectedCrop={() => {
-          if (placement.selectedCrop)
-            placement.removeCrop(placement.selectedCrop);
-        }}
-        onDuplicateSelectedCrops={() => void placement.duplicateSelectedCrops()}
-        onDeleteSelectedCrops={() => void placement.deleteSelectedCrops()}
-        onClearSelection={placement.clearSelection}
         isSavingPlacement={placement.isSaving}
+        hasPlantingChanges={placement.hasChanges}
+        pendingPlantingCount={placement.pendingCount}
+        onSavePlanting={() => void placement.save()}
+        onDiscardPlanting={() => setIsDiscardPlantingOpen(true)}
+        hasPositionChanges={editor.dirty}
+        isSavingPosition={editor.saving}
+        onSavePosition={editor.save}
+        onDiscardPosition={editor.promptDiscard}
         gridSnapEnabled={editor.gridSnapEnabled}
         onToggleGridSnap={editor.toggleGridSnap}
         neighborSnapEnabled={editor.neighborSnapEnabled}
         onToggleNeighborSnap={editor.toggleNeighborSnap}
-        selectedRotation={editor.selectedRotation}
-        onRotationChange={editor.setSelectedRotation}
-        selectedBed={selectedBed}
-        onUnplaceSelected={editor.unplaceSelected}
-        dirty={editor.dirty}
-        saving={editor.saving}
-        onSave={editor.save}
-        onDiscard={editor.discard}
-        {...visibility.toolbarProps}
-        onOpenEdit={() => bedActions.setIsEditOpen(true)}
-        canDeleteSelectedBed={bedActions.canDeleteSelectedBed}
-        isDeletingBed={bedActions.isDeletingBed}
-        onOpenDelete={() => bedActions.setIsDeleteOpen(true)}
+        showBedNames={visibility.showBedNames}
+        onToggleShowNames={visibility.handleToggleShowNames}
+        showDimensions={visibility.showDimensions}
+        onToggleShowDimensions={visibility.handleToggleShowDimensions}
+        showPlants={visibility.showPlants}
+        onToggleShowPlants={visibility.handleToggleShowPlants}
+        showCardinalOrientation={visibility.showCardinalOrientation}
+        onToggleShowCardinalOrientation={
+          visibility.handleToggleShowCardinalOrientation
+        }
+        showGrids={visibility.showGrids}
+        onToggleGrids={visibility.handleToggleGrids}
+        activeGridLayers={visibility.activeGridLayers}
+        onToggleGridLayer={visibility.handleToggleGridLayer}
+        viewport={viewport}
+        onFitToView={handleFitToView}
       />
 
+      {isPlanting && placement.toolMode === 'select' && (
+        <LayoutSelectionActionBar
+          count={placement.selectedCropCount}
+          onDuplicate={() => void placement.duplicateSelectedCrops()}
+          onDelete={() => void placement.deleteSelectedCrops()}
+          onClear={placement.clearSelection}
+          disabled={placement.isSaving}
+        />
+      )}
+
+      {isPlanting && placement.toolMode === 'brush' && (
+        <LayoutBrushPatternBar
+          activePattern={placement.brushPattern}
+          onSelectPattern={placement.setBrushPattern}
+          disabled={placement.isSaving}
+        />
+      )}
+
       <div className="location-layout-page__workspace">
-        <div className="location-layout-page__canvas">
-          <LocationLayoutCanvas
-            beds={editor.placedBeds}
-            viewBox={editor.viewBox}
-            label={t('bed.layout.canvas_label', {
-              name: layout.location.name
-            })}
-            mode={editor.mode}
-            selectedId={editor.selectedId}
-            viewport={viewport}
-            gridLayers={isPosition ? null : visibility.activeGridLayers}
-            showNames={visibility.showBedNames}
-            showDimensions={visibility.showDimensions}
-            northAngle={visibility.effectiveNorthAngle}
-            showCardinalOrientation={visibility.showCardinalOrientation}
-            floorWidth={layout.location.width}
-            floorHeight={layout.location.height}
-            cropsByBed={cropsByBed}
-            showPlants={visibility.showPlants}
-            placementPreview={placement.preview}
-            selectedCropId={placement.selectedCropId}
-            selectedCropIds={placement.selectedCropIds}
-            toolMode={placement.toolMode}
-            brushDirectrix={placement.brush.directrix}
-            brushCandidates={placement.brush.candidates}
-            isBrushDrawing={placement.brush.isDrawing}
-            brushBedId={placement.brush.strokeBedId}
-            boundingBox={placement.marquee.boundingBox}
-            boundingBoxBedId={selectedBedId}
-            marqueeBox={placement.marquee.marqueeBox}
-            marqueeBedId={placement.marquee.marqueeBedId}
-            onSelectBed={editor.selectBed}
-            onDeselect={bedActions.handleDeselectBed}
-            onBedMove={editor.moveBed}
-            onBedRotate={editor.rotateBedBy}
-            onPlacementDragOver={placement.updateDropPreview}
-            onPlacementDragLeave={placement.clearPreview}
-            onPlacementDrop={placement.dropPlant}
-            onPlacementTap={placement.tapPlace}
-            onCropSelect={placement.selectCrop}
-            onCropClick={placement.marquee.handleCropClick}
-            onCropDragStart={placement.beginCropDrag}
-            onCropDragMove={placement.moveCropDrag}
-            onCropDragEnd={placement.endCropDrag}
-            onBrushPointerDown={placement.brush.handlePointerDown}
-            onBrushPointerMove={placement.brush.handlePointerMove}
-            onBrushPointerUp={placement.brush.handlePointerUp}
-            onMarqueePointerDown={placement.marquee.handlePointerDown}
-            onMarqueePointerMove={placement.marquee.handlePointerMove}
-            onMarqueePointerUp={placement.marquee.handlePointerUp}
-          />
-          <LayoutScaleBar viewBox={editor.viewBox} zoom={viewport.zoom} />
-          <div className="location-layout-page__hud">
-            <LayoutViewportControls viewport={viewport} />
-            <BedCompassHud
-              northAngle={visibility.effectiveNorthAngle}
-              bedAzimuth={visibility.bedAzimuth}
-              mode={editor.mode === 'position' ? 'position' : 'read'}
-              onBedRotationChange={visibility.handleBedRotationChange}
-              onNorthAngleChange={visibility.setCalibratedNorth}
-              onSaveNorthAngle={visibility.handleSaveNorth}
-              isSavingNorth={visibility.isSavingNorth}
-            />
-          </div>
-        </div>
-        {isPlanting && (
-          <PlantPlacementPalette
-            isOpen
-            onSelectPlant={placement.selectPalettePlant}
-            onDragPlant={placement.dragPalettePlant}
-            activePlacingPlantId={placement.activePlantId}
-            activePlacingPlantName={placement.activePlantName}
-            onCancelPlacing={placement.cancelPalettePlant}
-          />
-        )}
-        {!isPlanting && editor.unplacedBeds.length > 0 && (
-          <UnplacedBedsTray
-            beds={editor.unplacedBeds}
-            mode={editor.mode}
-            onPlace={editor.placeBed}
-          />
-        )}
+        <LocationLayoutWorkspace
+          canvasContainerRef={canvasContainerRef}
+          editor={editor}
+          viewport={viewport}
+          visibility={visibility}
+          placement={placement}
+          bedActions={bedActions}
+          layout={layout}
+          cropsByBed={placement.effectiveCropsByBed}
+          selectedBedId={selectedBedId}
+        />
+
+        <LocationLayoutContextPanel
+          mode={editor.mode}
+          isPlanting={isPlanting}
+          isPosition={isPosition}
+          selectedBed={selectedBed}
+          editor={editor}
+          placement={placement}
+          bedActions={bedActions}
+        />
       </div>
+
+      {editor.placedBeds.length === 0 && (
+        <LocationLayoutEmptyState
+          hasUnplacedBeds={editor.unplacedBeds.length > 0}
+          onPlaceFirstBed={() => handleModeChange('position')}
+          onCreateNewBed={() => bedActions.setIsCreateOpen(true)}
+        />
+      )}
 
       <LocationLayoutDialogs
         locationId={id}
         selectedBedId={selectedBedId}
         selectedBedName={selectedBed?.name ?? ''}
-        discardOpen={editor.discardOpen}
+        discardOpen={editor.dirty && editor.discardOpen}
         dirty={editor.dirty}
         onUpdated={() =>
           void queryClient.invalidateQueries({
@@ -286,6 +340,31 @@ export default function LocationLayoutView({
         onConfirmDiscard={editor.confirmDiscard}
         onCancelDiscard={editor.cancelDiscard}
         {...bedActions.dialogProps}
+      />
+
+      <UnsavedChangesGuard
+        when={isPlanting && placement.hasChanges}
+        prompt={t('bed.placement.unsaved_message')}
+      />
+
+      <CancelConfirmModal
+        isOpen={pendingLeaveMode !== null}
+        title={t('bed.placement.unsaved_title')}
+        prompt={t('bed.placement.unsaved_message')}
+        confirmText={t('bed.placement.unsaved_confirm')}
+        cancelText={t('bed.placement.unsaved_cancel')}
+        onConfirm={confirmLeavePlanting}
+        onCancel={cancelLeavePlanting}
+      />
+
+      <CancelConfirmModal
+        isOpen={isDiscardPlantingOpen}
+        title={t('bed.placement.discard_title')}
+        prompt={t('bed.placement.discard_message')}
+        confirmText={t('bed.placement.discard_confirm')}
+        cancelText={t('bed.placement.discard_cancel')}
+        onConfirm={confirmDiscardPlanting}
+        onCancel={cancelDiscardPlanting}
       />
     </main>
   );
