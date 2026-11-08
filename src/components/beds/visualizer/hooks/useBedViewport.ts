@@ -19,6 +19,16 @@ export interface BedViewportState {
   readonly zoomIn: () => void;
   readonly zoomOut: () => void;
   readonly resetZoom: () => void;
+  readonly fitToBounds: (
+    bounds: {
+      readonly minX: number;
+      readonly minY: number;
+      readonly maxX: number;
+      readonly maxY: number;
+    },
+    viewBox: string,
+    fillFactor?: number
+  ) => void;
   readonly panBy: (dx: number, dy: number) => void;
   readonly onPointerDown: (e: PointerEvent<SVGSVGElement>) => void;
   readonly onPointerMove: (e: PointerEvent<SVGSVGElement>) => void;
@@ -54,6 +64,46 @@ export function useBedViewport(): BedViewportState {
     setPanX(0);
     setPanY(0);
   }, []);
+
+  const fitToBounds = useCallback(
+    (
+      bounds: {
+        readonly minX: number;
+        readonly minY: number;
+        readonly maxX: number;
+        readonly maxY: number;
+      },
+      viewBox: string,
+      fillFactor = 0.85
+    ) => {
+      const [vx, vy, vw, vh] = viewBox.split(/\s+/).map(Number);
+      if ([vx, vy, vw, vh].some((value) => !Number.isFinite(value))) return;
+      const boundsWidth = bounds.maxX - bounds.minX;
+      const boundsHeight = bounds.maxY - bounds.minY;
+      if (boundsWidth <= 0 || boundsHeight <= 0) return;
+
+      const nextZoom = Math.min(
+        MAX_ZOOM,
+        Math.max(
+          MIN_ZOOM,
+          Number(
+            (
+              Math.min(vw / boundsWidth, vh / boundsHeight) * fillFactor
+            ).toFixed(4)
+          )
+        )
+      );
+      const viewCenterX = vx + vw / 2;
+      const viewCenterY = vy + vh / 2;
+      const boundsCenterX = (bounds.minX + bounds.maxX) / 2;
+      const boundsCenterY = (bounds.minY + bounds.maxY) / 2;
+
+      setZoom(nextZoom);
+      setPanX(nextZoom * (viewCenterX - boundsCenterX));
+      setPanY(nextZoom * (viewCenterY - boundsCenterY));
+    },
+    []
+  );
 
   const panBy = useCallback((dx: number, dy: number) => {
     setPanX((prev) => prev + dx);
@@ -102,6 +152,7 @@ export function useBedViewport(): BedViewportState {
     zoomIn,
     zoomOut,
     resetZoom,
+    fitToBounds,
     panBy,
     onPointerDown,
     onPointerMove,

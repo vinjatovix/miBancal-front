@@ -1,0 +1,95 @@
+.crop-adjustment-controls {
+  position: absolute;
+  inset-block-start: var(--space-md);
+  inset-inline-end: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  background-color: var(--color-bg-surface-raised);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-2);
+}
+
+.crop-adjustment-controls__pad {
+  display: grid;
+  grid-template-columns: repeat(3, 2rem);
+  grid-template-rows: repeat(3, 2rem);
+  gap: var(--space-3xs);
+}
+
+.crop-adjustment-controls__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.crop-adjustment-controls__btn:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.crop-adjustment-controls__btn:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+.crop-adjustment-controls__btn--up {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.crop-adjustment-controls__btn--left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.crop-adjustment-controls__btn--right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.crop-adjustment-controls__btn--down {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.crop-adjustment-controls__hint {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-fg-muted);
+}
+
+.crop-adjustment-controls__actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-xs);
+}
+
+.crop-adjustment-controls__remove,
+.crop-adjustment-controls__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xs);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.crop-adjustment-controls__remove {
+  color: var(--color-on-danger);
+  background-color: var(--color-danger-bg);
+  border-color: var(--color-danger-bg);
+}
+
+.crop-adjustment-controls__close {
+  color: var(--color-fg-muted);
+}

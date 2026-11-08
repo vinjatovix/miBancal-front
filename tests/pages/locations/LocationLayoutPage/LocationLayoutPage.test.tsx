@@ -40,6 +40,20 @@ vi.mock('../../../../src/services/beds.service', () => ({
   updateBed: vi.fn()
 }));
 
+vi.mock('../../../../src/services/plants.service', () => ({
+  getPlantList: vi.fn().mockResolvedValue({
+    data: [],
+    pagination: { page: 1, limit: 50, totalPages: 1, totalItems: 0 }
+  })
+}));
+
+vi.mock('../../../../src/services/plantInstances.service', () => ({
+  getPlantInstancesByBed: vi.fn().mockResolvedValue({
+    data: [],
+    etag: undefined
+  })
+}));
+
 const mockedGetLocationLayout = vi.mocked(getLocationLayout);
 const mockedUpdateLocation = vi.mocked(updateLocation);
 const mockedDeleteBed = vi.mocked(deleteBed);
@@ -492,5 +506,51 @@ describe('LocationLayoutPage', () => {
     expect(
       container.querySelectorAll('.layout-bed-cardinal-labels__badge')
     ).toHaveLength(4);
+  });
+
+  it('displays planting tools and allows switching modes and brush patterns in planting mode', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    const bed = await screen.findByRole('button', {
+      name: /Bancal Tomates 1/
+    });
+    fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
+
+    const managePlantsBtn = await screen.findByRole('button', {
+      name: 'Gestionar plantas de Bancal Tomates 1'
+    });
+    await user.click(managePlantsBtn);
+
+    expect(
+      screen.getByRole('toolbar', {
+        name: 'Herramientas de siembra y selección'
+      })
+    ).toBeInTheDocument();
+
+    const brushToolBtn = screen.getByRole('button', {
+      name: 'Brochas de siembra'
+    });
+    await user.click(brushToolBtn);
+
+    expect(brushToolBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      screen.getByRole('button', { name: 'Hilera simple' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Doble hilera' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Tresbolillo (triangular)' })
+    ).toBeInTheDocument();
+
+    const doubleRowBtn = screen.getByRole('button', { name: 'Doble hilera' });
+    await user.click(doubleRowBtn);
+    expect(doubleRowBtn).toHaveAttribute('aria-pressed', 'true');
   });
 });

@@ -42,7 +42,7 @@
 }
 
 .location-layout-canvas__bed--selected .location-layout-canvas__rect {
-  fill: var(--color-primary-container);
+  fill: var(--color-selected-bg);
   stroke: var(--color-primary);
   stroke-width: 3;
 }
@@ -55,5 +55,5 @@
 }
 
 .location-layout-canvas__bed--selected .location-layout-canvas__name {
-  fill: var(--color-on-primary-container);
+  fill: var(--color-on-selected);
 }

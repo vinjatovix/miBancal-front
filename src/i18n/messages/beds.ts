@@ -166,6 +166,8 @@ export const bedsMessages = {
       tray_place_action: 'Colocar el bancal {name} en el plano',
       unplace_action: 'Devolver {name} a sin colocar',
       manage_plants: 'Gestionar plantas de {name}',
+      plants_mode_hint: 'Arrastra plantas al bancal o elige una para quitarla.',
+      plants_mode_done: 'Terminar siembra',
       edit_bed: 'Editar el bancal {name}',
       delete_bed: 'Eliminar el bancal {name}',
       snap_label: 'Ajuste magnético a bancales vecinos',
@@ -174,6 +176,8 @@ export const bedsMessages = {
       show_names_label: 'Mostrar nombres de bancales',
       show_dimensions_label: 'Mostrar líneas de cota',
       show_cardinal_label: 'Mostrar orientación cardinal',
+      show_plants_label: 'Mostrar plantas',
+      plants_layer_label: 'Plantas sembradas en los bancales',
       rotation_label: 'Rotación en grados',
       rotation_hint: 'Entero entre 0 y 359 grados.',
       save: 'Guardar disposición',
@@ -221,6 +225,108 @@ export const bedsMessages = {
       edge_east_label: 'Lado orientado al Este',
       edge_south_label: 'Lado orientado al Sur',
       edge_west_label: 'Lado orientado al Oeste'
+    },
+    placement: {
+      palette_title: 'Catálogo botánico',
+      palette_open: 'Abrir catálogo de plantas',
+      palette_close: 'Cerrar catálogo de plantas',
+      palette_toggle: 'Catálogo de plantas',
+      search_label: 'Buscar planta',
+      search_placeholder: 'Busca por nombre o especie',
+      palette_loading: 'Cargando el catálogo...',
+      palette_error: 'No se ha podido cargar el catálogo de plantas.',
+      palette_empty: 'No hay plantas que coincidan con la búsqueda.',
+      palette_empty_favorites:
+        'Aún no has marcado ninguna planta como favorita.',
+      palette_search_prompt:
+        'Busca una planta por nombre o elige tus favoritas para empezar.',
+      source_label: 'Origen de las plantas',
+      source_all: 'Todo el catálogo',
+      source_favorites: 'Mis favoritas',
+      plant_spacing: 'Marco de plantación: {spacing} cm',
+      vital_radius: 'Radio vital: {radius} cm',
+      plant_drag_hint: 'Arrastra la planta al bancal para sembrarla.',
+      plant_place_action: 'Sembrar {name}',
+      placing_active: 'Modo siembra activo: {name}. Toca el bancal.',
+      placing_cancel: 'Cancelar siembra',
+      manual_action: 'Introducir coordenadas',
+      crops_layer_label: 'Cultivos sembrados en el bancal',
+      crop_label: '{name} en {x}, {y} centímetros',
+      crop_label_collision:
+        '{name} en {x}, {y} centímetros, en colisión con otro cultivo',
+      crop_label_overflow:
+        '{name} en {x}, {y} centímetros, el radio sobrepasa el borde',
+      crop_remove_action: 'Retirar {name}',
+      crop_species: '{name}',
+      save_bar_label: 'Acciones de la distribución',
+      pending_one: '1 cambio pendiente',
+      pending_many: '{count} cambios pendientes',
+      no_changes: 'Sin cambios pendientes',
+      save: 'Guardar distribución',
+      saving: 'Guardando...',
+      discard: 'Descartar cambios',
+      save_error: 'No se ha podido guardar la distribución.',
+      save_conflict:
+        'La distribución cambió en otro sitio. Hemos recargado los datos; revisa y vuelve a guardar.',
+      announce_collision:
+        'Colisión detectada con otro cultivo. No se puede soltar aquí.',
+      announce_out_of_bounds:
+        'La posición queda fuera del bancal. No se puede soltar aquí.',
+      announce_cleared: 'Posición válida sin colisiones.',
+      announce_placed: 'Cultivo situado en {x}, {y} centímetros.',
+      announce_moved: 'Cultivo movido a {x}, {y} centímetros.',
+      adjust_label: 'Ajuste de posición de {name}',
+      adjust_up: 'Mover arriba 1 cm',
+      adjust_down: 'Mover abajo 1 cm',
+      adjust_left: 'Mover a la izquierda 1 cm',
+      adjust_right: 'Mover a la derecha 1 cm',
+      adjust_step_hint: 'Usa Mayús + flecha para 10 cm',
+      adjust_close: 'Cerrar controles de ajuste',
+      manual_title: 'Introducir coordenadas',
+      manual_subtitle: 'Indica la posición exacta en centímetros.',
+      manual_x_label: 'Coordenada X (cm)',
+      manual_y_label: 'Coordenada Y (cm)',
+      manual_confirm: 'Sembrar',
+      manual_cancel: 'Cancelar',
+      manual_close: 'Cerrar el diálogo de coordenadas',
+      manual_error_out_of_bounds:
+        'Las coordenadas deben estar dentro del bancal.',
+      manual_error_collision:
+        'Esa posición colisiona con otro cultivo. Elige otra.',
+      remove_title: '¿Retirar el cultivo?',
+      remove_message:
+        'Vas a retirar {name} del bancal. El cambio queda pendiente hasta que guardes.',
+      remove_confirm: 'Retirar',
+      remove_cancel: 'Cancelar',
+      unsaved_title: '¿Salir sin guardar?',
+      unsaved_message:
+        'Tienes cambios de distribución sin guardar. Si continúas, se perderán.',
+      unsaved_confirm: 'Salir',
+      unsaved_cancel: 'Seguir editando',
+      tools_toolbar_label: 'Herramientas de siembra y selección',
+      tool_select: 'Seleccionar y mover en grupo',
+      tool_single_plant: 'Siembra individual',
+      tool_brush: 'Brochas de siembra',
+      brush_single_row: 'Hilera simple',
+      brush_double_row: 'Doble hilera',
+      brush_staggered_triangle: 'Tresbolillo (triangular)',
+      duplicate_selected_crops: 'Duplicar grupo ({count})',
+      delete_selected_crops: 'Eliminar seleccionadas ({count})',
+      clear_selection: 'Deseleccionar todo',
+      group_selected_count: '{count} plantas seleccionadas',
+      brush_result_summary:
+        'Se colocaron {planted} de {total} plantas; {omitted} omitidas por colisión o desbordamiento',
+      brush_result_all: 'Se colocaron {planted} plantas',
+      brush_result_none:
+        'No se colocó ninguna planta: todas colisionan o desbordan el bancal',
+      brush_short_stroke:
+        'Trazo demasiado corto para el marco de la planta ({spacing} cm)',
+      brush_requires_plant:
+        'Selecciona primero una planta del catálogo para usar las brochas de siembra',
+      group_move_conflict:
+        'Movimiento bloqueado: alguna planta colisiona o desborda el bancal',
+      brush_preview_layer_label: 'Previsualización del trazo de brocha',
+      marquee_layer_label: 'Área de selección del bancal'
     }
   }
 };

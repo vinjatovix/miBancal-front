@@ -43,6 +43,8 @@ export interface LayoutEditor {
   readonly discardOpen: boolean;
   readonly selectedRotation: number;
   readonly toggleMode: () => void;
+  readonly startPlanting: (bedId?: string) => void;
+  readonly stopPlanting: () => void;
   readonly discard: () => void;
   readonly confirmDiscard: () => void;
   readonly cancelDiscard: () => void;
@@ -224,7 +226,7 @@ export function useLayoutEditor(
   }, [draft, etag, mutation]);
 
   const toggleMode = useCallback(() => {
-    if (mode === 'read') {
+    if (mode !== 'position') {
       setMode('position');
       return;
     }
@@ -235,6 +237,15 @@ export function useLayoutEditor(
     setMode('read');
     setSelectedId(null);
   }, [mode, draft.dirty]);
+
+  const startPlanting = useCallback((bedId?: string) => {
+    setMode('plants');
+    if (bedId) setSelectedId(bedId);
+  }, []);
+
+  const stopPlanting = useCallback(() => {
+    setMode('read');
+  }, []);
 
   const confirmDiscard = useCallback(() => {
     resetDragPositions();
@@ -332,6 +343,8 @@ export function useLayoutEditor(
     discardOpen,
     selectedRotation,
     toggleMode,
+    startPlanting,
+    stopPlanting,
     discard,
     confirmDiscard,
     cancelDiscard,

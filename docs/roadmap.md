@@ -687,23 +687,168 @@ catálogo) y 016 (pantallas de acceso y barra de navegación MiBancal).
 
 ## Futura Iteración (Bancales): Motor Espacial - Drag & Drop en el Bancal
 
-- **Estado**: planificada en Roadmap (fuera del alcance de la spec de catálogo y explorador de relaciones).
-- **Objetivo**: al arrastrar una planta sobre el bancal interactivo, resaltar visualmente las plantas vecinas según la distancia calculada en tiempo real:
-  - **Verde**: Interacción beneficiosa dentro de la distancia de influencia.
-  - **Rojo**: Interacción perjudicial / incompatible.
-  - **Gris / Neutro**: Sin interacción o fuera de la distancia de influencia biológica.
-- **Patrón de rendimiento óptimo (sin saturar la API)**:
-  - _Regla de oro_: Cero peticiones HTTP en los eventos `drag` o `pointermove`.
-  - **1. Pre-carga al tomar la planta (`dragStart`)**: Cuando el usuario agarra una planta de la paleta (`draggedPlantId`), el frontend consulta sus relaciones una sola vez (`GET /api/v1/plant-relations?filter[plantId][eq]=<draggedPlantId>&pagination[limit]=100`) y se indexan en un `Map` en memoria local por el ID de la planta compañera.
-  - **2. Cálculo de Distancia Euclidiana en el cliente (durante el movimiento)**: Con las coordenadas en centímetros $(x_1, y_1)$ de la planta arrastrada y $(x_2, y_2)$ de cada planta fija $V$ ya sembrada en el bancal:
-    $$d = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$$
-  - **3. Evaluación de Estado en caliente**: Para cada planta vecina $V$ en el bancal:
-    - Comprobar si existe relación en el `Map` entre `draggedPlantId` y `V.plantId`. Si no existe: estado neutro (sin borde / gris).
-    - Si existe relación, verificar umbral de distancia:
-      `const inRange = d >= rel.proximity.minDistanceCm && (rel.proximity.maxDistanceCm === null || d <= rel.proximity.maxDistanceCm);`
-    - Si `!inRange`: estado neutro (están en el mismo bancal, pero a mayor distancia del alcance del efecto biológico).
-    - Si `inRange`:
-      - Si `rel.type === 'beneficial'`: Verde (halo verde + tooltip con `rel.reason`).
-      - Si `rel.type === 'detrimental'`: Rojo (halo de advertencia rojo + alerta de incompatibilidad).
-  - **4. Consulta masiva para un bancal completo (resumen ecológico del bancal)**: Cálculo del informe ecológico global de un bancal con varias plantas sembradas mediante consulta batch:
-    `GET /api/v1/plant-relations?filter[plantId][in]=id1,id2,id3,id4&pagination[limit]=100` para obtener todas las aristas que conectan a cualquiera de las plantas del bancal en una única petición HTTP.
+- **Estado**: subsumida y estructurada en el roadmap del diseñador de bancales.
+
+---
+
+# Roadmap del objetivo: Diseñador interactivo de bancales y motor espacial agronómico
+
+> **Estado a 2026-11-08 (importante para trabajo en paralelo)**: el diseñador interactivo se
+> implementa hoy sobre **`/locations/:id/layout`** (`LocationLayoutPage`), **no** sobre `/beds/:id`.
+> La prosa de las iteraciones de abajo todavía redacta el diseñador "en el bancal" (`/beds/:id`) y con
+> arrastrar-y-soltar desde el catálogo: **está desactualizada** respecto a este pivote y se conserva
+> solo como referencia de intención (no reescrita aún).
+>
+> - **Feature 047** (brochas de patrón de siembra): entregada e integrada en el diseñador de ubicación.
+> - **Feature 048** (`048-bed-placement-ux-redesign`, **en curso**): rediseño exclusivo del **flujo e
+>   interfaz** del diseñador de `/locations/:id/layout` — modelo de tres modos (Ver/Colocar/Sembrar),
+>   composición estable y encuadre sin saltos. No cambia contrato ni red. Toca
+>   `src/pages/locations/LocationLayoutPage/*` y `src/components/beds/{layout,visualizer}/*`.
+> - **`/beds/:id` está congelado** (candidato a deprecación): no se modifica; los cambios en
+>   `useBedViewport` son aditivos para no romperlo.
+> - **Para otra tarea en paralelo**: no toques esos directorios ni `useBedViewport` mientras 048 esté
+>   abierta, para evitar conflictos.
+
+## Objetivo final
+
+Dotar a agro-front de un diseñador visual de bancales interactivo, accesible y de alta precisión métrica que permita a hortelanos y agricultores planificar la disposición de sus cultivos sobre el terreno real. El sistema traduce las dimensiones físicas del bancal (`width`, `height`, `depth`) a un lienzo vectorial enriquecido con capas de cuadrículas agrícolas (Square Foot Gardening de 30 cm, decímetros y centímetros), líneas de cota acotadas exteriores y una brújula o rosa de los vientos interactiva que refleje la orientación cardinal (azimut Norte) para optimizar la exposición solar de las especies.
+
+Sobre este lienzo, un motor espacial en cliente evalúa en tiempo real el posicionamiento de las plantas mediante arrastre y soltado desde el catálogo. El motor vigila los radios de desarrollo botánico y los límites físicos del bancal para advertir colisiones por solapamiento excesivo (destacado en rojo), y calcula la distancia euclidiana entre especies vecinas para proyectar una red ecológica en vivo: líneas de conexión verdes para asociaciones simbióticas en rango de interacción biológica, rojas para incompatibilidades o efectos alelopáticos perjudiciales, y neutralidad visual para plantas sin interacción.
+
+La solución se completa con herramientas profesionales de gestión sobre el terreno: la exportación del plano métrico a PDF vectorial imprimible con cotas y leyenda agronómica, y una vista dividida (split-view) estacional que permita comparar la temporada anterior frente a la actual para planificar rotaciones de cultivo eficaces y prevenir el agotamiento del suelo o la proliferación de plagas. Todo ello respetando estrictamente el contrato OpenAPI existente, el sistema de tokens de diseño y los principios de calidad de la constitución.
+
+**Mapa de dependencias entre iteraciones**:
+
+- Iteración 1 (Lienzo métrico y cuadrículas) es la base visual.
+- Iteración 2 (Orientación y brújula) depende de la Iteración 1.
+- Iteración 3 (Emplazamiento y motor de colisiones físicas) depende de la Iteración 1.
+- Iteración 4 (Red espacial de relaciones ecológicas) depende de la Iteración 3.
+- Iteración 5 (Exportación técnica a PDF) depende de la Iteración 1 (opcionalmente incluye capas de 2 y 3 si están presentes).
+- Iteración 6 (Comparador de temporadas en pantalla dividida) depende de la Iteración 3.
+
+---
+
+## Iteración 1: Lienzo métrico del bancal con cotas y cuadrículas agrícolas
+
+**Valor entregado**: Permite a los usuarios visualizar las dimensiones físicas de sus bancales a escala métrica real, alternando capas de cuadrícula (SFG 30x30 cm, 10 cm, 15 cm) y leyendo cotas arquitectónicas proyectadas fuera del perímetro.
+**Definition of Done**:
+
+- El componente del bancal renderiza las dimensiones exactas (`width` y `height` en cm) de forma escalable y responsive sin deformaciones de aspecto.
+- Líneas de cota acotadas exteriores en el margen superior e izquierdo proyectan los centímetros totales con tipografía y flechas delimitadoras legibles.
+- Tres capas de cuadrícula independientes (Square Foot Gardening 30 cm, decímetros 10 cm y cuadrícula fina de 1 cm) pueden activarse y desactivarse mediante controles accesibles.
+- Controles de zoom y desplazamiento (pan) permiten examinar bancales de grandes dimensiones en cualquier dispositivo.
+- Todos los textos visibles e indicaciones de cota están en castellano mediante `t()`, usan tokens de diseño y cumplen cobertura de tests unitarios (AAA).
+  **Riesgos / dependencias**:
+- Depende de los datos del bancal según `contracts/openapi.yaml` (`GET /api/v1/beds/{id}`).
+- Riesgo de sobrecarga visual o de renderizado si las cuadrículas métricas finas se instanciaran como nodos DOM individuales; deben resolverse como patrones vectoriales repetitivos ligeros.
+  **Prompt para /speckit.specify**:
+
+```
+En agro-front no existe ninguna representación gráfica de los bancales registrados por el usuario, mostrándose únicamente como registros alfanuméricos sin contexto espacial. Por qué: para planificar un huerto es imprescindible percibir visualmente el espacio físico disponible, entender las proporciones métricas reales del bancal y disponer de referencias modulares de siembra antes de decidir qué plantar. Qué necesitamos: una vista visual del bancal que dibuje a escala métrica precisa sus dimensiones (ancho y largo en centímetros), proyecte líneas de cota acotadas fuera de su perímetro indicando las medidas totales, y ofrezca selectores para superponer o alternar de forma independiente cuadrículas agrícolas estándar (Square Foot Gardening de 30x30 cm, decímetros y centímetros), contando con navegación fluida de zoom y desplazamiento adaptable a dispositivos móviles y escritorio.
+```
+
+---
+
+## Iteración 2: Rosa de los vientos y orientación cardinal del bancal
+
+**Valor entregado**: Facilita orientar geográficamente el bancal respecto al Norte magnético mediante una brújula interactiva, permitiendo al hortelano anticipar la trayectoria solar y el asoleamiento de sus plantas.
+**Definition of Done**:
+
+- Un widget interactivo de rosa de los vientos / brújula se visualiza en la vista del bancal, indicando los puntos cardinales (N, S, E, O) y el acimut en grados.
+- El usuario puede ajustar y fijar la orientación geográfica del bancal mediante manipulación directa de la brújula o selección de rumbo cardinal.
+- Indicadores cardinales sutiles en los bordes del bancal reflejan visualmente qué lados corresponden al Norte, Sur, Este y Oeste en todo momento.
+- La orientación seleccionada se conserva durante la sesión y es operable íntegramente mediante teclado y lector de pantalla con etiquetas accesibles.
+- Cobertura de tests unitarios estricta (AAA) para la lógica de rotación angular y cálculo de rumbos.
+  **Riesgos / dependencias**:
+- Depende de la Iteración 1 (lienzo visual del bancal).
+- El contrato actual `Bed` en OpenAPI no incluye aún un campo de persistencia de acimut; la orientación debe gestionarse en el estado de visualización del cliente o vincularse a la ubicación geográfica (`latitude`, `longitude`) sin romper el contrato del backend.
+  **Prompt para /speckit.specify**:
+
+```
+El visor de bancales no ofrece ninguna indicación sobre la orientación geográfica del bancal respecto a los puntos cardinales. Por qué: en agronomía y permacultura la orientación cardinal respecto al Norte es decisiva para la captación solar, la exposición a vientos dominantes y la correcta disposición de cultivos altos para no proyectar sombras perjudiciales sobre cultivos bajos. Qué necesitamos: incorporar una rosa de los vientos o brújula interactiva asociada al bancal que permita al usuario fijar e inspeccionar el rumbo y azimut del bancal, mostrando de forma visual e inequívoca qué lados del terreno corresponden al Norte, Sur, Este y Oeste, con controles accesibles por teclado y etiquetas descriptivas en castellano.
+```
+
+---
+
+## Iteración 3: Emplazamiento de plantas y motor espacial de colisiones físicas
+
+**Valor entregado**: Permite a los usuarios arrastrar y ubicar plantas del catálogo en el bancal, con un motor espacial que valida en tiempo real los radios botánicos y resalta en rojo las colisiones o desbordamientos del perímetro.
+**Definition of Done**:
+
+- El usuario puede arrastrar una planta desde el catálogo o paleta lateral y soltarla en coordenadas específicas $(x, y)$ del bancal, o mover plantas ya sembradas.
+- Cada instancia de planta renderiza su centro y su circunferencia de radio de espaciado agronómico según las características de la especie.
+- Un motor espacial matemático en cliente calcula en tiempo real distancias euclidianas y alerta visualmente (circunferencia en rojo y aviso de proximidad) cuando dos plantas solapan excesivamente sus radios vitales o cuando una planta sobrepasa los bordes físicos del bancal.
+- La acción de posicionar, mover o retirar persiste la instancia de cultivo a través de los endpoints oficiales (`/api/v1/plant-instances`) respetando `contracts/openapi.yaml`.
+- Suite de tests unitarios de lógica pura (AAA) para el detector de colisiones y límites geométricos con cobertura ≥ 95 %.
+  **Riesgos / dependencias**:
+- Depende de la Iteración 1 (lienzo del bancal) y de la disponibilidad de la API de `plant-instances`.
+- Riesgo de degradación de fluidez durante el arrastre; el cálculo geométrico debe ejecutarse en cliente en memoria sin peticiones de red en eventos de movimiento.
+  **Prompt para /speckit.specify**:
+
+```
+Actualmente los usuarios no pueden ubicar plantas en el lienzo del bancal ni conocer si el espacio disponible es suficiente para el desarrollo radicular y aéreo de cada especie. Por qué: sembrar cultivos a una distancia inferior a su marco de plantación recomendado provoca competencia nociva por nutrientes, agua y luz, reduciendo drásticamente la productividad o asfixiando los cultivos. Qué necesitamos: permitir arrastrar plantas desde el catálogo lateral hacia el interior del bancal para registrarlas en coordenadas concretas en centímetros, calculando automáticamente su radio vital de ocupación y alertando de forma visual e inmediata (mediante halos o circunferencias rojas) cuando dos plantas colisionen por proximidad excesiva o cuando un cultivo quede fuera de los márgenes del bancal, persistiendo los cambios según el contrato de instancias de cultivo de la API.
+```
+
+---
+
+## Iteración 4: Red espacial de relaciones ecológicas en tiempo real
+
+**Valor entregado**: Proyecta sobre el bancal una red visual dinámica de compatibilidades botánicas, enlazando con líneas verdes las asociaciones beneficiosas en rango y con líneas rojas las incompatibilidades perjudiciales.
+**Definition of Done**:
+
+- Al mover o ubicar una planta, el motor evalúa en caliente las relaciones ecológicas con las demás plantas presentes en el bancal utilizando la matriz botánica del catálogo (`/api/v1/plant-relations`).
+- Si dos plantas poseen una relación benéfica y su distancia euclidiana está dentro de su radio de interacción biológica, se dibuja una línea verde continua de conexión entre ambas.
+- Si la relación es perjudicial o alelopática y están dentro del rango de interferencia, se dibuja una línea roja discontinua de advertencia; las relaciones neutras o fuera de rango permanecen invisibles.
+- Al interactuar con una línea o nodo se despliega información accesible del beneficio o perjuicio agronómico correspondiente.
+- Cero peticiones de red durante el movimiento del cursor gracias a la precarga indexada de relaciones de las especies involucradas.
+- Cobertura de tests exhaustiva (AAA) para el evaluador de proximidad ecológica.
+  **Riesgos / dependencias**:
+- Depende de la Iteración 3 (emplazamiento y coordenadas de plantas) y del catálogo de `plant-relations`.
+- Complejidad en bancales densamente poblados; debe incluirse un control para alternar o filtrar la visibilidad de la red ecológica para no saturar la vista.
+  **Prompt para /speckit.specify**:
+
+```
+Los hortelanos que diseñan la distribución de su bancal no reciben asistencia visual sobre cómo interactúan biológicamente las plantas que han colocado unas junto a otras en el espacio físico. Por qué: la asociación de cultivos es el pilar de la agricultura ecológica; juntar plantas compañeras potencia su crecimiento y repele plagas, mientras que ubicar plantas incompatibles a corta distancia frena su desarrollo por alelopatías o atracción de patógenos comunes. Qué necesitamos: un sistema que evalúe en tiempo real las distancias físicas entre todas las plantas situadas en el bancal y dibuje dinámicamente líneas de conexión que unan a las plantas vecinas (verdes para asociaciones simbióticas y rojas de advertencia para incompatibilidades perjudiciales) únicamente cuando la distancia entre ellas esté dentro del alcance biológico efectivo de la relación, manteniendo la interfaz despejada ante especies neutras o lejanas.
+```
+
+---
+
+## Iteración 5: Exportación técnica del plano del bancal a PDF
+
+**Valor entregado**: Permite al usuario generar y descargar un documento PDF vectorial a escala con el plano acotado del bancal, su orientación cardinal y la lista de cultivos para llevar al huerto físico.
+**Definition of Done**:
+
+- Un botón accesible de exportación genera un documento PDF descargable con maquetación limpia y nítida a cualquier resolución.
+- El PDF incluye el dibujo a escala del bancal con sus líneas de cota totales, la cuadrícula activa seleccionada, la flecha/rosa de orientación Norte y la ubicación de cada planta.
+- Se adjunta una leyenda técnica con el listado de especies presentes, número de ejemplares y dimensiones generales del bancal.
+- La generación ocurre íntegramente en cliente de forma asíncrona sin bloquear la interfaz de usuario ni depender de servicios externos.
+- Tests automatizados que validan la generación del documento y la inclusión de los metadatos requeridos.
+  **Riesgos / dependencias**:
+- Depende de la Iteración 1 (lienzo y cotas) y opcionalmente refleja los elementos de las Iteraciones 2 y 3.
+- Cuidar el peso del bundle evitando librerías de generación masivas que vulneren los presupuestos de rendimiento (constitution Principle V).
+  **Prompt para /speckit.specify**:
+
+```
+Los usuarios que planifican digitalmente su bancal no disponen de ningún mecanismo para trasladar fácilmente su diseño a la práctica cuando van a trabajar sobre la tierra. Por qué: en el huerto o parcela exterior el uso de teléfonos o pantallas puede ser incómodo o inviable por reflejos solares, suciedad o falta de cobertura, siendo necesario contar con una ficha técnica en papel o documento imprimible. Qué necesitamos: permitir al usuario exportar en un clic el diseño de su bancal a un documento PDF de alta fidelidad vectorial que reproduzca a escala el plano del bancal con sus cotas de dimensiones, su orientación respecto al Norte, la cuadrícula activa y la posición exacta de cada cultivo junto a una tabla resumen con las especies sembradas.
+```
+
+---
+
+## Iteración 6: Comparador estacional de rotación de cultivos en pantalla dividida
+
+**Valor entregado**: Proporciona una vista en pantalla dividida (_split-view_) para contrastar la distribución de cultivos de la temporada anterior frente a la planificación actual, facilitando la rotación de familias botánicas.
+**Definition of Done**:
+
+- La interfaz ofrece un modo de visualización dividida: a la izquierda el bancal con los cultivos de la temporada previa (modo histórico de solo lectura) y a la derecha el diseñador activo de la temporada en curso.
+- Ambas vistas sincronizan opcionalmente su nivel de zoom y desplazamiento para comparar celdas equivalentes con precisión.
+- El sistema alerta visualmente si el usuario intenta ubicar una especie de la misma familia botánica en una zona donde ya estuvo presente la temporada pasada (riesgo de fatiga de suelo o plagas endémicas).
+- Totalmente responsive: en pantallas reducidas se sustituye la división horizontal por un selector alternador accesible o pestañas de temporada.
+- Cobertura de tests unitarios e integración (AAA) para la detección de conflictos de rotación familiar.
+  **Riesgos / dependencias**:
+- Depende de la Iteración 3 (instancias de plantas con información temporal o estado histórico).
+- En el contrato de la API, las instancias históricas de cultivo se identifican por `instanceStatus: removed` o por fechas `plantedAt`/`removedAt`; la vista debe consumir estos datos sin crear esquemas artificiales.
+  **Prompt para /speckit.specify**:
+
+```
+Al planificar una nueva temporada de siembra, los usuarios no tienen forma de consultar directamente sobre el plano qué cultivos ocuparon cada zona del bancal en el ciclo anterior. Por qué: la rotación de cultivos es esencial para evitar el agotamiento de nutrientes específicos en el suelo y prevenir la acumulación de plagas y hongos característicos de una misma familia botánica si se repite en el mismo espacio año tras año. Qué necesitamos: una modalidad de visualización dividida que muestre en paralelo el bancal de la temporada pasada (en modo de consulta histórica) y el bancal de la temporada actual (en edición activa), permitiendo comparar celda a celda la ocupación del suelo y advirtiendo cuando se intente sembrar una planta de la misma familia botánica en un área recientemente ocupada por ella.
+```
