@@ -1,8 +1,20 @@
-import { useRef, type JSX, type KeyboardEvent, type PointerEvent } from 'react';
+import {
+  useRef,
+  type DragEvent,
+  type JSX,
+  type KeyboardEvent,
+  type PointerEvent
+} from 'react';
 
 import { t } from '../../../i18n/core/t';
 import LayoutBedDimensions from './LayoutBedDimensions';
 import LayoutBedCardinalEdgeLabels from './LayoutBedCardinalEdgeLabels';
+import LocationCropsLayer from './LocationCropsLayer';
+import LocationPlacementLayer, {
+  type LocationPlacementPreview
+} from './LocationPlacementLayer';
+import { readDraggedPlantId } from '../visualizer/placementDnd';
+import { findBedAtPoint } from './utils/plantPlacementGeometry';
 import {
   calculateNetAzimuth,
   getBedEdgeCardinals
@@ -18,6 +30,14 @@ import {
 } from './utils/layoutGeometry';
 import { GRID_SPACING_CM } from './utils/snapConfig';
 import type { LayoutMode, ResolvedBed } from './utils/layoutTypes';
+import type { CropPlacementItem } from '../../../types/PlantInstance/plantPlacementTypes';
+import type {
+  BrushCandidatePosition,
+  BrushDirectrix,
+  GroupBoundingBox,
+  MarqueeBox,
+  PlantingToolMode
+} from '../../../types/PlantInstance/brushSelectionTypes';
 
 import './locationLayoutCanvas.css';
 
@@ -35,10 +55,47 @@ export interface LocationLayoutCanvasProps {
   readonly showCardinalOrientation?: boolean;
   readonly floorWidth?: number | null;
   readonly floorHeight?: number | null;
+  readonly cropsByBed?: ReadonlyMap<string, readonly CropPlacementItem[]>;
+  readonly showPlants?: boolean;
+  readonly placementPreview?: LocationPlacementPreview | null;
+  readonly selectedCropId?: string | null;
+  readonly selectedCropIds?: ReadonlySet<string>;
+  readonly toolMode?: PlantingToolMode;
+  readonly brushDirectrix?: BrushDirectrix | null;
+  readonly brushCandidates?: readonly BrushCandidatePosition[];
+  readonly isBrushDrawing?: boolean;
+  readonly brushBedId?: string | null;
+  readonly boundingBox?: GroupBoundingBox | null;
+  readonly boundingBoxBedId?: string | null;
+  readonly marqueeBox?: MarqueeBox | null;
+  readonly marqueeBedId?: string | null;
   readonly onSelectBed?: (id: string) => void;
   readonly onDeselect?: () => void;
   readonly onBedMove?: (id: string, deltaCmX: number, deltaCmY: number) => void;
   readonly onBedRotate?: (id: string, deltaDegrees: number) => void;
+  readonly onPlacementDragOver?: (global: Point) => void;
+  readonly onPlacementDragLeave?: () => void;
+  readonly onPlacementDrop?: (global: Point, plantId: string) => void;
+  readonly onPlacementTap?: (global: Point) => void;
+  readonly onCropSelect?: (cropId: string) => void;
+  readonly onCropClick?: (
+    event: React.MouseEvent,
+    cropId: string,
+    bedId: string
+  ) => void;
+  readonly onCropDragStart?: (
+    cropId: string,
+    bedId: string,
+    global: Point
+  ) => void;
+  readonly onCropDragMove?: (global: Point) => void;
+  readonly onCropDragEnd?: (global: Point) => void;
+  readonly onBrushPointerDown?: (global: Point) => void;
+  readonly onBrushPointerMove?: (global: Point) => void;
+  readonly onBrushPointerUp?: () => void;
+  readonly onMarqueePointerDown?: (global: Point, shiftKey: boolean) => void;
+  readonly onMarqueePointerMove?: (global: Point, shiftKey: boolean) => void;
+  readonly onMarqueePointerUp?: () => void;
 }
 
 const FINE_STEP_CM = 5;
@@ -106,27 +163,166 @@ export default function LocationLayoutCanvas({
   showCardinalOrientation = true,
   floorWidth = null,
   floorHeight = null,
+  cropsByBed,
+  showPlants = false,
+  placementPreview = null,
+  selectedCropId = null,
+  selectedCropIds = new Set<string>(),
+  toolMode = 'plant-single',
+  brushDirectrix = null,
+  brushCandidates = [],
+  isBrushDrawing = false,
+  brushBedId = null,
+  boundingBox = null,
+  boundingBoxBedId = null,
+  marqueeBox = null,
+  marqueeBedId = null,
   onSelectBed,
   onDeselect,
   onBedMove,
-  onBedRotate
+  onBedRotate,
+  onPlacementDragOver,
+  onPlacementDragLeave,
+  onPlacementDrop,
+  onPlacementTap,
+  onCropSelect,
+  onCropClick,
+  onCropDragStart,
+  onCropDragMove,
+  onCropDragEnd,
+  onBrushPointerDown,
+  onBrushPointerMove,
+  onBrushPointerUp,
+  onMarqueePointerDown,
+  onMarqueePointerMove,
+  onMarqueePointerUp
 }: LocationLayoutCanvasProps): JSX.Element {
   const interactive = mode === 'position';
+  const isPlanting = mode === 'plants';
+  const showCrops = mode === 'read' && showPlants && cropsByBed !== undefined;
+  const showPlacementLayer = isPlanting && cropsByBed !== undefined;
   const floor = floorBounds(viewBox, floorWidth, floorHeight);
   const selectedBed = beds.find((bed) => bed.id === selectedId);
-  const showGrid = mode === 'read' && gridLayers !== null;
+  const showGrid =
+    (mode === 'read' || mode === 'plants') && gridLayers !== null;
   const gridBeds = selectedBed ? [selectedBed] : beds;
   const dragRef = useRef<{ id: string; x: number; y: number } | null>(null);
   const surfaceDownRef = useRef<{ x: number; y: number } | null>(null);
+  const transformGroupRef = useRef<SVGGElement>(null);
+  const cropDragActiveRef = useRef(false);
+  const surfaceGestureRef = useRef<'brush' | 'select' | 'pan' | null>(null);
 
-  const handleSurfacePointerDown = (
-    event: PointerEvent<SVGSVGElement>
+  const clientToGlobal = (clientX: number, clientY: number): Point | null => {
+    const group = transformGroupRef.current;
+    const ctm = group?.getScreenCTM?.();
+    if (!ctm || typeof DOMPoint === 'undefined') return null;
+    const point = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
+    return { x: point.x, y: point.y };
+  };
+
+  const handlePlacementDragOver = (event: DragEvent<SVGSVGElement>): void => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+    const global = clientToGlobal(event.clientX, event.clientY);
+    if (global) onPlacementDragOver?.(global);
+  };
+
+  const handlePlacementDrop = (event: DragEvent<SVGSVGElement>): void => {
+    event.preventDefault();
+    const plantId = readDraggedPlantId(event.dataTransfer);
+    const global = clientToGlobal(event.clientX, event.clientY);
+    if (plantId && global) onPlacementDrop?.(global, plantId);
+  };
+
+  const handleCropPointerDown = (
+    cropId: string,
+    bedId: string,
+    event: PointerEvent<SVGGElement>
   ): void => {
+    if (isPlanting && toolMode === 'select') {
+      return;
+    }
+    event.stopPropagation();
+    onCropSelect?.(cropId);
+    const global = clientToGlobal(event.clientX, event.clientY);
+    if (!global || !onCropDragStart) return;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    cropDragActiveRef.current = true;
+    onCropDragStart(cropId, bedId, global);
+  };
+
+  const handleCropPointerMove = (event: PointerEvent<SVGGElement>): void => {
+    if (!cropDragActiveRef.current) return;
+    const global = clientToGlobal(event.clientX, event.clientY);
+    if (global) onCropDragMove?.(global);
+  };
+
+  const handleCropPointerUp = (event: PointerEvent<SVGGElement>): void => {
+    if (!cropDragActiveRef.current) return;
+    cropDragActiveRef.current = false;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    const global = clientToGlobal(event.clientX, event.clientY);
+    if (global) onCropDragEnd?.(global);
+  };
+
+  const startSurfacePan = (event: PointerEvent<SVGSVGElement>): void => {
+    surfaceGestureRef.current = 'pan';
     surfaceDownRef.current = { x: event.clientX, y: event.clientY };
     viewport.onPointerDown(event);
   };
 
+  const handleSurfacePointerDown = (
+    event: PointerEvent<SVGSVGElement>
+  ): void => {
+    if (isPlanting && (toolMode === 'brush' || toolMode === 'select')) {
+      const global = clientToGlobal(event.clientX, event.clientY);
+      const insideBed = global ? findBedAtPoint(beds, global) : null;
+      if (!global || !insideBed) {
+        startSurfacePan(event);
+        return;
+      }
+      if (toolMode === 'brush') {
+        surfaceGestureRef.current = 'brush';
+        onBrushPointerDown?.(global);
+      } else {
+        surfaceGestureRef.current = 'select';
+        onMarqueePointerDown?.(global, event.shiftKey);
+      }
+      return;
+    }
+    startSurfacePan(event);
+  };
+
+  const handleSurfacePointerMove = (
+    event: PointerEvent<SVGSVGElement>
+  ): void => {
+    if (isPlanting && (toolMode === 'brush' || toolMode === 'select')) {
+      if (surfaceGestureRef.current === 'pan') {
+        viewport.onPointerMove(event);
+        return;
+      }
+      const global = clientToGlobal(event.clientX, event.clientY);
+      if (!global) return;
+      if (toolMode === 'brush') onBrushPointerMove?.(global);
+      else onMarqueePointerMove?.(global, event.shiftKey);
+      return;
+    }
+    viewport.onPointerMove(event);
+  };
+
   const handleSurfacePointerUp = (event: PointerEvent<SVGSVGElement>): void => {
+    if (isPlanting && (toolMode === 'brush' || toolMode === 'select')) {
+      const gesture = surfaceGestureRef.current;
+      surfaceGestureRef.current = null;
+      if (gesture === 'pan') {
+        viewport.onPointerUp(event);
+        surfaceDownRef.current = null;
+        return;
+      }
+      if (toolMode === 'brush') onBrushPointerUp?.();
+      else onMarqueePointerUp?.();
+      return;
+    }
     viewport.onPointerUp(event);
     const start = surfaceDownRef.current;
     surfaceDownRef.current = null;
@@ -135,7 +331,13 @@ export default function LocationLayoutCanvas({
       event.clientX - start.x,
       event.clientY - start.y
     );
-    if (movedDistance <= CLICK_MOVE_THRESHOLD_PX) onDeselect?.();
+    if (movedDistance > CLICK_MOVE_THRESHOLD_PX) return;
+    if (isPlanting) {
+      const global = clientToGlobal(event.clientX, event.clientY);
+      if (global) onPlacementTap?.(global);
+      return;
+    }
+    onDeselect?.();
   };
   const center = viewBoxCenter(viewBox);
   const transform = `translate(${viewport.panX}, ${viewport.panY}) translate(${center.x}, ${center.y}) scale(${viewport.zoom}) translate(${-center.x}, ${-center.y})`;
@@ -212,9 +414,12 @@ export default function LocationLayoutCanvas({
       viewBox={viewBox}
       preserveAspectRatio="xMidYMid meet"
       onPointerDown={handleSurfacePointerDown}
-      onPointerMove={viewport.onPointerMove}
+      onPointerMove={handleSurfacePointerMove}
       onPointerUp={handleSurfacePointerUp}
       onDoubleClick={viewport.resetZoom}
+      onDragOver={isPlanting ? handlePlacementDragOver : undefined}
+      onDragLeave={isPlanting ? onPlacementDragLeave : undefined}
+      onDrop={isPlanting ? handlePlacementDrop : undefined}
     >
       {floor && (
         <defs>
@@ -235,7 +440,7 @@ export default function LocationLayoutCanvas({
           </pattern>
         </defs>
       )}
-      <g transform={transform}>
+      <g ref={transformGroupRef} transform={transform}>
         {floor && (
           <rect
             className="location-layout-canvas__floor"
@@ -268,7 +473,11 @@ export default function LocationLayoutCanvas({
               tabIndex={0}
               aria-label={bedLabel}
               aria-pressed={isSelected}
-              onPointerDown={(event) => handleBedPointerDown(bed.id, event)}
+              onPointerDown={
+                isPlanting
+                  ? undefined
+                  : (event) => handleBedPointerDown(bed.id, event)
+              }
               onPointerMove={interactive ? handleBedPointerMove : undefined}
               onPointerUp={interactive ? handleBedPointerUp : undefined}
               onLostPointerCapture={
@@ -338,6 +547,31 @@ export default function LocationLayoutCanvas({
               />
             </g>
           ))}
+        {showCrops && cropsByBed && (
+          <LocationCropsLayer beds={beds} cropsByBed={cropsByBed} />
+        )}
+        {showPlacementLayer && cropsByBed && (
+          <LocationPlacementLayer
+            beds={beds}
+            cropsByBed={cropsByBed}
+            selectedCropId={selectedCropId}
+            selectedCropIds={selectedCropIds}
+            preview={placementPreview}
+            brushDirectrix={brushDirectrix}
+            brushCandidates={brushCandidates}
+            isBrushDrawing={isBrushDrawing}
+            brushBedId={brushBedId}
+            boundingBox={boundingBox}
+            boundingBoxBedId={boundingBoxBedId}
+            marqueeBox={marqueeBox}
+            marqueeBedId={marqueeBedId}
+            onSelectCrop={(cropId) => onCropSelect?.(cropId)}
+            onCropClick={onCropClick}
+            onCropPointerDown={handleCropPointerDown}
+            onCropPointerMove={handleCropPointerMove}
+            onCropPointerUp={handleCropPointerUp}
+          />
+        )}
       </g>
     </svg>
   );

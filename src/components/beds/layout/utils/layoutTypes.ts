@@ -1,6 +1,6 @@
 import type { BedPosition } from '../../../../types/Location/LocationLayout';
 
-export type LayoutMode = 'read' | 'position';
+export type LayoutMode = 'read' | 'position' | 'plants';
 
 export interface ResolvedBed {
   readonly id: string;

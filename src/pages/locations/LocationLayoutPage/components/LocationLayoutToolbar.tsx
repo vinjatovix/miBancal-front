@@ -4,49 +4,33 @@ import BedRotationControl from '../../../../components/beds/layout/BedRotationCo
 import LayoutModeToggle from '../../../../components/beds/layout/LayoutModeToggle';
 import LayoutSaveBar from '../../../../components/beds/layout/LayoutSaveBar';
 import SnapToggle from '../../../../components/beds/layout/SnapToggle';
+import { BedCanvasToolSelector } from '../../../../components/beds/visualizer/BedCanvasToolSelector';
 import BedGridControls from '../../../../components/beds/visualizer/BedGridControls';
-import type {
-  ActiveGridLayers,
-  BedGridLayerKey
-} from '../../../../components/beds/visualizer/utils/bedGridConfig';
-import type { ResolvedBed } from '../../../../components/beds/layout/utils/layoutTypes';
 import { t } from '../../../../i18n/core/t';
 import Button from '../../../../shared/components/Button/Button';
 import DeleteButton from '../../../../shared/components/ActionButtons/DeleteButton';
 import EditButton from '../../../../shared/components/ActionButtons/EditButton';
+import type { LocationLayoutToolbarProps } from './locationLayoutToolbarTypes';
 
-export interface LocationLayoutToolbarProps {
-  readonly isPosition: boolean;
-  readonly onToggleMode: () => void;
-  readonly gridSnapEnabled: boolean;
-  readonly onToggleGridSnap: () => void;
-  readonly neighborSnapEnabled: boolean;
-  readonly onToggleNeighborSnap: () => void;
-  readonly selectedRotation: number;
-  readonly onRotationChange: (rotation: number) => void;
-  readonly selectedBed?: ResolvedBed;
-  readonly onUnplaceSelected: () => void;
-  readonly dirty: boolean;
-  readonly saving: boolean;
-  readonly onSave: () => void;
-  readonly onDiscard: () => void;
-  readonly activeGridLayers: ActiveGridLayers;
-  readonly onToggleGridLayer: (key: BedGridLayerKey) => void;
-  readonly showBedNames: boolean;
-  readonly onToggleShowNames: () => void;
-  readonly showDimensions: boolean;
-  readonly onToggleShowDimensions: () => void;
-  readonly showCardinalOrientation: boolean;
-  readonly onToggleShowCardinalOrientation: () => void;
-  readonly onOpenEdit: () => void;
-  readonly canDeleteSelectedBed: boolean;
-  readonly isDeletingBed: boolean;
-  readonly onOpenDelete: () => void;
-}
+export type { LocationLayoutToolbarProps };
 
 export default function LocationLayoutToolbar({
   isPosition,
+  isPlanting,
   onToggleMode,
+  onStartPlanting,
+  onStopPlanting,
+  toolMode,
+  brushPattern,
+  onSelectToolMode,
+  onSelectBrushPattern,
+  selectedCropName,
+  selectedCropCount = 0,
+  onRemoveSelectedCrop,
+  onDuplicateSelectedCrops,
+  onDeleteSelectedCrops,
+  onClearSelection,
+  isSavingPlacement,
   gridSnapEnabled,
   onToggleGridSnap,
   neighborSnapEnabled,
@@ -67,6 +51,8 @@ export default function LocationLayoutToolbar({
   onToggleShowDimensions,
   showCardinalOrientation,
   onToggleShowCardinalOrientation,
+  showPlants,
+  onToggleShowPlants,
   onOpenEdit,
   canDeleteSelectedBed,
   isDeletingBed,
@@ -83,7 +69,71 @@ export default function LocationLayoutToolbar({
         className="location-layout-page__toolbar-divider"
         aria-hidden="true"
       />
-      {isPosition ? (
+      {isPlanting ? (
+        <div className="location-layout-page__toolbar-group">
+          <BedGridControls
+            activeLayers={activeGridLayers}
+            onToggleLayer={onToggleGridLayer}
+          />
+          {onSelectToolMode && onSelectBrushPattern ? (
+            <BedCanvasToolSelector
+              activeMode={toolMode ?? 'plant-single'}
+              activeBrushPattern={brushPattern ?? 'single-row'}
+              onSelectMode={onSelectToolMode}
+              onSelectBrushPattern={onSelectBrushPattern}
+              disabled={isSavingPlacement}
+            />
+          ) : null}
+          {selectedCropCount > 1 ? (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onDuplicateSelectedCrops}
+                disabled={isSavingPlacement}
+              >
+                {t('bed.placement.duplicate_selected_crops', {
+                  count: String(selectedCropCount)
+                })}
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={onDeleteSelectedCrops}
+                disabled={isSavingPlacement}
+              >
+                {t('bed.placement.delete_selected_crops', {
+                  count: String(selectedCropCount)
+                })}
+              </Button>
+              <Button
+                variant="neutral"
+                size="sm"
+                onClick={onClearSelection}
+                disabled={isSavingPlacement}
+              >
+                {t('bed.placement.clear_selection')}
+              </Button>
+            </>
+          ) : selectedCropName ? (
+            <Button
+              variant="danger"
+              size="sm"
+              icon="delete"
+              onClick={onRemoveSelectedCrop}
+              disabled={isSavingPlacement}
+            >
+              {t('bed.placement.crop_remove_action', {
+                name: selectedCropName
+              })}
+            </Button>
+          ) : null}
+          <div className="location-layout-page__toolbar-spacer" />
+          <Button variant="secondary" onClick={onStopPlanting}>
+            {t('bed.layout.plants_mode_done')}
+          </Button>
+        </div>
+      ) : isPosition ? (
         <>
           <div className="location-layout-page__toolbar-group">
             <SnapToggle
@@ -132,6 +182,11 @@ export default function LocationLayoutToolbar({
               onToggle={onToggleShowDimensions}
               label={t('bed.layout.show_dimensions_label')}
             />
+            <SnapToggle
+              enabled={showPlants}
+              onToggle={onToggleShowPlants}
+              label={t('bed.layout.show_plants_label')}
+            />
             <Button
               variant={showCardinalOrientation ? 'secondary' : 'neutral'}
               icon="explore"
@@ -145,7 +200,7 @@ export default function LocationLayoutToolbar({
             <>
               <div className="location-layout-page__toolbar-spacer" />
               <div className="location-layout-page__bed-actions">
-                <Button variant="secondary">
+                <Button variant="secondary" onClick={onStartPlanting}>
                   {t('bed.layout.manage_plants', { name: selectedBed.name })}
                 </Button>
                 <EditButton

@@ -1,0 +1,204 @@
+.plant-placement-palette {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+  max-width: 320px;
+  padding: var(--space-md);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-decor);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.plant-placement-palette__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.plant-placement-palette__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--type-body-lg, 1.125rem);
+  font-weight: 600;
+  color: var(--color-fg);
+}
+
+.plant-placement-palette__close {
+  display: inline-flex;
+  padding: var(--space-2xs);
+  color: var(--color-fg-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.plant-placement-palette__close:hover {
+  color: var(--color-fg);
+}
+
+.plant-placement-palette__search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  color: var(--color-fg-muted);
+  background-color: var(--color-bg-page);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-full);
+}
+
+.plant-placement-palette__search input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-body-sm, 0.875rem);
+  color: var(--color-fg);
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.plant-placement-palette__source {
+  display: flex;
+  gap: var(--space-2xs);
+  padding: var(--space-2xs);
+  background-color: var(--color-bg-page);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-full);
+}
+
+.plant-placement-palette__source-option {
+  flex: 1;
+  padding: var(--space-2xs) var(--space-sm);
+  font-family: var(--font-ui);
+  font-size: var(--type-body-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--color-fg-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.plant-placement-palette__source-option:hover {
+  color: var(--color-fg);
+}
+
+.plant-placement-palette__source-option--active {
+  color: var(--color-on-primary);
+  background-color: var(--color-primary);
+}
+
+.plant-placement-palette__source-option:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+.plant-placement-palette__placing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--font-ui);
+  font-size: var(--type-body-sm, 0.875rem);
+  color: var(--color-fg);
+  background-color: var(--color-primary-container);
+  border-radius: var(--radius-md, 8px);
+}
+
+.plant-placement-palette__placing button {
+  display: inline-flex;
+  color: var(--color-fg);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.plant-placement-palette__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.plant-placement-palette__error {
+  color: var(--color-error-border);
+  font-family: var(--font-ui);
+  font-size: var(--type-body-sm, 0.875rem);
+}
+
+.plant-placement-palette__empty {
+  color: var(--color-fg-muted);
+  font-family: var(--font-ui);
+  font-size: var(--type-body-sm, 0.875rem);
+}
+
+.plant-placement-palette__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plant-placement-palette__card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  text-align: start;
+  color: var(--color-fg);
+  background-color: var(--color-bg-page);
+  border: 1px solid var(--color-border-decor);
+  border-radius: var(--radius-md, 8px);
+  cursor: grab;
+}
+
+.plant-placement-palette__card:hover {
+  border-color: var(--color-border-control);
+  background-color: var(--color-bg-hover);
+}
+
+.plant-placement-palette__card--active {
+  border-color: var(--color-primary);
+  background-color: var(--color-selected-bg);
+}
+
+.plant-placement-palette__card:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+.plant-placement-palette__card-icon {
+  display: inline-flex;
+  color: var(--color-primary);
+}
+
+.plant-placement-palette__card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.plant-placement-palette__card-name {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: var(--type-body-sm, 0.875rem);
+}
+
+.plant-placement-palette__card-meta {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-fg-muted);
+}
+
+@media (max-width: 768px) {
+  .plant-placement-palette {
+    max-width: 100%;
+  }
+}

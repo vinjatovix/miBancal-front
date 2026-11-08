@@ -235,14 +235,14 @@ export function createRoutes(isDevTools = IS_DEV_TOOLS): RouteObject[] {
             {
               path: '/beds/:id',
               lazy: async () => {
-                const [{ default: BedDetailRedirect }] = await Promise.all([
-                  import('../pages/beds/BedDetailRedirect/BedDetailRedirect'),
+                const [{ default: BedDetailPage }] = await Promise.all([
+                  import('../pages/beds/BedDetailPage/BedDetailPage'),
                   import('../i18n/messages/beds')
                 ]);
                 return {
                   Component: () => (
                     <ProtectedRoute requireAdmin={false}>
-                      <BedDetailRedirect />
+                      <BedDetailPage />
                     </ProtectedRoute>
                   )
                 };

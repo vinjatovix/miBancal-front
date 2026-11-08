@@ -1,28 +1,17 @@
 import type { Metadata } from '../Metadata';
+import type {
+  CropGrowthStatus,
+  PlantCoordinates,
+  PlantInstanceLifecycleStatus,
+  PlantInstanceResponse
+} from '../PlantInstance/PlantInstance';
 
-export type CropGrowthStatus = 'seeded' | 'planted' | 'growing' | 'harvested';
-export type PlantInstanceLifecycleStatus = 'active' | 'removed';
-
-export interface PlantCoordinates {
-  readonly x: number;
-  readonly y: number;
-}
-
-export interface PlantInstanceResponse {
-  readonly id: string;
-  readonly userId: string;
-  readonly bedId: string;
-  readonly plantId: string;
-  readonly position?: PlantCoordinates;
-  readonly growthStatus: CropGrowthStatus;
-  readonly instanceStatus: PlantInstanceLifecycleStatus;
-  readonly plantedAt: string;
-  readonly removedAt?: string | null;
-  readonly variety?: string;
-  readonly notes?: string;
-  readonly metadata: Metadata;
-  readonly version: number;
-}
+export type {
+  CropGrowthStatus,
+  PlantCoordinates,
+  PlantInstanceLifecycleStatus,
+  PlantInstanceResponse
+};
 
 export interface LocationSummary {
   readonly id: string;

@@ -14,6 +14,7 @@ function buildViewport(): BedViewportState {
     zoomIn: vi.fn(),
     zoomOut: vi.fn(),
     resetZoom: vi.fn(),
+    fitToBounds: vi.fn(),
     panBy: vi.fn(),
     onPointerDown: vi.fn(),
     onPointerMove: vi.fn(),

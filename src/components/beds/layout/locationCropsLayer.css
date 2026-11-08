@@ -1,0 +1,15 @@
+.location-crops-layer {
+  pointer-events: none;
+}
+
+.location-crops-layer__radius {
+  fill: var(--color-primary);
+  fill-opacity: 0.08;
+  stroke: var(--color-border-decor);
+  stroke-width: 0.6;
+  stroke-dasharray: 2 2;
+}
+
+.location-crops-layer__center {
+  fill: var(--color-primary);
+}

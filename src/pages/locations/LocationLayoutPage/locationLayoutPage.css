@@ -136,4 +136,10 @@
   .location-layout-page .unplaced-beds-tray {
     flex: 0 0 18rem;
   }
+
+  .location-layout-page__workspace .plant-placement-palette {
+    flex: 0 0 20rem;
+    max-width: none;
+    max-height: 60vh;
+  }
 }

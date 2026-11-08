@@ -1,0 +1,30 @@
+.bed-selection-bounding-box {
+  pointer-events: none;
+}
+
+.bed-selection-bounding-box__rect {
+  fill: transparent;
+  stroke: var(--color-primary);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 3;
+  rx: 3px;
+  ry: 3px;
+}
+
+.bed-selection-bounding-box__rect.is-dragging {
+  stroke: var(--color-focus);
+  stroke-dasharray: 2 2;
+}
+
+.bed-selection-bounding-box__rect.is-conflict {
+  stroke: var(--color-error-border);
+  fill: var(--color-error-bg);
+  fill-opacity: 0.1;
+}
+
+.bed-selection-bounding-box__label {
+  font-family: var(--font-ui);
+  font-size: 8px;
+  font-weight: 600;
+  fill: var(--color-fg);
+}

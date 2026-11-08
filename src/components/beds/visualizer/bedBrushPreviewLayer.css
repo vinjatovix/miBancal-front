@@ -1,0 +1,39 @@
+.bed-brush-preview-layer {
+  pointer-events: none;
+}
+
+.bed-brush-preview-layer__directrix {
+  stroke: var(--color-primary);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  stroke-linecap: round;
+}
+
+.bed-brush-preview-layer__candidate.is-valid
+  .bed-brush-preview-layer__vital-circle {
+  fill: var(--color-primary);
+  fill-opacity: 0.18;
+  stroke: var(--color-primary);
+  stroke-width: 1;
+}
+
+.bed-brush-preview-layer__candidate.is-valid
+  .bed-brush-preview-layer__center-dot {
+  fill: var(--color-primary);
+  opacity: 0.75;
+}
+
+.bed-brush-preview-layer__candidate.is-omitted
+  .bed-brush-preview-layer__vital-circle {
+  fill: var(--color-error-bg);
+  fill-opacity: 0.2;
+  stroke: var(--color-error-border);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+}
+
+.bed-brush-preview-layer__candidate.is-omitted
+  .bed-brush-preview-layer__center-dot {
+  fill: var(--color-error-border);
+  opacity: 0.7;
+}
