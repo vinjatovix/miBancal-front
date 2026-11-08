@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import LocationLayoutCanvas from '../../../../src/components/beds/layout/LocationLayoutCanvas';
 import type { BedViewportState } from '../../../../src/components/beds/visualizer/hooks/useBedViewport';
@@ -11,11 +11,14 @@ function buildViewport(): BedViewportState {
     panX: 0,
     panY: 0,
     isDragging: false,
+    zoomPercent: 100,
     zoomIn: vi.fn(),
     zoomOut: vi.fn(),
     resetZoom: vi.fn(),
     fitToBounds: vi.fn(),
     panBy: vi.fn(),
+    animateTo: vi.fn(),
+    compensateWidthChange: vi.fn(),
     onPointerDown: vi.fn(),
     onPointerMove: vi.fn(),
     onPointerUp: vi.fn(),
@@ -250,5 +253,108 @@ describe('LocationLayoutCanvas', () => {
       '.layout-bed-cardinal-labels__badge'
     );
     expect(badges).toHaveLength(0);
+  });
+
+  describe('bed selection in planting mode', () => {
+    const originalDOMPoint = globalThis.DOMPoint;
+
+    beforeEach(() => {
+      class IdentityDOMPoint {
+        x: number;
+        y: number;
+        constructor(x = 0, y = 0) {
+          this.x = x;
+          this.y = y;
+        }
+        matrixTransform(): { x: number; y: number } {
+          return { x: this.x, y: this.y };
+        }
+      }
+      globalThis.DOMPoint = IdentityDOMPoint as unknown as typeof DOMPoint;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (SVGElement.prototype as any).getScreenCTM = () => ({
+        inverse: () => ({})
+      });
+    });
+
+    afterEach(() => {
+      globalThis.DOMPoint = originalDOMPoint;
+    });
+
+    function tapSurface(x: number, y: number): void {
+      const svg = screen.getByRole('img', { name: 'Layout' });
+      fireEvent.pointerDown(svg, { pointerId: 1, clientX: x, clientY: y });
+      fireEvent.pointerUp(svg, { pointerId: 1, clientX: x, clientY: y });
+    }
+
+    it('selects the bed under a tap in planting mode', () => {
+      const onSelectBed = vi.fn();
+      const onDeselect = vi.fn();
+
+      render(
+        <LocationLayoutCanvas
+          beds={BEDS}
+          viewBox="0 0 400 400"
+          label="Layout"
+          mode="plants"
+          selectedId={null}
+          cropsByBed={new Map()}
+          viewport={buildViewport()}
+          onSelectBed={onSelectBed}
+          onDeselect={onDeselect}
+        />
+      );
+
+      tapSurface(10, 10);
+
+      expect(onSelectBed).toHaveBeenCalledWith('bed-1');
+      expect(onDeselect).not.toHaveBeenCalled();
+    });
+
+    it('deselects when tapping empty floor in planting mode', () => {
+      const onSelectBed = vi.fn();
+      const onDeselect = vi.fn();
+
+      render(
+        <LocationLayoutCanvas
+          beds={BEDS}
+          viewBox="0 0 400 400"
+          label="Layout"
+          mode="plants"
+          selectedId="bed-1"
+          cropsByBed={new Map()}
+          viewport={buildViewport()}
+          onSelectBed={onSelectBed}
+          onDeselect={onDeselect}
+        />
+      );
+
+      tapSurface(350, 10);
+
+      expect(onDeselect).toHaveBeenCalledTimes(1);
+      expect(onSelectBed).not.toHaveBeenCalled();
+    });
+
+    it('switches the active bed when tapping another bed with the select tool', () => {
+      const onSelectBed = vi.fn();
+
+      render(
+        <LocationLayoutCanvas
+          beds={BEDS}
+          viewBox="0 0 400 400"
+          label="Layout"
+          mode="plants"
+          selectedId="bed-1"
+          toolMode="select"
+          cropsByBed={new Map()}
+          viewport={buildViewport()}
+          onSelectBed={onSelectBed}
+        />
+      );
+
+      tapSurface(210, 210);
+
+      expect(onSelectBed).toHaveBeenCalledWith('bed-2');
+    });
   });
 });

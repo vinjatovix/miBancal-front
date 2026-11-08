@@ -66,6 +66,20 @@ export interface GroupBoundingBox {
   readonly count: number;
 }
 
+export interface GroupMovePreviewItem {
+  readonly id: string;
+  readonly local: Coordinates;
+  readonly vitalRadius: number;
+  readonly commonName: string;
+  readonly hasCollision: boolean;
+  readonly isOutOfBounds: boolean;
+}
+
+export interface GroupMovePreview {
+  readonly bedId: string;
+  readonly items: readonly GroupMovePreviewItem[];
+}
+
 export interface GroupDragState {
   readonly initialPositions: ReadonlyMap<string, Coordinates>;
   readonly currentDisplacement: { readonly dx: number; readonly dy: number };

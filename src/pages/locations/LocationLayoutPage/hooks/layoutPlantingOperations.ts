@@ -21,6 +21,15 @@ export interface BatchCropMoveInput {
   readonly version?: number;
 }
 
+export interface LayoutCreateInput {
+  readonly bedId: string;
+  readonly plantId: string;
+  readonly commonName: string;
+  readonly scientificName?: string;
+  readonly vitalRadius: number;
+  readonly position: Coordinates;
+}
+
 export function evaluateStoredPlacement(
   bed: { readonly width: number; readonly height: number },
   stored: Coordinates,
@@ -94,60 +103,121 @@ export async function batchUpdateCrops(
   });
 }
 
-export async function batchDuplicateCrops(
-  cropsToDuplicate: readonly CropPlacementItem[],
-  bed: { readonly width: number; readonly height: number },
-  offset: Coordinates = { x: 20, y: 20 }
-): Promise<void> {
-  const validItems: {
-    readonly bedId: string;
-    readonly plantId: string;
-    readonly position: Coordinates;
-  }[] = [];
+const DUPLICATE_MARGIN_CM = 1;
 
-  for (const crop of cropsToDuplicate) {
-    const newPos = {
-      x: crop.position.x + offset.x,
-      y: crop.position.y + offset.y
-    };
-    if (
-      newPos.x >= 0 &&
-      newPos.x <= bed.width &&
-      newPos.y >= 0 &&
-      newPos.y <= bed.height
-    ) {
-      validItems.push({
-        bedId: crop.bedId,
-        plantId: crop.plantId,
-        position: newPos
-      });
+const MAX_DUPLICATE_PLACEMENT_RINGS = 24;
+
+const DUPLICATE_SEARCH_DIRECTIONS: readonly Coordinates[] = [
+  { x: 1, y: 1 },
+  { x: 1, y: 0 },
+  { x: 0, y: 1 },
+  { x: -1, y: 1 },
+  { x: 1, y: -1 },
+  { x: -1, y: 0 },
+  { x: 0, y: -1 },
+  { x: -1, y: -1 }
+];
+
+interface SpatialObstacle {
+  readonly x: number;
+  readonly y: number;
+  readonly vitalRadius: number;
+}
+
+function isCenterInsideBed(
+  position: Coordinates,
+  bed: { readonly width: number; readonly height: number }
+): boolean {
+  return (
+    position.x >= 0 &&
+    position.x <= bed.width &&
+    position.y >= 0 &&
+    position.y <= bed.height
+  );
+}
+
+function collidesWithObstacles(
+  position: Coordinates,
+  vitalRadius: number,
+  obstacles: readonly SpatialObstacle[]
+): boolean {
+  return obstacles.some((obstacle) =>
+    evaluateCollision({ x: position.x, y: position.y, vitalRadius }, obstacle)
+  );
+}
+
+function findFreeDuplicatePosition(
+  origin: Coordinates,
+  vitalRadius: number,
+  bed: { readonly width: number; readonly height: number },
+  obstacles: readonly SpatialObstacle[]
+): Coordinates | null {
+  const step = 2 * vitalRadius + DUPLICATE_MARGIN_CM;
+  for (let ring = 1; ring <= MAX_DUPLICATE_PLACEMENT_RINGS; ring += 1) {
+    for (const direction of DUPLICATE_SEARCH_DIRECTIONS) {
+      const candidate = {
+        x: origin.x + direction.x * step * ring,
+        y: origin.y + direction.y * step * ring
+      };
+      if (!isCenterInsideBed(candidate, bed)) {
+        continue;
+      }
+      if (collidesWithObstacles(candidate, vitalRadius, obstacles)) {
+        continue;
+      }
+      return candidate;
     }
   }
+  return null;
+}
 
-  if (validItems.length === 0) {
-    return;
-  }
+export function computeDuplicatePlacements(
+  cropsToDuplicate: readonly CropPlacementItem[],
+  bed: { readonly width: number; readonly height: number },
+  existingCrops: readonly CropPlacementItem[] = []
+): readonly LayoutCreateInput[] {
+  const obstaclesByBed = new Map<string, SpatialObstacle[]>();
+  const seedObstacle = (bedId: string, obstacle: SpatialObstacle): void => {
+    const list = obstaclesByBed.get(bedId) ?? [];
+    list.push(obstacle);
+    obstaclesByBed.set(bedId, list);
+  };
 
-  const itemsByBed = new Map<
-    string,
-    { readonly plantId: string; readonly position: Coordinates }[]
-  >();
-
-  for (const item of validItems) {
-    const list = itemsByBed.get(item.bedId) ?? [];
-    list.push({ plantId: item.plantId, position: item.position });
-    itemsByBed.set(item.bedId, list);
-  }
-
-  for (const [bedId, bedItems] of itemsByBed) {
-    await batchPlacePlantInstances({
-      bedId,
-      items: bedItems.map((item) => ({
-        id: crypto.randomUUID(),
-        plantId: item.plantId,
-        position: item.position,
-        growthStatus: 'planted'
-      }))
+  for (const crop of [...existingCrops, ...cropsToDuplicate]) {
+    seedObstacle(crop.bedId, {
+      x: crop.position.x,
+      y: crop.position.y,
+      vitalRadius: crop.vitalRadius
     });
   }
+
+  const placements: LayoutCreateInput[] = [];
+
+  for (const crop of cropsToDuplicate) {
+    const obstacles = obstaclesByBed.get(crop.bedId) ?? [];
+    const position = findFreeDuplicatePosition(
+      crop.position,
+      crop.vitalRadius,
+      bed,
+      obstacles
+    );
+    if (!position) {
+      continue;
+    }
+    obstacles.push({
+      x: position.x,
+      y: position.y,
+      vitalRadius: crop.vitalRadius
+    });
+    placements.push({
+      bedId: crop.bedId,
+      plantId: crop.plantId,
+      commonName: crop.commonName,
+      scientificName: crop.scientificName,
+      vitalRadius: crop.vitalRadius,
+      position
+    });
+  }
+
+  return placements;
 }

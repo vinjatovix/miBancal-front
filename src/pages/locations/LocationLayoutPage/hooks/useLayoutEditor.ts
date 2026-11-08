@@ -32,6 +32,7 @@ interface BedMeta {
 
 export interface LayoutEditor {
   readonly mode: LayoutMode;
+  readonly setMode: (mode: LayoutMode) => void;
   readonly gridSnapEnabled: boolean;
   readonly neighborSnapEnabled: boolean;
   readonly selectedId: string | null;
@@ -45,6 +46,7 @@ export interface LayoutEditor {
   readonly toggleMode: () => void;
   readonly startPlanting: (bedId?: string) => void;
   readonly stopPlanting: () => void;
+  readonly promptDiscard: () => void;
   readonly discard: () => void;
   readonly confirmDiscard: () => void;
   readonly cancelDiscard: () => void;
@@ -57,6 +59,7 @@ export interface LayoutEditor {
   readonly setSelectedRotation: (value: number) => void;
   readonly placeBed: (id: string) => void;
   readonly unplaceSelected: () => void;
+  readonly renameBedInline: (id: string, newName: string) => void;
   readonly save: () => void;
 }
 
@@ -100,6 +103,17 @@ export function useLayoutEditor(
   }, []);
 
   const metas = useMemo(() => buildMetas(layout), [layout]);
+  const [inlineRenames, setInlineRenames] = useState<Map<string, string>>(
+    () => new Map()
+  );
+
+  const renameBedInline = useCallback((bedId: string, newName: string) => {
+    setInlineRenames((prev) => {
+      const next = new Map(prev);
+      next.set(bedId, newName);
+      return next;
+    });
+  }, []);
 
   const getServerPlacement = useCallback<GetServerPlacement>(
     (bedId) => {
@@ -122,20 +136,34 @@ export function useLayoutEditor(
       const effective =
         draft.placements.get(meta.id) ?? getServerPlacement(meta.id);
       if (effective.position === null) return [];
+      const resolvedName = inlineRenames.get(meta.id) ?? meta.name;
       return [
-        { ...meta, position: effective.position, rotation: effective.rotation }
+        {
+          ...meta,
+          name: resolvedName,
+          position: effective.position,
+          rotation: effective.rotation
+        }
       ];
     });
-  }, [metas, draft.placements, getServerPlacement]);
+  }, [metas, draft.placements, getServerPlacement, inlineRenames]);
 
   const unplacedBeds = useMemo<readonly UnplacedBedSummary[]>(() => {
     return [...metas.values()].flatMap((meta) => {
       const effective =
         draft.placements.get(meta.id) ?? getServerPlacement(meta.id);
       if (effective.position !== null) return [];
-      return [{ ...meta, position: null, rotation: effective.rotation }];
+      const resolvedName = inlineRenames.get(meta.id) ?? meta.name;
+      return [
+        {
+          ...meta,
+          name: resolvedName,
+          position: null,
+          rotation: effective.rotation
+        }
+      ];
     });
-  }, [metas, draft.placements, getServerPlacement]);
+  }, [metas, draft.placements, getServerPlacement, inlineRenames]);
 
   const viewBox = useMemo(
     () =>
@@ -247,6 +275,10 @@ export function useLayoutEditor(
     setMode('read');
   }, []);
 
+  const promptDiscard = useCallback(() => {
+    setDiscardOpen(true);
+  }, []);
+
   const confirmDiscard = useCallback(() => {
     resetDragPositions();
     draft.discard();
@@ -332,6 +364,7 @@ export function useLayoutEditor(
 
   return {
     mode,
+    setMode,
     gridSnapEnabled,
     neighborSnapEnabled,
     selectedId,
@@ -345,6 +378,7 @@ export function useLayoutEditor(
     toggleMode,
     startPlanting,
     stopPlanting,
+    promptDiscard,
     discard,
     confirmDiscard,
     cancelDiscard,
@@ -357,6 +391,7 @@ export function useLayoutEditor(
     setSelectedRotation,
     placeBed,
     unplaceSelected,
+    renameBedInline,
     save
   };
 }

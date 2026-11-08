@@ -8,11 +8,11 @@ describe('LayoutModeToggle', () => {
   it('marks the position segment as pressed in position mode', () => {
     render(<LayoutModeToggle active onToggle={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: 'Posición' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Colocar' })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
-    expect(screen.getByRole('button', { name: 'Vista' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Ver' })).toHaveAttribute(
       'aria-pressed',
       'false'
     );
@@ -21,11 +21,11 @@ describe('LayoutModeToggle', () => {
   it('marks the view segment as pressed in read mode', () => {
     render(<LayoutModeToggle active={false} onToggle={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: 'Vista' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Ver' })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
-    expect(screen.getByRole('button', { name: 'Posición' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Colocar' })).toHaveAttribute(
       'aria-pressed',
       'false'
     );
@@ -37,7 +37,7 @@ describe('LayoutModeToggle', () => {
 
     render(<LayoutModeToggle active={false} onToggle={onToggle} />);
 
-    await user.click(screen.getByRole('button', { name: 'Posición' }));
+    await user.click(screen.getByRole('button', { name: 'Colocar' }));
 
     expect(onToggle).toHaveBeenCalledTimes(1);
   });
@@ -48,7 +48,7 @@ describe('LayoutModeToggle', () => {
 
     render(<LayoutModeToggle active={false} onToggle={onToggle} />);
 
-    await user.click(screen.getByRole('button', { name: 'Vista' }));
+    await user.click(screen.getByRole('button', { name: 'Ver' }));
 
     expect(onToggle).not.toHaveBeenCalled();
   });

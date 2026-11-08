@@ -142,13 +142,16 @@ describe('LocationLayoutPage', () => {
     expect(mockedGetLocationLayout).not.toHaveBeenCalled();
   });
 
-  it('reveals grid layers and plant management when selecting a bed in read mode', async () => {
+  it('reveals bed properties panel in context panel when selecting a bed in position mode', async () => {
     mockedGetLocationLayout.mockResolvedValueOnce({
       layout: buildLocationLayout(),
       etag: '"1"'
     });
+    const user = userEvent.setup();
 
     renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    await user.click(await screen.findByRole('radio', { name: 'Colocar' }));
 
     const bed = await screen.findByRole('button', {
       name: /Bancal Tomates 1/
@@ -156,17 +159,13 @@ describe('LocationLayoutPage', () => {
     fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
 
     expect(
-      await screen.findByRole('button', {
-        name: 'Gestionar plantas de Bancal Tomates 1'
+      await screen.findByRole('heading', {
+        name: 'Propiedades del bancal'
       })
     ).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Bancal Tomates 1')).toBeInTheDocument();
     expect(
-      screen.queryByRole('link', {
-        name: 'Gestionar plantas de Bancal Tomates 1'
-      })
-    ).toBeNull();
-    expect(
-      screen.getByText('Capas de cuadrícula agronómica')
+      screen.getByRole('button', { name: 'Editar medidas completas' })
     ).toBeInTheDocument();
   });
 
@@ -183,13 +182,25 @@ describe('LocationLayoutPage', () => {
       expect(screen.getByRole('img')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('button', { name: 'Posición' }));
+    await user.click(screen.getByRole('radio', { name: 'Colocar' }));
     await user.click(
       screen.getByRole('button', {
         name: 'Colocar el bancal Bancal Vivero Auxiliar en el plano'
       })
     );
-    await user.click(screen.getByRole('button', { name: 'Vista' }));
+
+    expect(
+      screen.getAllByRole('button', { name: 'Guardar disposición' })[0]
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: 'Ver' }));
+    expect(
+      screen.getAllByRole('button', { name: 'Guardar disposición' })[0]
+    ).toBeInTheDocument();
+
+    await user.click(
+      screen.getAllByRole('button', { name: 'Descartar cambios' })[0]
+    );
 
     expect(
       await screen.findByText('¿Descartar los cambios?')
@@ -220,13 +231,15 @@ describe('LocationLayoutPage', () => {
       initialToken: VALID_TEST_TOKEN
     });
 
+    await user.click(await screen.findByRole('radio', { name: 'Colocar' }));
+
     const bed = await screen.findByRole('button', {
       name: new RegExp(placedBed.name)
     });
     fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
 
     const deleteBtn = await screen.findByRole('button', {
-      name: `Eliminar el bancal ${placedBed.name}`
+      name: 'Eliminar bancal'
     });
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
 
@@ -306,8 +319,8 @@ describe('LocationLayoutPage', () => {
 
     renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
 
-    const modeToggle = await screen.findByRole('button', {
-      name: 'Posición'
+    const modeToggle = await screen.findByRole('radio', {
+      name: 'Colocar'
     });
     await user.click(modeToggle);
 
@@ -317,7 +330,7 @@ describe('LocationLayoutPage', () => {
     fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
 
     const rotationInput = screen.getByRole('spinbutton', {
-      name: 'Rotación en grados'
+      name: 'Rotación'
     });
     await user.click(rotationInput);
     await user.keyboard('{ArrowUp}');
@@ -340,8 +353,8 @@ describe('LocationLayoutPage', () => {
 
     renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
 
-    const modeToggle = await screen.findByRole('button', {
-      name: 'Posición'
+    const modeToggle = await screen.findByRole('radio', {
+      name: 'Colocar'
     });
     await user.click(modeToggle);
 
@@ -375,7 +388,7 @@ describe('LocationLayoutPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders viewport controls above the compass HUD in the layout hud container', async () => {
+  it('renders viewport controls in the top bar right zone', async () => {
     mockedGetLocationLayout.mockResolvedValueOnce({
       layout: buildLocationLayout(),
       etag: '"1"'
@@ -383,19 +396,14 @@ describe('LocationLayoutPage', () => {
 
     renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
 
-    const compass = await screen.findByRole('region', {
-      name: 'Brújula y orientación cardinal'
+    const topBar = await screen.findByRole('toolbar', {
+      name: 'Modo del diseñador'
     });
     const viewportControls = screen.getByRole('toolbar', {
       name: 'Controles del plano'
     });
-    const hudContainer = compass.parentElement;
 
-    expect(hudContainer).toContainElement(viewportControls);
-    expect(hudContainer).toContainElement(compass);
-    expect(viewportControls.compareDocumentPosition(compass)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING
-    );
+    expect(topBar).toContainElement(viewportControls);
   });
 
   it('calibrates terrain north when dragging compass dial in position mode', async () => {
@@ -409,8 +417,8 @@ describe('LocationLayoutPage', () => {
 
     renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
 
-    const modeToggle = await screen.findByRole('button', {
-      name: 'Posición'
+    const modeToggle = await screen.findByRole('radio', {
+      name: 'Colocar'
     });
     await user.click(modeToggle);
 
@@ -461,12 +469,13 @@ describe('LocationLayoutPage', () => {
     });
     fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
 
-    const toggleCardinalBtn = screen.getByRole('button', {
-      name: 'Mostrar orientación cardinal'
+    await user.click(screen.getByRole('button', { name: 'Capas' }));
+    const toggleCardinalBtn = screen.getByRole('switch', {
+      name: 'Orientación cardinal'
     });
     await user.click(toggleCardinalBtn);
 
-    expect(toggleCardinalBtn).toHaveAttribute('aria-pressed', 'false');
+    expect(toggleCardinalBtn).toHaveAttribute('aria-checked', 'false');
     expect(
       container.querySelectorAll('.layout-bed-cardinal-labels__badge')
     ).toHaveLength(0);
@@ -492,8 +501,9 @@ describe('LocationLayoutPage', () => {
     });
     fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
 
-    const toggleCardinalBtn = screen.getByRole('button', {
-      name: 'Mostrar orientación cardinal'
+    await user.click(screen.getByRole('button', { name: 'Capas' }));
+    const toggleCardinalBtn = screen.getByRole('switch', {
+      name: 'Orientación cardinal'
     });
     await user.click(toggleCardinalBtn);
     expect(
@@ -502,7 +512,7 @@ describe('LocationLayoutPage', () => {
 
     await user.click(toggleCardinalBtn);
 
-    expect(toggleCardinalBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(toggleCardinalBtn).toHaveAttribute('aria-checked', 'true');
     expect(
       container.querySelectorAll('.layout-bed-cardinal-labels__badge')
     ).toHaveLength(4);
@@ -517,15 +527,10 @@ describe('LocationLayoutPage', () => {
 
     renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
 
-    const bed = await screen.findByRole('button', {
-      name: /Bancal Tomates 1/
+    const plantingRadio = await screen.findByRole('radio', {
+      name: 'Sembrar'
     });
-    fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
-
-    const managePlantsBtn = await screen.findByRole('button', {
-      name: 'Gestionar plantas de Bancal Tomates 1'
-    });
-    await user.click(managePlantsBtn);
+    await user.click(plantingRadio);
 
     expect(
       screen.getByRole('toolbar', {
@@ -534,7 +539,7 @@ describe('LocationLayoutPage', () => {
     ).toBeInTheDocument();
 
     const brushToolBtn = screen.getByRole('button', {
-      name: 'Brochas de siembra'
+      name: /Brochas de siembra/i
     });
     await user.click(brushToolBtn);
 
@@ -552,5 +557,97 @@ describe('LocationLayoutPage', () => {
     const doubleRowBtn = screen.getByRole('button', { name: 'Doble hilera' });
     await user.click(doubleRowBtn);
     expect(doubleRowBtn).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('offers save and discard actions in planting mode, disabled without pending changes', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    await user.click(await screen.findByRole('radio', { name: 'Sembrar' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Descartar cambios' })
+    ).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Guardar cambios' })
+    ).toBeDisabled();
+  });
+
+  it('offers save and discard actions in position mode, disabled without pending changes', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    await user.click(await screen.findByRole('radio', { name: 'Colocar' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Descartar cambios' })
+    ).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Guardar disposición' })
+    ).toBeDisabled();
+  });
+
+  it('preserves camera zoom and viewport transform when toggling between read and position modes', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    await user.click(await screen.findByRole('button', { name: 'Acercar' }));
+    expect(screen.getByText('125%')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: 'Colocar' }));
+    expect(screen.getByText('125%')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: 'Ver' }));
+    expect(screen.getByText('125%')).toBeInTheDocument();
+  });
+
+  it('rotates selected bed on key R and unplaces it on key U in position mode', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    const modeToggle = await screen.findByRole('radio', {
+      name: 'Colocar'
+    });
+    await user.click(modeToggle);
+
+    const bed = await screen.findByRole('button', {
+      name: /Bancal Tomates 1/
+    });
+    fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
+
+    const rotationInput = screen.getByRole('spinbutton', {
+      name: 'Rotación'
+    });
+    expect(rotationInput).toHaveValue(90);
+
+    await user.keyboard('r');
+    expect(rotationInput).toHaveValue(180);
+
+    await user.keyboard('u');
+    expect(
+      screen.getByRole('button', {
+        name: 'Colocar el bancal Bancal Tomates 1 en el plano'
+      })
+    ).toBeInTheDocument();
   });
 });

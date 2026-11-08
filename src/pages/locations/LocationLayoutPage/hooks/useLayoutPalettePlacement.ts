@@ -10,7 +10,7 @@ import {
 import { calculateVitalRadius } from '../../../../components/beds/visualizer/utils/spatialCollisions';
 import type { Coordinates } from '../../../../types/PlantInstance/PlantInstance';
 import type { PlantListItem } from '../../../../types/Plants/Plant';
-import { batchCreateCrops } from './layoutPlantingOperations';
+import type { LayoutCreateInput } from './layoutPlantingOperations';
 
 export interface LayoutPlacementPreview {
   readonly bedId: string;
@@ -42,8 +42,7 @@ export interface UseLayoutPalettePlacementParams {
     stored: Coordinates,
     vitalRadius: number
   ) => { readonly hasCollision: boolean; readonly isOutOfBounds: boolean };
-  readonly invalidateBed: (bedId: string) => Promise<void>;
-  readonly setIsSaving: (saving: boolean) => void;
+  readonly addCrop: (input: LayoutCreateInput) => void;
   readonly onAnnounceError: (message: string) => void;
   readonly onClearSelection: () => void;
 }
@@ -51,8 +50,7 @@ export interface UseLayoutPalettePlacementParams {
 export function useLayoutPalettePlacement({
   beds,
   evaluateStored,
-  invalidateBed,
-  setIsSaving,
+  addCrop,
   onAnnounceError,
   onClearSelection
 }: UseLayoutPalettePlacementParams) {
@@ -73,7 +71,7 @@ export function useLayoutPalettePlacement({
   );
 
   const placeAt = useCallback(
-    async (global: Point, plant: PlacingPlant) => {
+    (global: Point, plant: PlacingPlant) => {
       const target = resolveTarget(global, plant.vitalRadius);
       if (!target) return;
       if (target.isOutOfBounds) {
@@ -84,19 +82,15 @@ export function useLayoutPalettePlacement({
         onAnnounceError(t('bed.placement.announce_collision'));
         return;
       }
-      setIsSaving(true);
-      try {
-        await batchCreateCrops(target.bed.id, [
-          { plantId: plant.plantId, position: target.stored }
-        ]);
-        await invalidateBed(target.bed.id);
-      } catch {
-        onAnnounceError(t('bed.placement.save_error'));
-      } finally {
-        setIsSaving(false);
-      }
+      addCrop({
+        bedId: target.bed.id,
+        plantId: plant.plantId,
+        commonName: plant.commonName,
+        vitalRadius: plant.vitalRadius,
+        position: target.stored
+      });
     },
-    [resolveTarget, invalidateBed, setIsSaving, onAnnounceError]
+    [resolveTarget, addCrop, onAnnounceError]
   );
 
   const dropPlant = useCallback(

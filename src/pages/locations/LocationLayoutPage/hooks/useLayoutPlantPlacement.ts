@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { t } from '../../../../i18n/core/t';
 import type { Point } from '../../../../components/beds/layout/utils/layoutGeometry';
 import type { ResolvedBed } from '../../../../components/beds/layout/utils/layoutTypes';
 import { useAuth } from '../../../../shared/auth/useAuth';
@@ -17,6 +18,7 @@ import {
   useLayoutPalettePlacement,
   type LayoutPlacementPreview
 } from './useLayoutPalettePlacement';
+import { useLayoutPlantingDraft } from './useLayoutPlantingDraft';
 import { useLayoutSingleCropDrag } from './useLayoutSingleCropDrag';
 
 export type { LayoutPlacementPreview };
@@ -38,7 +40,6 @@ export function useLayoutPlantPlacement({
   const { showSuccessToast, showErrorToast, showToast } = useToast();
 
   const [toolMode, setToolMode] = useState<PlantingToolMode>('plant-single');
-  const [isSaving, setIsSaving] = useState(false);
 
   const bedsById = useMemo(() => {
     const map = new Map<string, ResolvedBed>();
@@ -58,6 +59,9 @@ export function useLayoutPlantPlacement({
     [queryClient, userId]
   );
 
+  const draft = useLayoutPlantingDraft({ cropsByBed, invalidateBed });
+  const effectiveCropsByBed = draft.effectiveCropsByBed;
+
   const evaluateStored = useCallback(
     (
       bed: ResolvedBed,
@@ -65,7 +69,7 @@ export function useLayoutPlantPlacement({
       vitalRadius: number,
       ignoreCropId?: string
     ) => {
-      const others = cropsByBed.get(bed.id) ?? [];
+      const others = effectiveCropsByBed.get(bed.id) ?? [];
       return evaluateStoredPlacement(
         bed,
         stored,
@@ -74,23 +78,24 @@ export function useLayoutPlantPlacement({
         ignoreCropId
       );
     },
-    [cropsByBed]
+    [effectiveCropsByBed]
   );
 
   const marquee = useLayoutMarqueeSelection({
     isEnabled: toolMode === 'select',
     beds,
-    cropsByBed,
+    cropsByBed: effectiveCropsByBed,
     activeBedId,
-    invalidateBed,
+    addCrops: draft.addCrops,
+    moveCrops: draft.moveCrops,
+    removeCrops: draft.removeCrops,
     onAnnounceError: (msg) => showErrorToast(null, msg)
   });
 
   const palette = useLayoutPalettePlacement({
     beds,
     evaluateStored,
-    invalidateBed,
-    setIsSaving,
+    addCrop: draft.addCrop,
     onAnnounceError: (msg) => showErrorToast(null, msg),
     onClearSelection: marquee.clearSelection
   });
@@ -98,35 +103,34 @@ export function useLayoutPlantPlacement({
   const brush = useLayoutBrushPlacement({
     isEnabled: toolMode === 'brush',
     beds,
-    cropsByBed,
+    cropsByBed: effectiveCropsByBed,
     activePlant: palette.activePlant,
     activeBedId,
     onAnnounceSuccess: (msg) => showSuccessToast(msg),
     onAnnounceWarning: (msg) => showToast({ message: msg, variant: 'warning' }),
     onAnnounceError: (msg) => showErrorToast(null, msg),
-    invalidateBed
+    addCrops: draft.addCrops
   });
 
   const cropDrag = useLayoutSingleCropDrag({
     bedsById,
-    cropsByBed,
+    cropsByBed: effectiveCropsByBed,
     evaluateStored,
-    invalidateBed,
+    moveCrop: draft.moveCrop,
     setPreview: palette.setPreview,
     onSelectSingleCrop: marquee.selectSingleCrop,
-    setIsSaving,
     onAnnounceError: (msg) => showErrorToast(null, msg)
   });
 
   const selectedCrop = useMemo(() => {
     if (marquee.selectedCropIds.size !== 1) return null;
     const id = Array.from(marquee.selectedCropIds)[0];
-    for (const crops of cropsByBed.values()) {
+    for (const crops of effectiveCropsByBed.values()) {
       const found = crops.find((crop) => crop.id === id);
       if (found) return found;
     }
     return null;
-  }, [marquee.selectedCropIds, cropsByBed]);
+  }, [marquee.selectedCropIds, effectiveCropsByBed]);
 
   const reset = useCallback(() => {
     palette.resetPalette();
@@ -134,6 +138,18 @@ export function useLayoutPlantPlacement({
     marquee.clearSelection();
     brush.cancelStroke();
   }, [palette, cropDrag, marquee, brush]);
+
+  const { save: draftSave } = draft;
+  const save = useCallback(async () => {
+    const status = await draftSave();
+    if (status === 'conflict') {
+      showErrorToast(null, t('bed.placement.save_conflict'));
+    } else if (status === 'error') {
+      showErrorToast(null, t('bed.placement.save_error'));
+    } else if (status === 'ok') {
+      showSuccessToast(t('bed.placement.save_success'));
+    }
+  }, [draftSave, showErrorToast, showSuccessToast]);
 
   return {
     toolMode,
@@ -150,7 +166,12 @@ export function useLayoutPlantPlacement({
     selectedCropCount: marquee.selectedCropCount,
     selectedCrop,
     preview: palette.preview,
-    isSaving,
+    isSaving: draft.isSaving,
+    hasChanges: draft.hasChanges,
+    pendingCount: draft.pendingCount,
+    effectiveCropsByBed,
+    save,
+    discardChanges: draft.discardChanges,
     selectPalettePlant: palette.selectPalettePlant,
     cancelPalettePlant: palette.cancelPalettePlant,
     dragPalettePlant: palette.dragPalettePlant,

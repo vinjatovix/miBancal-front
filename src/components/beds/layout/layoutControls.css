@@ -2,18 +2,27 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--space-3xs, 0.125rem);
-  padding: var(--space-3xs, 0.125rem);
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-decor);
+  gap: var(--space-2xs);
+  padding: var(--space-2xs);
+  background: transparent;
+  border: none;
   border-radius: var(--radius-full);
-  box-shadow: var(--elevation-2);
 }
 
 .layout-viewport-controls__divider {
   width: 1px;
   height: 1.25rem;
   background-color: var(--color-border-decor);
+}
+
+.layout-viewport-controls__percent {
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-fg-muted);
+  min-width: 2.75rem;
+  text-align: center;
+  user-select: none;
 }
 
 .layout-viewport-controls__button {

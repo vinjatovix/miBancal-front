@@ -1,0 +1,112 @@
+import type { RefObject, JSX } from 'react';
+
+import BedCompassHud from '../../../../components/beds/layout/BedCompassHud';
+import LayoutScaleBar from '../../../../components/beds/layout/LayoutScaleBar';
+import LocationLayoutCanvas from '../../../../components/beds/layout/LocationLayoutCanvas';
+import type { BedViewportState } from '../../../../components/beds/visualizer/hooks/useBedViewport';
+import { t } from '../../../../i18n/core/t';
+import type { LocationLayoutResponse } from '../../../../types/Location/LocationLayout';
+import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
+import type { LayoutEditor } from '../hooks/useLayoutEditor';
+import type { useLayoutPlantPlacement } from '../hooks/useLayoutPlantPlacement';
+import type { useLayoutVisibilityControls } from '../hooks/useLayoutVisibilityControls';
+import type { useLocationBedActions } from '../hooks/useLocationBedActions';
+
+export interface LocationLayoutWorkspaceProps {
+  readonly canvasContainerRef: RefObject<HTMLDivElement | null>;
+  readonly editor: LayoutEditor;
+  readonly viewport: BedViewportState;
+  readonly visibility: ReturnType<typeof useLayoutVisibilityControls>;
+  readonly placement: ReturnType<typeof useLayoutPlantPlacement>;
+  readonly bedActions: ReturnType<typeof useLocationBedActions>;
+  readonly layout: LocationLayoutResponse;
+  readonly cropsByBed:
+    | ReadonlyMap<string, readonly CropPlacementItem[]>
+    | undefined;
+  readonly selectedBedId: string | null;
+}
+
+export default function LocationLayoutWorkspace({
+  canvasContainerRef,
+  editor,
+  viewport,
+  visibility,
+  placement,
+  bedActions,
+  layout,
+  cropsByBed,
+  selectedBedId
+}: LocationLayoutWorkspaceProps): JSX.Element {
+  const isPosition = editor.mode === 'position';
+
+  return (
+    <div ref={canvasContainerRef} className="location-layout-page__canvas">
+      <LocationLayoutCanvas
+        beds={editor.placedBeds}
+        viewBox={editor.viewBox}
+        label={t('bed.layout.canvas_label', {
+          name: layout.location.name
+        })}
+        mode={editor.mode}
+        selectedId={editor.selectedId}
+        viewport={viewport}
+        gridLayers={isPosition ? null : visibility.activeGridLayers}
+        showNames={visibility.showBedNames}
+        showDimensions={visibility.showDimensions}
+        northAngle={visibility.effectiveNorthAngle}
+        showCardinalOrientation={visibility.showCardinalOrientation}
+        floorWidth={layout.location.width}
+        floorHeight={layout.location.height}
+        cropsByBed={cropsByBed}
+        showPlants={visibility.showPlants}
+        placementPreview={placement.preview}
+        selectedCropId={placement.selectedCropId}
+        selectedCropIds={placement.selectedCropIds}
+        toolMode={placement.toolMode}
+        brushDirectrix={placement.brush.directrix}
+        brushCandidates={placement.brush.candidates}
+        isBrushDrawing={placement.brush.isDrawing}
+        brushBedId={placement.brush.strokeBedId}
+        boundingBox={placement.marquee.boundingBox}
+        boundingBoxBedId={placement.marquee.boundingBoxBedId ?? selectedBedId}
+        marqueeBox={placement.marquee.marqueeBox}
+        marqueeBedId={placement.marquee.marqueeBedId}
+        groupMovePreview={placement.marquee.groupMovePreview}
+        onSelectBed={editor.selectBed}
+        onDeselect={bedActions.handleDeselectBed}
+        onBedMove={editor.moveBed}
+        onBedRotate={editor.rotateBedBy}
+        onPlacementDragOver={placement.updateDropPreview}
+        onPlacementDragLeave={placement.clearPreview}
+        onPlacementDrop={placement.dropPlant}
+        onPlacementTap={placement.tapPlace}
+        onCropSelect={placement.selectCrop}
+        onCropClick={placement.marquee.handleCropClick}
+        onCropDragStart={placement.beginCropDrag}
+        onCropDragMove={placement.moveCropDrag}
+        onCropDragEnd={placement.endCropDrag}
+        onBrushPointerDown={placement.brush.handlePointerDown}
+        onBrushPointerMove={placement.brush.handlePointerMove}
+        onBrushPointerUp={placement.brush.handlePointerUp}
+        onMarqueePointerDown={placement.marquee.handlePointerDown}
+        onMarqueePointerMove={placement.marquee.handlePointerMove}
+        onMarqueePointerUp={placement.marquee.handlePointerUp}
+        onBedUnplace={editor.unplaceSelected}
+        onBedEdit={() => bedActions.setIsEditOpen(true)}
+        onBedDelete={() => bedActions.setIsDeleteOpen(true)}
+      />
+      <LayoutScaleBar viewBox={editor.viewBox} zoom={viewport.zoom} />
+      <div className="location-layout-page__hud">
+        <BedCompassHud
+          northAngle={visibility.effectiveNorthAngle}
+          bedAzimuth={visibility.bedAzimuth}
+          mode={editor.mode === 'position' ? 'position' : 'read'}
+          onBedRotationChange={visibility.handleBedRotationChange}
+          onNorthAngleChange={visibility.setCalibratedNorth}
+          onSaveNorthAngle={visibility.handleSaveNorth}
+          isSavingNorth={visibility.isSavingNorth}
+        />
+      </div>
+    </div>
+  );
+}
