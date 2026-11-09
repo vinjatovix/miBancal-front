@@ -126,15 +126,60 @@ export function useLayoutPlantPlacement({
   const { preview: palettePreview } = palette;
   const { draggingCropId } = cropDrag;
   const { groupMovePreview } = marquee;
+
+  const { activePlant } = palette;
+  const {
+    isDrawing: isBrushDrawing,
+    strokeBedId: brushStrokeBedId,
+    candidates: brushCandidates
+  } = brush;
+  const brushPreviewCrops = useMemo(() => {
+    if (!isBrushDrawing || !brushStrokeBedId || !activePlant) return null;
+    const validCandidates = brushCandidates.filter(
+      (candidate) => candidate.isValid
+    );
+    if (validCandidates.length === 0) return null;
+
+    const { identity } = activePlant;
+    const familyId =
+      typeof identity.family === 'string'
+        ? identity.family
+        : identity.family.id;
+    const crops: CropPlacementItem[] = validCandidates.map(
+      (candidate, index) => ({
+        id: `brush-preview-${brushStrokeBedId}-${index}`,
+        bedId: brushStrokeBedId,
+        plantId: activePlant.id,
+        commonName: identity.name.primary,
+        scientificName: identity.scientificName,
+        familyId,
+        genus: identity.genus,
+        position: candidate.position,
+        vitalRadius: candidate.vitalRadius,
+        growthStatus: 'planted',
+        version: 0,
+        isNew: true
+      })
+    );
+    return { bedId: brushStrokeBedId, crops };
+  }, [isBrushDrawing, brushStrokeBedId, brushCandidates, activePlant]);
+
   const associationCropsByBed = useMemo(
     () =>
       buildAssociationCropsByBed({
         effectiveCropsByBed,
         draggingCropId,
         singlePreview: palettePreview,
-        groupMovePreview
+        groupMovePreview,
+        brushPreviewCrops
       }),
-    [effectiveCropsByBed, draggingCropId, palettePreview, groupMovePreview]
+    [
+      effectiveCropsByBed,
+      draggingCropId,
+      palettePreview,
+      groupMovePreview,
+      brushPreviewCrops
+    ]
   );
 
   const selectedCrop = useMemo(() => {

@@ -1,5 +1,5 @@
-import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import LocationCropsLayer from '../../../../src/components/beds/layout/LocationCropsLayer';
 import type { ResolvedBed } from '../../../../src/components/beds/layout/utils/layoutTypes';
@@ -91,5 +91,32 @@ describe('LocationCropsLayer', () => {
     const { container } = renderLayer([bed], new Map());
 
     expect(container.querySelector('.location-crops-layer__node')).toBeNull();
+  });
+
+  it('calls onInspectCrop with the crop id when the node is clicked', () => {
+    const bed: ResolvedBed = {
+      id: 'bed-1',
+      name: 'Tomates',
+      width: 100,
+      height: 50,
+      position: { x: 0, y: 0 },
+      rotation: 0
+    };
+    const onInspectCrop = vi.fn();
+    const { container } = render(
+      <svg>
+        <LocationCropsLayer
+          beds={[bed]}
+          cropsByBed={new Map([['bed-1', [buildCrop({ id: 'crop-42' })]]])}
+          onInspectCrop={onInspectCrop}
+        />
+      </svg>
+    );
+
+    const node = container.querySelector('.location-crops-layer__node');
+    expect(node).not.toBeNull();
+    fireEvent.click(node as Element);
+
+    expect(onInspectCrop).toHaveBeenCalledWith('crop-42');
   });
 });

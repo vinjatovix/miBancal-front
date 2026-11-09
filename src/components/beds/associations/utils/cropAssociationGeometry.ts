@@ -1,7 +1,11 @@
-import type { PlantRelation } from '../../../../types/Plants/PlantRelation';
+import type {
+  PlantRelation,
+  PlantRelationMechanism
+} from '../../../../types/Plants/PlantRelation';
 import type {
   ActiveAssociationLink,
   AssociationFilterMode,
+  AssociationScope,
   ComputeAssociationsParams
 } from '../types/cropAssociationTypes';
 import {
@@ -10,6 +14,23 @@ import {
 } from './botanicalRelationIndex';
 
 const DEFAULT_EFFECTIVE_REACH_CM = 100;
+
+const SOIL_MEDIATED_MECHANISMS: ReadonlySet<PlantRelationMechanism> = new Set([
+  'nitrogen_fixer',
+  'nutrient_accumulator'
+]);
+
+export function filterRelationsForScope(
+  relations: readonly PlantRelation[],
+  scope: AssociationScope
+): readonly PlantRelation[] {
+  if (scope === 'intra_bed') {
+    return relations;
+  }
+  return relations.filter(
+    (relation) => !SOIL_MEDIATED_MECHANISMS.has(relation.mechanism)
+  );
+}
 
 export function calculateEuclideanDistance(
   p1: { x: number; y: number },
@@ -91,11 +112,19 @@ export function computeActiveAssociationLinks(
         continue;
       }
 
-      const relations = getRelationsForPair(
+      const pairRelations = getRelationsForPair(
         relationIndex,
         cropA.plantId,
         cropB.plantId
       );
+
+      if (pairRelations.length === 0) {
+        continue;
+      }
+
+      const scope: AssociationScope =
+        cropA.bedId === cropB.bedId ? 'intra_bed' : 'cross_bed';
+      const relations = filterRelationsForScope(pairRelations, scope);
 
       if (relations.length === 0) {
         continue;
@@ -113,7 +142,6 @@ export function computeActiveAssociationLinks(
 
       const { visualPolarity, isWarningPriority } =
         resolveVisualPolarity(relations);
-      const scope = cropA.bedId === cropB.bedId ? 'intra_bed' : 'cross_bed';
 
       links.push({
         id: buildCanonicalLinkId(cropA.id, cropB.id),

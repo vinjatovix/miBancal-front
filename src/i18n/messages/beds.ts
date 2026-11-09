@@ -445,7 +445,14 @@ export const bedsMessages = {
       panel_section_title: 'Asociaciones biológicas activas',
       panel_empty: 'Sin asociaciones activas con las plantas vecinas',
       inspect_action: 'Inspeccionar asociación',
-      view_details_with: 'Ver detalles de la asociación con {name}'
+      view_details_with: 'Ver detalles de la asociación con {name}',
+      crop_modal_title: 'Asociaciones de {name}',
+      crop_modal_close: 'Cerrar asociaciones de la planta',
+      crop_modal_count: '{count} especies relacionadas',
+      crop_modal_empty: 'Sin asociaciones activas con las plantas vecinas',
+      crop_neighbor_distance: 'a {distance} cm',
+      crop_neighbor_closest: 'a {distance} cm (más cercana)',
+      crop_neighbor_instances: '{count} ejemplares'
     }
   }
 };

@@ -65,6 +65,7 @@ export interface BedAssociationsLayerProps {
 export interface LocationAssociationsLayerProps {
   readonly links: readonly ActiveAssociationLink[];
   readonly filterMode?: AssociationFilterMode;
+  readonly highlightCropId?: string | null;
   readonly onSelectLink?: (link: ActiveAssociationLink) => void;
 }
 

@@ -25,6 +25,7 @@ import LocationLayoutEmptyState from './components/LocationLayoutEmptyState';
 import LocationLayoutTopBar from './components/LocationLayoutTopBar';
 import LocationLayoutWorkspace from './components/LocationLayoutWorkspace';
 import CropAssociationInspectionModal from '../../../components/beds/associations/CropAssociationInspectionModal';
+import CropRelationsModal from '../../../components/beds/associations/CropRelationsModal';
 import { useLayoutEditor } from './hooks/useLayoutEditor';
 import { useLayoutKeyboardShortcuts } from './hooks/useLayoutKeyboardShortcuts';
 import { useLayoutModeController } from './hooks/useLayoutModeController';
@@ -92,6 +93,7 @@ export default function LocationLayoutView({
     useState<AssociationFilterMode>('all');
   const [inspectedLink, setInspectedLink] =
     useState<ActiveAssociationLink | null>(null);
+  const [inspectedCropId, setInspectedCropId] = useState<string | null>(null);
 
   const placement = useLayoutPlantPlacement({
     beds: editor.placedBeds,
@@ -103,6 +105,27 @@ export default function LocationLayoutView({
     editor.placedBeds,
     placement.associationCropsByBed
   );
+
+  const inspectedCropLinks = useMemo(() => {
+    if (!inspectedCropId) return [];
+    return associationLinks.filter(
+      (link) =>
+        link.cropA.id === inspectedCropId || link.cropB.id === inspectedCropId
+    );
+  }, [associationLinks, inspectedCropId]);
+
+  const inspectedCropName = useMemo(() => {
+    if (!inspectedCropId) return '';
+    for (const link of associationLinks) {
+      if (link.cropA.id === inspectedCropId) return link.cropA.commonName;
+      if (link.cropB.id === inspectedCropId) return link.cropB.commonName;
+    }
+    for (const crops of placement.associationCropsByBed.values()) {
+      const found = crops.find((crop) => crop.id === inspectedCropId);
+      if (found) return found.commonName;
+    }
+    return '';
+  }, [associationLinks, inspectedCropId, placement.associationCropsByBed]);
 
   const bedActions = useLocationBedActions({
     locationId: id,
@@ -330,6 +353,7 @@ export default function LocationLayoutView({
           associationFilterMode={associationFilterMode}
           showAssociations={showAssociations}
           onSelectAssociationLink={setInspectedLink}
+          onInspectCrop={setInspectedCropId}
         />
 
         <LocationLayoutContextPanel
@@ -396,6 +420,14 @@ export default function LocationLayoutView({
         link={inspectedLink}
         isOpen={inspectedLink !== null}
         onClose={() => setInspectedLink(null)}
+      />
+
+      <CropRelationsModal
+        isOpen={inspectedCropId !== null}
+        focusCropId={inspectedCropId}
+        focusCropName={inspectedCropName}
+        links={inspectedCropLinks}
+        onClose={() => setInspectedCropId(null)}
       />
     </main>
   );

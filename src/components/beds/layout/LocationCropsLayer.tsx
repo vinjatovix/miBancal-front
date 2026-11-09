@@ -2,7 +2,6 @@ import type { JSX, KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 
 import { t } from '../../../i18n/core/t';
 import type { CropPlacementItem } from '../../../types/PlantInstance/plantPlacementTypes';
-import type { ActiveAssociationLink } from '../associations/types/cropAssociationTypes';
 import type { ResolvedBed } from './utils/layoutTypes';
 
 import './locationCropsLayer.css';
@@ -10,17 +9,25 @@ import './locationCropsLayer.css';
 export interface LocationCropsLayerProps {
   readonly beds: readonly ResolvedBed[];
   readonly cropsByBed: ReadonlyMap<string, readonly CropPlacementItem[]>;
-  readonly associationLinks?: readonly ActiveAssociationLink[];
-  readonly onSelectLink?: (link: ActiveAssociationLink) => void;
+  readonly onInspectCrop?: (cropId: string) => void;
   readonly onSelectCrop?: (cropId: string) => void;
+  readonly onCropHoverEnter?: (
+    cropId: string,
+    label: string,
+    event: PointerEvent<SVGGElement>
+  ) => void;
+  readonly onCropHoverMove?: (event: PointerEvent<SVGGElement>) => void;
+  readonly onCropHoverLeave?: () => void;
 }
 
 export default function LocationCropsLayer({
   beds,
   cropsByBed,
-  associationLinks = [],
-  onSelectLink,
-  onSelectCrop
+  onInspectCrop,
+  onSelectCrop,
+  onCropHoverEnter,
+  onCropHoverMove,
+  onCropHoverLeave
 }: LocationCropsLayerProps): JSX.Element {
   return (
     <g
@@ -39,26 +46,13 @@ export default function LocationCropsLayer({
             {crops.map((crop) => {
               const local = crop.position;
 
-              const cropLink =
-                associationLinks.find(
-                  (link) =>
-                    (link.cropA.id === crop.id || link.cropB.id === crop.id) &&
-                    link.visualPolarity === 'detrimental'
-                ) ??
-                associationLinks.find(
-                  (link) =>
-                    link.cropA.id === crop.id || link.cropB.id === crop.id
-                );
-
               const handlePointerDown = (event: PointerEvent<SVGGElement>) => {
                 event.stopPropagation();
               };
 
               const handleClick = (event: MouseEvent<SVGGElement>) => {
                 event.stopPropagation();
-                if (cropLink && onSelectLink) {
-                  onSelectLink(cropLink);
-                }
+                onInspectCrop?.(crop.id);
                 onSelectCrop?.(crop.id);
               };
 
@@ -66,9 +60,7 @@ export default function LocationCropsLayer({
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
                   event.stopPropagation();
-                  if (cropLink && onSelectLink) {
-                    onSelectLink(cropLink);
-                  }
+                  onInspectCrop?.(crop.id);
                   onSelectCrop?.(crop.id);
                 }
               };
@@ -86,10 +78,14 @@ export default function LocationCropsLayer({
                     y: String(Math.round(crop.position.y))
                   })}
                   onPointerDown={handlePointerDown}
+                  onPointerEnter={(event) =>
+                    onCropHoverEnter?.(crop.id, crop.commonName, event)
+                  }
+                  onPointerMove={onCropHoverMove}
+                  onPointerLeave={onCropHoverLeave}
                   onClick={handleClick}
                   onKeyDown={handleKeyDown}
                 >
-                  <title>{crop.commonName}</title>
                   <circle
                     className="location-crops-layer__radius"
                     cx={0}
