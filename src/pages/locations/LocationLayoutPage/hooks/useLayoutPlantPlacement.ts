@@ -11,6 +11,7 @@ import { useToast } from '../../../../shared/toast/useToast';
 import type { Coordinates } from '../../../../types/PlantInstance/PlantInstance';
 import type { PlantingToolMode } from '../../../../types/PlantInstance/brushSelectionTypes';
 import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
+import { buildAssociationCropsByBed } from './associationPreviewCrops';
 import { evaluateStoredPlacement } from './layoutPlantingOperations';
 import { useLayoutBrushPlacement } from './useLayoutBrushPlacement';
 import { useLayoutMarqueeSelection } from './useLayoutMarqueeSelection';
@@ -122,6 +123,20 @@ export function useLayoutPlantPlacement({
     onAnnounceError: (msg) => showErrorToast(null, msg)
   });
 
+  const { preview: palettePreview } = palette;
+  const { draggingCropId } = cropDrag;
+  const { groupMovePreview } = marquee;
+  const associationCropsByBed = useMemo(
+    () =>
+      buildAssociationCropsByBed({
+        effectiveCropsByBed,
+        draggingCropId,
+        singlePreview: palettePreview,
+        groupMovePreview
+      }),
+    [effectiveCropsByBed, draggingCropId, palettePreview, groupMovePreview]
+  );
+
   const selectedCrop = useMemo(() => {
     if (marquee.selectedCropIds.size !== 1) return null;
     const id = Array.from(marquee.selectedCropIds)[0];
@@ -170,6 +185,7 @@ export function useLayoutPlantPlacement({
     hasChanges: draft.hasChanges,
     pendingCount: draft.pendingCount,
     effectiveCropsByBed,
+    associationCropsByBed,
     save,
     discardChanges: draft.discardChanges,
     selectPalettePlant: palette.selectPalettePlant,

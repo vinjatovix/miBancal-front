@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
 import LayoutGlyph from '../layout/LayoutGlyph';
 import { t } from '../../../i18n/core/t';
 import type { I18nKey } from '../../../i18n/core/types';
+import type { AssociationFilterMode } from '../associations/types/cropAssociationTypes';
 import {
   BED_GRID_LAYERS,
   type ActiveGridLayers,
@@ -24,6 +25,12 @@ export interface LayersPopoverButtonProps {
   readonly onToggleGrids: () => void;
   readonly activeGridLayers: ActiveGridLayers;
   readonly onToggleGridLayer: (key: BedGridLayerKey) => void;
+  readonly showAssociations?: boolean;
+  readonly onToggleAssociations?: () => void;
+  readonly associationFilterMode?: AssociationFilterMode;
+  readonly onSelectAssociationFilterMode?: (
+    mode: AssociationFilterMode
+  ) => void;
   readonly disabled?: boolean;
 }
 
@@ -40,6 +47,10 @@ export default function LayersPopoverButton({
   onToggleGrids,
   activeGridLayers,
   onToggleGridLayer,
+  showAssociations = true,
+  onToggleAssociations,
+  associationFilterMode = 'all',
+  onSelectAssociationFilterMode,
   disabled = false
 }: LayersPopoverButtonProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
@@ -159,6 +170,56 @@ export default function LayersPopoverButton({
                 />
               </button>
             </label>
+
+            {onToggleAssociations && (
+              <>
+                <label className="layers-popover-button__row">
+                  <span>{t('bed.associations.layer_toggle')}</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={showAssociations}
+                    aria-label={t('bed.associations.layer_toggle')}
+                    className="layers-popover-button__switch"
+                    onClick={onToggleAssociations}
+                  >
+                    <span
+                      className="layers-popover-button__thumb"
+                      aria-hidden="true"
+                    />
+                  </button>
+                </label>
+
+                {showAssociations && onSelectAssociationFilterMode && (
+                  <label className="layers-popover-button__row layers-popover-button__row--sub">
+                    <span className="layers-popover-button__sublabel">
+                      {t('bed.associations.filter_detrimental_only')}
+                    </span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={
+                        associationFilterMode === 'detrimental_only'
+                      }
+                      aria-label={t('bed.associations.filter_detrimental_only')}
+                      className="layers-popover-button__switch"
+                      onClick={() =>
+                        onSelectAssociationFilterMode(
+                          associationFilterMode === 'all'
+                            ? 'detrimental_only'
+                            : 'all'
+                        )
+                      }
+                    >
+                      <span
+                        className="layers-popover-button__thumb"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </label>
+                )}
+              </>
+            )}
 
             <label className="layers-popover-button__row">
               <span>{t('bed.layout.layer_cardinal')}</span>

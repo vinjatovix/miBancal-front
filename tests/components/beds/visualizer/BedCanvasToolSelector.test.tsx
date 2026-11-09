@@ -111,4 +111,58 @@ describe('BedCanvasToolSelector', () => {
       screen.getByRole('button', { name: 'Hilera simple' })
     ).toBeDisabled();
   });
+
+  it('renders association toggle button and calls onToggleAssociations when clicked', async () => {
+    const onToggle = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <BedCanvasToolSelector
+        activeMode="plant-single"
+        activeBrushPattern="single-row"
+        onSelectMode={vi.fn()}
+        onSelectBrushPattern={vi.fn()}
+        showAssociations={true}
+        onToggleAssociations={onToggle}
+      />
+    );
+
+    const toggleButton = screen.getByRole('button', {
+      name: /asociaciones biológicas/i
+    });
+    expect(toggleButton).toBeInTheDocument();
+    expect(toggleButton).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(toggleButton);
+
+    expect(onToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders filter mode button and toggles detrimental-only mode', async () => {
+    const onSelectFilter = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <BedCanvasToolSelector
+        activeMode="plant-single"
+        activeBrushPattern="single-row"
+        onSelectMode={vi.fn()}
+        onSelectBrushPattern={vi.fn()}
+        showAssociations={true}
+        associationFilterMode="all"
+        onToggleAssociations={vi.fn()}
+        onSelectAssociationFilterMode={onSelectFilter}
+      />
+    );
+
+    const filterButton = screen.getByRole('button', {
+      name: /solo incompatibilidades/i
+    });
+    expect(filterButton).toBeInTheDocument();
+    expect(filterButton).toHaveAttribute('aria-pressed', 'false');
+
+    await user.click(filterButton);
+
+    expect(onSelectFilter).toHaveBeenCalledWith('detrimental_only');
+  });
 });

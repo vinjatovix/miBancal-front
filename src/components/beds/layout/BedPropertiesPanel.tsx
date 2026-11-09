@@ -2,6 +2,8 @@ import { useCallback, useState, type JSX, type KeyboardEvent } from 'react';
 
 import { t } from '../../../i18n/core/t';
 import Button from '../../../shared/components/Button/Button';
+import Icon from '../../../shared/components/Icon/Icon';
+import type { ActiveAssociationLink } from '../associations/types/cropAssociationTypes';
 import { normalizeAngle } from './utils/cardinalGeometry';
 import type { ResolvedBed } from './utils/layoutTypes';
 
@@ -13,6 +15,8 @@ export interface BedPropertiesPanelProps {
   readonly onOpenFullEdit: () => void;
   readonly onRotationChange?: (degrees: number) => void;
   readonly disabled?: boolean;
+  readonly activeLinks?: readonly ActiveAssociationLink[];
+  readonly onInspectLink?: (link: ActiveAssociationLink) => void;
 }
 
 export default function BedPropertiesPanel({
@@ -20,7 +24,9 @@ export default function BedPropertiesPanel({
   onRenameInline,
   onOpenFullEdit,
   onRotationChange,
-  disabled = false
+  disabled = false,
+  activeLinks = [],
+  onInspectLink
 }: BedPropertiesPanelProps): JSX.Element {
   const [name, setName] = useState(bed.name);
   const [prevBedName, setPrevBedName] = useState(bed.name);
@@ -123,6 +129,38 @@ export default function BedPropertiesPanel({
           onKeyDown={handleRotationKeyDown}
         />
       </div>
+
+      {activeLinks.length > 0 && (
+        <div className="bed-properties-panel__associations">
+          <span className="bed-properties-panel__label">
+            {t('bed.associations.panel_section_title')}
+          </span>
+          <div className="bed-properties-panel__associations-list">
+            {activeLinks.map((link) => {
+              const isDetrimental = link.visualPolarity === 'detrimental';
+              return (
+                <button
+                  key={link.id}
+                  type="button"
+                  className={`bed-properties-panel__association-btn bed-properties-panel__association-btn--${link.visualPolarity}`}
+                  onClick={() => onInspectLink?.(link)}
+                >
+                  <Icon
+                    name={isDetrimental ? 'warning' : 'plant_relations'}
+                    decorative
+                  />
+                  <span>
+                    {link.cropA.commonName} - {link.cropB.commonName}
+                  </span>
+                  <span className="bed-properties-panel__association-dist">
+                    {link.distanceCm} cm
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="bed-properties-panel__actions">
         <Button

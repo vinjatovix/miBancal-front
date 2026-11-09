@@ -11,6 +11,11 @@ import type {
   GroupBoundingBox,
   MarqueeBox
 } from '../../../types/PlantInstance/brushSelectionTypes';
+import BedAssociationsLayer from '../associations/BedAssociationsLayer';
+import type {
+  ActiveAssociationLink,
+  AssociationFilterMode
+} from '../associations/types/cropAssociationTypes';
 import BedCropsLayer, { type CropPreview } from './BedCropsLayer';
 import BedGridLayers from './BedGridLayers';
 import { BedBrushPreviewLayer } from './BedBrushPreviewLayer';
@@ -35,6 +40,10 @@ export interface BedVisualizerBedLayerProps {
   readonly isBrushDrawing: boolean;
   readonly boundingBox: GroupBoundingBox | null;
   readonly marqueeBox: MarqueeBox | null;
+  readonly associationLinks?: readonly ActiveAssociationLink[];
+  readonly associationFilterMode?: AssociationFilterMode;
+  readonly showAssociations?: boolean;
+  readonly onSelectAssociationLink?: (link: ActiveAssociationLink) => void;
   readonly onSelectCrop?: (id: string | null) => void;
   readonly onCropClick?: (event: MouseEvent<SVGGElement>, id: string) => void;
   readonly onCropKeyDown?: (
@@ -68,6 +77,10 @@ export function BedVisualizerBedLayer({
   isBrushDrawing,
   boundingBox,
   marqueeBox,
+  associationLinks = [],
+  associationFilterMode = 'all',
+  showAssociations = true,
+  onSelectAssociationLink,
   onSelectCrop,
   onCropClick,
   onCropKeyDown,
@@ -95,12 +108,20 @@ export function BedVisualizerBedLayer({
         height={height}
         activeLayers={activeLayers}
       />
+      {showAssociations && associationLinks.length > 0 ? (
+        <BedAssociationsLayer
+          links={associationLinks}
+          filterMode={associationFilterMode}
+          onSelectLink={onSelectAssociationLink}
+        />
+      ) : null}
       <BedCropsLayer
         crops={crops}
         collisions={collisions}
         perimeterWarnings={perimeterWarnings}
         selectedCropId={selectedCropId}
         selectedCropIds={selectedCropIds}
+        associationLinks={associationLinks}
         preview={preview}
         onSelectCrop={onSelectCrop}
         onCropClick={onCropClick}

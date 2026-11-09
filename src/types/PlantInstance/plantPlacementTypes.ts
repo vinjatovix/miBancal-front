@@ -13,6 +13,8 @@ export interface CropPlacementItem {
   readonly version: number;
   readonly isNew?: boolean;
   readonly hasMoved?: boolean;
+  readonly familyId?: string;
+  readonly genus?: string;
 }
 
 export interface SpatialCollision {

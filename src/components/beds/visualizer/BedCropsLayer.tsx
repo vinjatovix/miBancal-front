@@ -6,6 +6,7 @@ import type {
   CropPlacementItem,
   SpatialCollision
 } from '../../../types/PlantInstance/plantPlacementTypes';
+import type { ActiveAssociationLink } from '../associations/types/cropAssociationTypes';
 import BedCropNode from './BedCropNode';
 
 import './bedCropsLayer.css';
@@ -24,6 +25,7 @@ export interface BedCropsLayerProps {
   readonly perimeterWarnings: ReadonlySet<string>;
   readonly selectedCropId?: string | null;
   readonly selectedCropIds?: ReadonlySet<string>;
+  readonly associationLinks?: readonly ActiveAssociationLink[];
   readonly preview?: CropPreview | null;
   readonly onSelectCrop?: (id: string) => void;
   readonly onCropClick?: (event: MouseEvent<SVGGElement>, id: string) => void;
@@ -57,6 +59,7 @@ export default function BedCropsLayer({
   perimeterWarnings,
   selectedCropId,
   selectedCropIds,
+  associationLinks = [],
   preview,
   onSelectCrop,
   onCropClick,
@@ -79,6 +82,16 @@ export default function BedCropsLayer({
           selectedCropId === crop.id ||
           (selectedCropIds?.has(crop.id) ?? false);
 
+        const cropLinks = associationLinks.filter(
+          (link) => link.cropA.id === crop.id || link.cropB.id === crop.id
+        );
+        const companionCount = cropLinks.filter(
+          (link) => link.visualPolarity === 'beneficial'
+        ).length;
+        const incompatibilityCount = cropLinks.filter(
+          (link) => link.visualPolarity === 'detrimental'
+        ).length;
+
         return (
           <BedCropNode
             key={crop.id}
@@ -86,6 +99,8 @@ export default function BedCropsLayer({
             hasCollision={collisionIds.has(crop.id)}
             hasOverflow={perimeterWarnings.has(crop.id)}
             isSelected={isSelected}
+            companionCount={companionCount}
+            incompatibilityCount={incompatibilityCount}
             onSelect={onSelectCrop}
             onCropClick={onCropClick}
             onCropKeyDown={onCropKeyDown}
