@@ -5,6 +5,7 @@ import type {
   PlantingToolMode,
   BrushPatternType
 } from '../../../types/PlantInstance/brushSelectionTypes';
+import type { AssociationFilterMode } from '../associations/types/cropAssociationTypes';
 import './bedCanvasToolSelector.css';
 
 export interface BedCanvasToolSelectorProps {
@@ -13,6 +14,12 @@ export interface BedCanvasToolSelectorProps {
   readonly onSelectMode: (mode: PlantingToolMode) => void;
   readonly onSelectBrushPattern: (pattern: BrushPatternType) => void;
   readonly disabled?: boolean;
+  readonly showAssociations?: boolean;
+  readonly onToggleAssociations?: () => void;
+  readonly associationFilterMode?: AssociationFilterMode;
+  readonly onSelectAssociationFilterMode?: (
+    mode: AssociationFilterMode
+  ) => void;
 }
 
 const BRUSH_PATTERNS: readonly BrushPatternType[] = [
@@ -26,7 +33,11 @@ export function BedCanvasToolSelector({
   activeBrushPattern,
   onSelectMode,
   onSelectBrushPattern,
-  disabled = false
+  disabled = false,
+  showAssociations = true,
+  onToggleAssociations,
+  associationFilterMode = 'all',
+  onSelectAssociationFilterMode
 }: BedCanvasToolSelectorProps): JSX.Element {
   return (
     <div
@@ -111,6 +122,49 @@ export function BedCanvasToolSelector({
           })}
         </div>
       ) : null}
+
+      {onToggleAssociations && (
+        <div
+          className="bed-canvas-tool-selector__group"
+          role="group"
+          aria-label={t('bed.associations.layer_toggle')}
+        >
+          <button
+            type="button"
+            className={`bed-canvas-tool-selector__button ${
+              showAssociations ? 'is-active' : ''
+            }`}
+            aria-pressed={showAssociations}
+            disabled={disabled}
+            onClick={onToggleAssociations}
+          >
+            <Icon
+              name={showAssociations ? 'visibility' : 'visibility_off'}
+              decorative
+            />
+            <span>{t('bed.associations.layer_toggle')}</span>
+          </button>
+
+          {showAssociations && onSelectAssociationFilterMode && (
+            <button
+              type="button"
+              className={`bed-canvas-tool-selector__button ${
+                associationFilterMode === 'detrimental_only' ? 'is-active' : ''
+              }`}
+              aria-pressed={associationFilterMode === 'detrimental_only'}
+              disabled={disabled}
+              onClick={() =>
+                onSelectAssociationFilterMode(
+                  associationFilterMode === 'all' ? 'detrimental_only' : 'all'
+                )
+              }
+            >
+              <Icon name="warning" decorative />
+              <span>{t('bed.associations.filter_detrimental_only')}</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

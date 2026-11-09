@@ -43,6 +43,11 @@ import type {
   MarqueeBox,
   PlantingToolMode
 } from '../../../types/PlantInstance/brushSelectionTypes';
+import LocationAssociationsLayer from '../associations/LocationAssociationsLayer';
+import type {
+  ActiveAssociationLink,
+  AssociationFilterMode
+} from '../associations/types/cropAssociationTypes';
 
 import './locationLayoutCanvas.css';
 
@@ -62,6 +67,10 @@ export interface LocationLayoutCanvasProps {
   readonly floorHeight?: number | null;
   readonly cropsByBed?: ReadonlyMap<string, readonly CropPlacementItem[]>;
   readonly showPlants?: boolean;
+  readonly associationLinks?: readonly ActiveAssociationLink[];
+  readonly associationFilterMode?: AssociationFilterMode;
+  readonly showAssociations?: boolean;
+  readonly onSelectAssociationLink?: (link: ActiveAssociationLink) => void;
   readonly placementPreview?: LocationPlacementPreview | null;
   readonly selectedCropId?: string | null;
   readonly selectedCropIds?: ReadonlySet<string>;
@@ -174,6 +183,10 @@ export default function LocationLayoutCanvas({
   floorHeight = null,
   cropsByBed,
   showPlants = false,
+  associationLinks = [],
+  associationFilterMode = 'all',
+  showAssociations = true,
+  onSelectAssociationLink,
   placementPreview = null,
   selectedCropId = null,
   selectedCropIds = new Set<string>(),
@@ -637,8 +650,23 @@ export default function LocationLayoutCanvas({
                 />
               </g>
             ))}
+          {showAssociations &&
+            associationLinks &&
+            associationLinks.length > 0 && (
+              <LocationAssociationsLayer
+                links={associationLinks}
+                filterMode={associationFilterMode}
+                onSelectLink={onSelectAssociationLink}
+              />
+            )}
           {showCrops && cropsByBed && (
-            <LocationCropsLayer beds={beds} cropsByBed={cropsByBed} />
+            <LocationCropsLayer
+              beds={beds}
+              cropsByBed={cropsByBed}
+              associationLinks={associationLinks}
+              onSelectLink={onSelectAssociationLink}
+              onSelectCrop={(cropId) => onCropSelect?.(cropId)}
+            />
           )}
           {showPlacementLayer && cropsByBed && (
             <LocationPlacementLayer

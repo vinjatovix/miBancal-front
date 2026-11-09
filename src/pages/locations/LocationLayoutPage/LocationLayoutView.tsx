@@ -24,6 +24,7 @@ import LocationLayoutDialogs from './components/LocationLayoutDialogs';
 import LocationLayoutEmptyState from './components/LocationLayoutEmptyState';
 import LocationLayoutTopBar from './components/LocationLayoutTopBar';
 import LocationLayoutWorkspace from './components/LocationLayoutWorkspace';
+import CropAssociationInspectionModal from '../../../components/beds/associations/CropAssociationInspectionModal';
 import { useLayoutEditor } from './hooks/useLayoutEditor';
 import { useLayoutKeyboardShortcuts } from './hooks/useLayoutKeyboardShortcuts';
 import { useLayoutModeController } from './hooks/useLayoutModeController';
@@ -31,6 +32,11 @@ import { useLayoutPlantPlacement } from './hooks/useLayoutPlantPlacement';
 import { useLayoutVisibilityControls } from './hooks/useLayoutVisibilityControls';
 import { useLocationBedActions } from './hooks/useLocationBedActions';
 import { useLocationBedCrops } from './hooks/useLocationBedCrops';
+import { useLocationCropAssociations } from './hooks/useLocationCropAssociations';
+import type {
+  ActiveAssociationLink,
+  AssociationFilterMode
+} from '../../../components/beds/associations/types/cropAssociationTypes';
 
 import './locationLayoutPage.css';
 
@@ -81,11 +87,22 @@ export default function LocationLayoutView({
     [editor.placedBeds]
   );
   const { cropsByBed } = useLocationBedCrops(placedBedIds);
+  const [showAssociations, setShowAssociations] = useState(true);
+  const [associationFilterMode, setAssociationFilterMode] =
+    useState<AssociationFilterMode>('all');
+  const [inspectedLink, setInspectedLink] =
+    useState<ActiveAssociationLink | null>(null);
+
   const placement = useLayoutPlantPlacement({
     beds: editor.placedBeds,
     cropsByBed,
     activeBedId: selectedBedId
   });
+
+  const { links: associationLinks } = useLocationCropAssociations(
+    editor.placedBeds,
+    placement.associationCropsByBed
+  );
 
   const bedActions = useLocationBedActions({
     locationId: id,
@@ -274,6 +291,10 @@ export default function LocationLayoutView({
         onToggleGridLayer={visibility.handleToggleGridLayer}
         viewport={viewport}
         onFitToView={handleFitToView}
+        showAssociations={showAssociations}
+        onToggleAssociations={() => setShowAssociations((prev) => !prev)}
+        associationFilterMode={associationFilterMode}
+        onSelectAssociationFilterMode={setAssociationFilterMode}
       />
 
       {isPlanting && placement.toolMode === 'select' && (
@@ -305,6 +326,10 @@ export default function LocationLayoutView({
           layout={layout}
           cropsByBed={placement.effectiveCropsByBed}
           selectedBedId={selectedBedId}
+          associationLinks={associationLinks}
+          associationFilterMode={associationFilterMode}
+          showAssociations={showAssociations}
+          onSelectAssociationLink={setInspectedLink}
         />
 
         <LocationLayoutContextPanel
@@ -365,6 +390,12 @@ export default function LocationLayoutView({
         cancelText={t('bed.placement.discard_cancel')}
         onConfirm={confirmDiscardPlanting}
         onCancel={cancelDiscardPlanting}
+      />
+
+      <CropAssociationInspectionModal
+        link={inspectedLink}
+        isOpen={inspectedLink !== null}
+        onClose={() => setInspectedLink(null)}
       />
     </main>
   );

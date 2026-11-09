@@ -128,4 +128,53 @@ describe('BedPropertiesPanel', () => {
 
     expect(onRotationChange).toHaveBeenCalledWith(90);
   });
+
+  it('renders active associations and calls onInspectLink when clicked', async () => {
+    const user = userEvent.setup();
+    const onInspect = vi.fn();
+    const link = {
+      id: 'l1',
+      cropA: {
+        id: 'c1',
+        plantId: 'p1',
+        bedId: 'bed-1',
+        commonName: 'Tomate',
+        x: 10,
+        y: 10,
+        vitalRadius: 15
+      },
+      cropB: {
+        id: 'c2',
+        plantId: 'p2',
+        bedId: 'bed-1',
+        commonName: 'Albahaca',
+        x: 40,
+        y: 10,
+        vitalRadius: 15
+      },
+      distanceCm: 30,
+      effectiveReachCm: 80,
+      scope: 'intra_bed' as const,
+      relations: [],
+      visualPolarity: 'beneficial' as const,
+      isWarningPriority: false,
+      midpoint: { x: 25, y: 10 }
+    };
+
+    render(
+      <BedPropertiesPanel
+        bed={MOCK_BED}
+        onRenameInline={vi.fn()}
+        onOpenFullEdit={vi.fn()}
+        activeLinks={[link]}
+        onInspectLink={onInspect}
+      />
+    );
+
+    const btn = screen.getByRole('button', { name: /Tomate - Albahaca/i });
+    expect(btn).toBeInTheDocument();
+    await user.click(btn);
+
+    expect(onInspect).toHaveBeenCalledWith(link);
+  });
 });

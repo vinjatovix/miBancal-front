@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { t } from '../../../../i18n/core/t';
 import type { Point } from '../../../../components/beds/layout/utils/layoutGeometry';
@@ -39,10 +39,12 @@ export function useLayoutSingleCropDrag({
     readonly cropId: string;
     readonly bedId: string;
   } | null>(null);
+  const [draggingCropId, setDraggingCropId] = useState<string | null>(null);
 
   const beginCropDrag = useCallback(
     (cropId: string, bedId: string) => {
       cropDragRef.current = { cropId, bedId };
+      setDraggingCropId(cropId);
       onSelectSingleCrop(cropId);
     },
     [onSelectSingleCrop]
@@ -75,6 +77,7 @@ export function useLayoutSingleCropDrag({
     (global: Point | null) => {
       const drag = cropDragRef.current;
       cropDragRef.current = null;
+      setDraggingCropId(null);
       setPreview(null);
       if (!drag || !global) return;
       const bed = bedsById.get(drag.bedId);
@@ -108,12 +111,14 @@ export function useLayoutSingleCropDrag({
 
   const resetCropDrag = useCallback(() => {
     cropDragRef.current = null;
+    setDraggingCropId(null);
   }, []);
 
   return {
     beginCropDrag,
     moveCropDrag,
     endCropDrag,
-    resetCropDrag
+    resetCropDrag,
+    draggingCropId
   };
 }

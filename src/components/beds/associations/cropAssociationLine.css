@@ -1,0 +1,39 @@
+.crop-association-line {
+  cursor: pointer;
+}
+
+.crop-association-line__visual {
+  stroke-width: 2px;
+  stroke-linecap: round;
+  transition: stroke-width 0.15s ease;
+}
+
+.crop-association-line__visual--beneficial {
+  stroke: var(--color-success-border);
+}
+
+.crop-association-line__visual--detrimental {
+  stroke: var(--color-error-border);
+}
+
+.crop-association-line__hit-target {
+  cursor: pointer;
+  outline: none;
+}
+
+.crop-association-line__hit-target:focus-visible
+  + .crop-association-line__visual {
+  stroke-width: 4px;
+}
+
+.crop-association-line__warning-glyph {
+  pointer-events: none;
+}
+
+.crop-association-line__warning-glyph-bg {
+  fill: var(--color-error-border);
+}
+
+.crop-association-line__warning-glyph-icon {
+  fill: var(--color-on-danger);
+}

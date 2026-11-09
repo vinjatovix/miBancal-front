@@ -54,6 +54,13 @@ vi.mock('../../../../src/services/plantInstances.service', () => ({
   })
 }));
 
+vi.mock('../../../../src/services/plantRelations.service', () => ({
+  getPlantRelations: vi.fn().mockResolvedValue({
+    data: [],
+    pagination: { page: 1, limit: 100, totalPages: 1, totalItems: 0 }
+  })
+}));
+
 const mockedGetLocationLayout = vi.mocked(getLocationLayout);
 const mockedUpdateLocation = vi.mocked(updateLocation);
 const mockedDeleteBed = vi.mocked(deleteBed);

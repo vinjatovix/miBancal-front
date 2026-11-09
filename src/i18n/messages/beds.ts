@@ -408,6 +408,44 @@ export const bedsMessages = {
         'Movimiento bloqueado: alguna planta colisiona o desborda el bancal',
       brush_preview_layer_label: 'Previsualización del trazo de brocha',
       marquee_layer_label: 'Área de selección del bancal'
+    },
+    associations: {
+      layer_toggle: 'Asociaciones biológicas',
+      layer_toggle_active: 'Ocultar asociaciones biológicas',
+      layer_toggle_inactive: 'Mostrar asociaciones biológicas',
+      filter_mode_label: 'Filtro de asociaciones',
+      filter_all: 'Todas las asociaciones',
+      filter_detrimental_only: 'Solo incompatibilidades',
+      link_beneficial_label:
+        'Asociación simbiótica entre {plantA} y {plantB}, a {distance} cm',
+      link_detrimental_label:
+        'Incompatibilidad entre {plantA} y {plantB}, a {distance} cm',
+      link_warning_priority_label:
+        'Incompatibilidad con efectos mixtos entre {plantA} y {plantB}, a {distance} cm',
+      badge_cross_bed: 'Entre bancales',
+      badge_intra_bed: 'Mismo bancal',
+      modal_title: 'Fundamento agronómico de la asociación',
+      modal_close: 'Cerrar detalles de la asociación',
+      polarity_beneficial: 'Asociación beneficiosa / Simbiótica',
+      polarity_detrimental: 'Incompatibilidad perjudicial',
+      mixed_warning_notice:
+        'Advertencia fitosanitaria: Coexisten efectos simbióticos y perjudiciales documentados entre estas especies. Prevalece la recomendación de separación para evitar riesgos fitosanitarios.',
+      distance_label: 'Distancia física',
+      distance_value: '{distance} cm (alcance efectivo: {reach} cm)',
+      reach_bed_wide: 'Efectiva en todo el bancal (sin límite)',
+      strength_label: 'Fuerza de la interacción ({strength} de 5)',
+      strength_value: '{strength} / 5',
+      mechanism_label: 'Mecanismo ecológico',
+      reason_label: 'Fundamento botánico',
+      concurrent_effects_title: 'Efectos biológicos concurrentes ({count})',
+      concurrent_beneficial: 'Efecto beneficioso',
+      concurrent_detrimental: 'Efecto perjudicial',
+      crop_companions_count: '{count} compañeras',
+      crop_incompatibilities_count: '{count} incompatibles',
+      panel_section_title: 'Asociaciones biológicas activas',
+      panel_empty: 'Sin asociaciones activas con las plantas vecinas',
+      inspect_action: 'Inspeccionar asociación',
+      view_details_with: 'Ver detalles de la asociación con {name}'
     }
   }
 };

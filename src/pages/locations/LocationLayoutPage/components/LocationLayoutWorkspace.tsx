@@ -7,6 +7,10 @@ import type { BedViewportState } from '../../../../components/beds/visualizer/ho
 import { t } from '../../../../i18n/core/t';
 import type { LocationLayoutResponse } from '../../../../types/Location/LocationLayout';
 import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
+import type {
+  ActiveAssociationLink,
+  AssociationFilterMode
+} from '../../../../components/beds/associations/types/cropAssociationTypes';
 import type { LayoutEditor } from '../hooks/useLayoutEditor';
 import type { useLayoutPlantPlacement } from '../hooks/useLayoutPlantPlacement';
 import type { useLayoutVisibilityControls } from '../hooks/useLayoutVisibilityControls';
@@ -24,6 +28,10 @@ export interface LocationLayoutWorkspaceProps {
     | ReadonlyMap<string, readonly CropPlacementItem[]>
     | undefined;
   readonly selectedBedId: string | null;
+  readonly associationLinks?: readonly ActiveAssociationLink[];
+  readonly associationFilterMode?: AssociationFilterMode;
+  readonly showAssociations?: boolean;
+  readonly onSelectAssociationLink?: (link: ActiveAssociationLink) => void;
 }
 
 export default function LocationLayoutWorkspace({
@@ -35,7 +43,11 @@ export default function LocationLayoutWorkspace({
   bedActions,
   layout,
   cropsByBed,
-  selectedBedId
+  selectedBedId,
+  associationLinks = [],
+  associationFilterMode = 'all',
+  showAssociations = true,
+  onSelectAssociationLink
 }: LocationLayoutWorkspaceProps): JSX.Element {
   const isPosition = editor.mode === 'position';
 
@@ -59,6 +71,10 @@ export default function LocationLayoutWorkspace({
         floorHeight={layout.location.height}
         cropsByBed={cropsByBed}
         showPlants={visibility.showPlants}
+        associationLinks={associationLinks}
+        associationFilterMode={associationFilterMode}
+        showAssociations={showAssociations}
+        onSelectAssociationLink={onSelectAssociationLink}
         placementPreview={placement.preview}
         selectedCropId={placement.selectedCropId}
         selectedCropIds={placement.selectedCropIds}

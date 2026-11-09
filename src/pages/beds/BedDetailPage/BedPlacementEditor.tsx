@@ -9,6 +9,7 @@ import PlantPlacementPalette from '../../../components/beds/visualizer/PlantPlac
 import PlacementSaveBar from '../../../components/beds/visualizer/PlacementSaveBar';
 import CropAdjustmentControls from '../../../components/beds/visualizer/CropAdjustmentControls';
 import ManualPlacementModal from '../../../components/beds/visualizer/ManualPlacementModal';
+import CropAssociationInspectionModal from '../../../components/beds/associations/CropAssociationInspectionModal';
 import {
   DEFAULT_ACTIVE_GRID_LAYERS,
   type ActiveGridLayers,
@@ -26,6 +27,11 @@ import type { Bed } from '../../../types/Bed/Bed';
 import type { Coordinates } from '../../../types/PlantInstance/PlantInstance';
 import type { PlantListItem } from '../../../types/Plants/Plant';
 import { useBedPlantInstances } from '../hooks/useBedPlantInstances';
+import { useBedCropAssociations } from '../hooks/useBedCropAssociations';
+import type {
+  ActiveAssociationLink,
+  AssociationFilterMode
+} from '../../../components/beds/associations/types/cropAssociationTypes';
 import { useBedPlacementDraft } from '../hooks/useBedPlacementDraft';
 import { toPlacementInput, toPlacingPlant } from './bedPlacementEditorUtils';
 import { BedPlacementSelectionBar } from './BedPlacementSelectionBar';
@@ -63,7 +69,16 @@ export default function BedPlacementEditor({
     null
   );
   const [manualOpen, setManualOpen] = useState(false);
+  const [showAssociations, setShowAssociations] = useState(true);
+  const [associationFilterMode, setAssociationFilterMode] =
+    useState<AssociationFilterMode>('all');
+  const [inspectedLink, setInspectedLink] =
+    useState<ActiveAssociationLink | null>(null);
   const knownPlants = useRef(new Map<string, PlantListItem>());
+
+  const { links: associationLinks } = useBedCropAssociations(
+    draft.currentCrops
+  );
 
   const selectedCrop =
     draft.currentCrops.find((crop) => crop.id === draft.selectedCropId) ?? null;
@@ -169,6 +184,10 @@ export default function BedPlacementEditor({
           activeBrushPattern={brushPattern}
           onSelectMode={setToolMode}
           onSelectBrushPattern={setBrushPattern}
+          showAssociations={showAssociations}
+          onToggleAssociations={() => setShowAssociations((prev) => !prev)}
+          associationFilterMode={associationFilterMode}
+          onSelectAssociationFilterMode={setAssociationFilterMode}
         />
         <button
           type="button"
@@ -200,6 +219,10 @@ export default function BedPlacementEditor({
             perimeterWarnings={draft.perimeterWarnings}
             selectedCropId={draft.selectedCropId}
             selectedCropIds={draft.selectedCropIds}
+            associationLinks={associationLinks}
+            associationFilterMode={associationFilterMode}
+            showAssociations={showAssociations}
+            onSelectAssociationLink={setInspectedLink}
             isPlacingActive={activePlacing !== null}
             placingPlant={placingPlant}
             activeToolMode={toolMode}
@@ -222,6 +245,8 @@ export default function BedPlacementEditor({
             onAdjust={handleAdjust}
             onRemove={setRemovalCandidateId}
             onClose={() => draft.selectCrop(null)}
+            activeLinks={associationLinks}
+            onInspectLink={setInspectedLink}
           />
           <PlacementSaveBar
             isDirty={draft.hasChanges}
@@ -261,6 +286,11 @@ export default function BedPlacementEditor({
         cancelText={t('bed.placement.remove_cancel')}
         onConfirm={confirmRemoval}
         onCancel={() => setRemovalCandidateId(null)}
+      />
+      <CropAssociationInspectionModal
+        link={inspectedLink}
+        isOpen={inspectedLink !== null}
+        onClose={() => setInspectedLink(null)}
       />
       <UnsavedChangesGuard
         when={draft.hasChanges}

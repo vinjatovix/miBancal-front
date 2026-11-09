@@ -27,6 +27,10 @@ export default function BedVisualizerCanvas({
   perimeterWarnings = new Set<string>(),
   selectedCropId = null,
   selectedCropIds = new Set<string>(),
+  associationLinks = [],
+  associationFilterMode = 'all',
+  showAssociations = true,
+  onSelectAssociationLink,
   isPlacingActive = false,
   placingPlant = null,
   activeToolMode = 'plant-single',
@@ -201,6 +205,10 @@ export default function BedVisualizerCanvas({
             perimeterWarnings={perimeterWarnings}
             selectedCropId={selectedCropId}
             selectedCropIds={selectedCropIds}
+            associationLinks={associationLinks}
+            associationFilterMode={associationFilterMode}
+            showAssociations={showAssociations}
+            onSelectAssociationLink={onSelectAssociationLink}
             preview={activeToolMode === 'brush' ? null : placement.preview}
             directrix={brushStroke.directrix}
             brushCandidates={brushStroke.candidates}

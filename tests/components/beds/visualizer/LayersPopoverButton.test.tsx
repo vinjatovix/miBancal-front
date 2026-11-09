@@ -187,4 +187,56 @@ describe('LayersPopoverButton', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(document.activeElement).toBe(trigger);
   });
+
+  it('renders association layer toggle and detrimental-only filter switches in popover', async () => {
+    const user = userEvent.setup();
+    const onToggleAssociations = vi.fn();
+    const onSelectFilterMode = vi.fn();
+
+    render(
+      <LayersPopoverButton
+        showNames={true}
+        onToggleNames={vi.fn()}
+        showDimensions={true}
+        onToggleDimensions={vi.fn()}
+        showPlants={true}
+        onTogglePlants={vi.fn()}
+        showCardinalOrientation={true}
+        onToggleCardinalOrientation={vi.fn()}
+        showGrids={true}
+        onToggleGrids={vi.fn()}
+        activeGridLayers={{
+          sfg: false,
+          intermediate: false,
+          decimeters: false,
+          fine: false
+        }}
+        onToggleGridLayer={vi.fn()}
+        showAssociations={true}
+        onToggleAssociations={onToggleAssociations}
+        associationFilterMode="all"
+        onSelectAssociationFilterMode={onSelectFilterMode}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Capas' }));
+
+    const assocSwitch = screen.getByRole('switch', {
+      name: 'Asociaciones biológicas'
+    });
+    expect(assocSwitch).toBeInTheDocument();
+    expect(assocSwitch).toHaveAttribute('aria-checked', 'true');
+
+    await user.click(assocSwitch);
+    expect(onToggleAssociations).toHaveBeenCalledTimes(1);
+
+    const filterSwitch = screen.getByRole('switch', {
+      name: 'Solo incompatibilidades'
+    });
+    expect(filterSwitch).toBeInTheDocument();
+    expect(filterSwitch).toHaveAttribute('aria-checked', 'false');
+
+    await user.click(filterSwitch);
+    expect(onSelectFilterMode).toHaveBeenCalledWith('detrimental_only');
+  });
 });

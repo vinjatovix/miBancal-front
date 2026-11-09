@@ -93,3 +93,59 @@
 .crop-adjustment-controls__close {
   color: var(--color-fg-muted);
 }
+
+.crop-adjustment-controls__associations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+  margin-block-start: var(--space-2xs);
+  border-block-start: 1px solid var(--color-border-decor);
+  padding-block-start: var(--space-2xs);
+}
+
+.crop-adjustment-controls__associations-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-fg-muted);
+}
+
+.crop-adjustment-controls__associations-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+  max-block-size: 10rem;
+  overflow-y: auto;
+}
+
+.crop-adjustment-controls__association-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: var(--space-3xs) var(--space-2xs);
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
+  cursor: pointer;
+  text-align: start;
+}
+
+.crop-adjustment-controls__association-btn:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.crop-adjustment-controls__association-btn--beneficial {
+  border-color: var(--color-success-border);
+  color: var(--color-on-success);
+}
+
+.crop-adjustment-controls__association-btn--detrimental {
+  border-color: var(--color-error-border);
+  color: var(--color-on-error);
+}
+
+.crop-adjustment-controls__association-dist {
+  margin-inline-start: auto;
+  font-size: 0.6875rem;
+  color: var(--color-fg-muted);
+}

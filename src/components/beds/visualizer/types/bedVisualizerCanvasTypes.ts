@@ -16,6 +16,10 @@ import type {
   PlacingPlant
 } from '../hooks/useCanvasPlacement';
 import type { ActiveGridLayers } from '../utils/bedGridConfig';
+import type {
+  ActiveAssociationLink,
+  AssociationFilterMode
+} from '../../associations/types/cropAssociationTypes';
 
 export interface BedVisualizerCanvasProps {
   readonly bed: Bed;
@@ -25,6 +29,10 @@ export interface BedVisualizerCanvasProps {
   readonly perimeterWarnings?: ReadonlySet<string>;
   readonly selectedCropId?: string | null;
   readonly selectedCropIds?: ReadonlySet<string>;
+  readonly associationLinks?: readonly ActiveAssociationLink[];
+  readonly associationFilterMode?: AssociationFilterMode;
+  readonly showAssociations?: boolean;
+  readonly onSelectAssociationLink?: (link: ActiveAssociationLink) => void;
   readonly isPlacingActive?: boolean;
   readonly placingPlant?: PlacingPlant | null;
   readonly activeToolMode?: PlantingToolMode;

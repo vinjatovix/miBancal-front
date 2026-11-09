@@ -21,6 +21,8 @@ export interface BedCropNodeProps {
   readonly hasOverflow?: boolean;
   readonly isSelected?: boolean;
   readonly isPreview?: boolean;
+  readonly companionCount?: number;
+  readonly incompatibilityCount?: number;
   readonly onSelect?: (id: string) => void;
   readonly onCropClick?: (event: MouseEvent<SVGGElement>, id: string) => void;
   readonly onCropKeyDown?: (
@@ -39,20 +41,42 @@ export interface BedCropNodeProps {
 function cropLabel(
   crop: CropPlacementItem,
   hasCollision: boolean,
-  hasOverflow: boolean
+  hasOverflow: boolean,
+  companionCount = 0,
+  incompatibilityCount = 0
 ): string {
   const values = {
     name: crop.commonName,
     x: String(Math.round(crop.position.x)),
     y: String(Math.round(crop.position.y))
   };
+  let base: string;
   if (hasCollision) {
-    return t('bed.placement.crop_label_collision', values);
+    base = t('bed.placement.crop_label_collision', values);
+  } else if (hasOverflow) {
+    base = t('bed.placement.crop_label_overflow', values);
+  } else {
+    base = t('bed.placement.crop_label', values);
   }
-  if (hasOverflow) {
-    return t('bed.placement.crop_label_overflow', values);
+
+  const associationParts: string[] = [];
+  if (companionCount > 0) {
+    associationParts.push(
+      t('bed.associations.crop_companions_count', { count: companionCount })
+    );
   }
-  return t('bed.placement.crop_label', values);
+  if (incompatibilityCount > 0) {
+    associationParts.push(
+      t('bed.associations.crop_incompatibilities_count', {
+        count: incompatibilityCount
+      })
+    );
+  }
+
+  if (associationParts.length > 0) {
+    return `${base}, ${associationParts.join(', ')}`;
+  }
+  return base;
 }
 
 export default function BedCropNode({
@@ -61,6 +85,8 @@ export default function BedCropNode({
   hasOverflow = false,
   isSelected = false,
   isPreview = false,
+  companionCount = 0,
+  incompatibilityCount = 0,
   onSelect,
   onCropClick,
   onCropKeyDown,
@@ -94,7 +120,13 @@ export default function BedCropNode({
     .filter(Boolean)
     .join(' ');
 
-  const label = cropLabel(crop, hasCollision, hasOverflow);
+  const label = cropLabel(
+    crop,
+    hasCollision,
+    hasOverflow,
+    companionCount,
+    incompatibilityCount
+  );
 
   return (
     <g

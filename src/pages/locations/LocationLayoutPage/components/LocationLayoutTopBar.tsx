@@ -12,6 +12,7 @@ import type {
   ActiveGridLayers,
   BedGridLayerKey
 } from '../../../../components/beds/visualizer/utils/bedGridConfig';
+import type { AssociationFilterMode } from '../../../../components/beds/associations/types/cropAssociationTypes';
 import type { PlantingToolMode } from '../../../../types/PlantInstance/brushSelectionTypes';
 import LayoutKeyboardHelp from './LayoutKeyboardHelp';
 import LayoutModeSegmentedControl from './LayoutModeSegmentedControl';
@@ -51,6 +52,12 @@ export interface LocationLayoutTopBarProps {
   readonly onToggleGridLayer: (key: BedGridLayerKey) => void;
   readonly viewport: BedViewportState;
   readonly onFitToView: () => void;
+  readonly showAssociations?: boolean;
+  readonly onToggleAssociations?: () => void;
+  readonly associationFilterMode?: AssociationFilterMode;
+  readonly onSelectAssociationFilterMode?: (
+    mode: AssociationFilterMode
+  ) => void;
 }
 
 export default function LocationLayoutTopBar({
@@ -86,7 +93,11 @@ export default function LocationLayoutTopBar({
   activeGridLayers,
   onToggleGridLayer,
   viewport,
-  onFitToView
+  onFitToView,
+  showAssociations = true,
+  onToggleAssociations,
+  associationFilterMode = 'all',
+  onSelectAssociationFilterMode
 }: LocationLayoutTopBarProps): JSX.Element {
   return (
     <LayoutTopBar
@@ -184,6 +195,10 @@ export default function LocationLayoutTopBar({
             onToggleGrids={onToggleGrids}
             activeGridLayers={activeGridLayers}
             onToggleGridLayer={onToggleGridLayer}
+            showAssociations={showAssociations}
+            onToggleAssociations={onToggleAssociations}
+            associationFilterMode={associationFilterMode}
+            onSelectAssociationFilterMode={onSelectAssociationFilterMode}
           />
           <LayoutViewportControls
             viewport={viewport}

@@ -62,4 +62,56 @@ describe('CropAdjustmentControls', () => {
 
     expect(onRemove).toHaveBeenCalledWith('crop-1');
   });
+
+  it('renders active associations and calls onInspectLink when clicked', async () => {
+    const onInspect = vi.fn();
+    const user = userEvent.setup();
+    const link = {
+      id: 'c1:c2',
+      cropA: {
+        id: crop.id,
+        plantId: crop.plantId,
+        bedId: crop.bedId,
+        commonName: crop.commonName,
+        x: 20,
+        y: 20,
+        vitalRadius: crop.vitalRadius
+      },
+      cropB: {
+        id: 'crop-2',
+        plantId: 'plant-2',
+        bedId: crop.bedId,
+        commonName: 'Albahaca',
+        x: 45,
+        y: 20,
+        vitalRadius: 15
+      },
+      distanceCm: 25,
+      effectiveReachCm: 80,
+      scope: 'intra_bed' as const,
+      relations: [],
+      visualPolarity: 'beneficial' as const,
+      isWarningPriority: false,
+      midpoint: { x: 32.5, y: 20 }
+    };
+
+    render(
+      <CropAdjustmentControls
+        selectedCrop={crop}
+        onAdjust={vi.fn()}
+        onRemove={vi.fn()}
+        onClose={vi.fn()}
+        activeLinks={[link]}
+        onInspectLink={onInspect}
+      />
+    );
+
+    const btn = screen.getByRole('button', {
+      name: /ver detalles de la asociación con albahaca/i
+    });
+    expect(btn).toBeInTheDocument();
+    await user.click(btn);
+
+    expect(onInspect).toHaveBeenCalledWith(link);
+  });
 });
