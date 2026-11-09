@@ -3,6 +3,11 @@ import type { GroupMovePreview } from '../../../../types/PlantInstance/brushSele
 import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
 import type { LayoutPlacementPreview } from './useLayoutPalettePlacement';
 
+export interface BrushPreviewCrops {
+  readonly bedId: string;
+  readonly crops: readonly CropPlacementItem[];
+}
+
 export interface AssociationPreviewInput {
   readonly effectiveCropsByBed: ReadonlyMap<
     string,
@@ -11,13 +16,15 @@ export interface AssociationPreviewInput {
   readonly draggingCropId: string | null;
   readonly singlePreview: LayoutPlacementPreview | null;
   readonly groupMovePreview: GroupMovePreview | null;
+  readonly brushPreviewCrops?: BrushPreviewCrops | null;
 }
 
 export function buildAssociationCropsByBed({
   effectiveCropsByBed,
   draggingCropId,
   singlePreview,
-  groupMovePreview
+  groupMovePreview,
+  brushPreviewCrops
 }: AssociationPreviewInput): ReadonlyMap<string, readonly CropPlacementItem[]> {
   const overrides = new Map<string, Coordinates>();
   if (draggingCropId && singlePreview) {
@@ -29,17 +36,31 @@ export function buildAssociationCropsByBed({
     }
   }
 
-  if (overrides.size === 0) return effectiveCropsByBed;
+  const hasOverrides = overrides.size > 0;
+  const hasBrushPreview =
+    brushPreviewCrops != null && brushPreviewCrops.crops.length > 0;
+
+  if (!hasOverrides && !hasBrushPreview) return effectiveCropsByBed;
 
   const next = new Map<string, readonly CropPlacementItem[]>();
   for (const [bedId, crops] of effectiveCropsByBed) {
-    next.set(
-      bedId,
-      crops.map((crop) => {
-        const override = overrides.get(crop.id);
-        return override ? { ...crop, position: override } : crop;
-      })
-    );
+    const repositioned = hasOverrides
+      ? crops.map((crop) => {
+          const override = overrides.get(crop.id);
+          return override ? { ...crop, position: override } : crop;
+        })
+      : crops;
+
+    if (hasBrushPreview && brushPreviewCrops.bedId === bedId) {
+      next.set(bedId, [...repositioned, ...brushPreviewCrops.crops]);
+    } else {
+      next.set(bedId, repositioned);
+    }
   }
+
+  if (hasBrushPreview && !effectiveCropsByBed.has(brushPreviewCrops.bedId)) {
+    next.set(brushPreviewCrops.bedId, [...brushPreviewCrops.crops]);
+  }
+
   return next;
 }

@@ -126,4 +126,56 @@ describe('buildAssociationCropsByBed', () => {
       y: 0
     });
   });
+
+  it('appends brush preview crops to the stroke bed', () => {
+    const previewCrop = crop('brush-preview-bed-1-0', { x: 70, y: 30 });
+
+    const result = buildAssociationCropsByBed({
+      effectiveCropsByBed,
+      draggingCropId: null,
+      singlePreview: null,
+      groupMovePreview: null,
+      brushPreviewCrops: { bedId: 'bed-1', crops: [previewCrop] }
+    });
+
+    const bedCrops = result.get('bed-1') ?? [];
+    expect(bedCrops).toHaveLength(4);
+    expect(
+      bedCrops.find((c) => c.id === 'brush-preview-bed-1-0')
+    ).toBeDefined();
+    expect(bedCrops.find((c) => c.id === 'a')?.position).toEqual({
+      x: 0,
+      y: 0
+    });
+  });
+
+  it('creates an entry for a brush stroke on a bed without existing crops', () => {
+    const previewCrop: CropPlacementItem = {
+      ...crop('brush-preview-bed-2-0', { x: 10, y: 10 }),
+      bedId: 'bed-2'
+    };
+
+    const result = buildAssociationCropsByBed({
+      effectiveCropsByBed,
+      draggingCropId: null,
+      singlePreview: null,
+      groupMovePreview: null,
+      brushPreviewCrops: { bedId: 'bed-2', crops: [previewCrop] }
+    });
+
+    expect(result.get('bed-2')).toHaveLength(1);
+    expect(result.get('bed-1')).toHaveLength(3);
+  });
+
+  it('ignores an empty brush preview', () => {
+    const result = buildAssociationCropsByBed({
+      effectiveCropsByBed,
+      draggingCropId: null,
+      singlePreview: null,
+      groupMovePreview: null,
+      brushPreviewCrops: { bedId: 'bed-1', crops: [] }
+    });
+
+    expect(result).toBe(effectiveCropsByBed);
+  });
 });

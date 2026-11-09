@@ -251,6 +251,96 @@ describe('cropAssociationGeometry', () => {
       expect(links[0].scope).toBe('cross_bed');
     });
 
+    it.each(['nitrogen_fixer', 'nutrient_accumulator'] as const)(
+      'omits cross_bed link when the only relation is soil-mediated (%s)',
+      (mechanism) => {
+        const otherBedBasil: AssociationCropPoint = {
+          ...basilCrop,
+          bedId: 'bed-2'
+        };
+        const relation = buildPlantRelation({
+          sourcePlantId: 'plant-tomato',
+          targetPlantId: 'plant-basil',
+          type: 'beneficial',
+          mechanism,
+          proximity: { minDistanceCm: 0, maxDistanceCm: 100 }
+        });
+        const index = buildBotanicalRelationIndex(
+          [relation],
+          [tomatoCrop, otherBedBasil]
+        );
+
+        const links = computeActiveAssociationLinks({
+          crops: [tomatoCrop, otherBedBasil],
+          relationIndex: index
+        });
+
+        expect(links).toHaveLength(0);
+      }
+    );
+
+    it.each(['nitrogen_fixer', 'nutrient_accumulator'] as const)(
+      'keeps intra_bed link for soil-mediated relation (%s)',
+      (mechanism) => {
+        const relation = buildPlantRelation({
+          sourcePlantId: 'plant-tomato',
+          targetPlantId: 'plant-basil',
+          type: 'beneficial',
+          mechanism,
+          proximity: { minDistanceCm: 0, maxDistanceCm: 100 }
+        });
+        const index = buildBotanicalRelationIndex(
+          [relation],
+          [tomatoCrop, basilCrop]
+        );
+
+        const links = computeActiveAssociationLinks({
+          crops: [tomatoCrop, basilCrop],
+          relationIndex: index
+        });
+
+        expect(links).toHaveLength(1);
+        expect(links[0].scope).toBe('intra_bed');
+      }
+    );
+
+    it('keeps cross_bed link but drops the soil-mediated relation when a spatial one coexists', () => {
+      const otherBedBasil: AssociationCropPoint = {
+        ...basilCrop,
+        bedId: 'bed-2'
+      };
+      const soilRelation = buildPlantRelation({
+        id: 'rel-soil',
+        sourcePlantId: 'plant-tomato',
+        targetPlantId: 'plant-basil',
+        type: 'beneficial',
+        mechanism: 'nitrogen_fixer',
+        proximity: { minDistanceCm: 0, maxDistanceCm: 100 }
+      });
+      const spatialRelation = buildPlantRelation({
+        id: 'rel-spatial',
+        sourcePlantId: 'plant-tomato',
+        targetPlantId: 'plant-basil',
+        type: 'beneficial',
+        mechanism: 'pest_repellent',
+        proximity: { minDistanceCm: 0, maxDistanceCm: 100 }
+      });
+      const index = buildBotanicalRelationIndex(
+        [soilRelation, spatialRelation],
+        [tomatoCrop, otherBedBasil]
+      );
+
+      const links = computeActiveAssociationLinks({
+        crops: [tomatoCrop, otherBedBasil],
+        relationIndex: index
+      });
+
+      expect(links).toHaveLength(1);
+      expect(links[0].scope).toBe('cross_bed');
+      expect(links[0].relations).toHaveLength(1);
+      expect(links[0].relations[0].mechanism).toBe('pest_repellent');
+    });
+
     it('sets isWarningPriority when concurrent beneficial and detrimental relations coexist', () => {
       const beneficialRel = buildPlantRelation({
         id: 'rel-ben',

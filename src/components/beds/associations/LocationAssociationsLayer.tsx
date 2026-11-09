@@ -6,9 +6,18 @@ import './locationAssociationsLayer.css';
 export default function LocationAssociationsLayer({
   links,
   filterMode = 'all',
+  highlightCropId = null,
   onSelectLink
 }: LocationAssociationsLayerProps) {
-  const visibleLinks = filterAssociationLinks(links, filterMode);
+  const filteredLinks = filterAssociationLinks(links, filterMode);
+  const visibleLinks =
+    highlightCropId === null
+      ? filteredLinks
+      : filteredLinks.filter(
+          (link) =>
+            link.cropA.id === highlightCropId ||
+            link.cropB.id === highlightCropId
+        );
 
   return (
     <g

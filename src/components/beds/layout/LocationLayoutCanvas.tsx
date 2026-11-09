@@ -71,6 +71,7 @@ export interface LocationLayoutCanvasProps {
   readonly associationFilterMode?: AssociationFilterMode;
   readonly showAssociations?: boolean;
   readonly onSelectAssociationLink?: (link: ActiveAssociationLink) => void;
+  readonly onInspectCrop?: (cropId: string) => void;
   readonly placementPreview?: LocationPlacementPreview | null;
   readonly selectedCropId?: string | null;
   readonly selectedCropIds?: ReadonlySet<string>;
@@ -187,6 +188,7 @@ export default function LocationLayoutCanvas({
   associationFilterMode = 'all',
   showAssociations = true,
   onSelectAssociationLink,
+  onInspectCrop,
   placementPreview = null,
   selectedCropId = null,
   selectedCropIds = new Set<string>(),
@@ -239,6 +241,16 @@ export default function LocationLayoutCanvas({
   const cropDragActiveRef = useRef(false);
   const surfaceGestureRef = useRef<'brush' | 'select' | 'pan' | null>(null);
 
+  const rootRef = useRef<HTMLDivElement>(null);
+  const hoverTimerRef = useRef<number | null>(null);
+  const hoverPointRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [hoveredCropId, setHoveredCropId] = useState<string | null>(null);
+  const [cropTooltip, setCropTooltip] = useState<{
+    readonly label: string;
+    readonly x: number;
+    readonly y: number;
+  } | null>(null);
+
   const [containerSize, setContainerSize] = useState<{
     readonly width: number;
     readonly height: number;
@@ -259,6 +271,64 @@ export default function LocationLayoutCanvas({
     observer.observe(svg);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current !== null) {
+        window.clearTimeout(hoverTimerRef.current);
+      }
+    };
+  }, []);
+
+  const HOVER_TOOLTIP_DELAY_MS = 1000;
+
+  const toContainerPoint = (
+    clientX: number,
+    clientY: number
+  ): { x: number; y: number } => {
+    const rect = rootRef.current?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 };
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  };
+
+  const clearHoverTimer = (): void => {
+    if (hoverTimerRef.current !== null) {
+      window.clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+  };
+
+  const handleCropHoverEnter = (
+    cropId: string,
+    label: string,
+    event: PointerEvent<SVGGElement>
+  ): void => {
+    setHoveredCropId(cropId);
+    hoverPointRef.current = toContainerPoint(event.clientX, event.clientY);
+    clearHoverTimer();
+    hoverTimerRef.current = window.setTimeout(() => {
+      setCropTooltip({
+        label,
+        x: hoverPointRef.current.x,
+        y: hoverPointRef.current.y
+      });
+    }, HOVER_TOOLTIP_DELAY_MS);
+  };
+
+  const handleCropHoverMove = (event: PointerEvent<SVGGElement>): void => {
+    hoverPointRef.current = toContainerPoint(event.clientX, event.clientY);
+    setCropTooltip((prev) =>
+      prev
+        ? { ...prev, x: hoverPointRef.current.x, y: hoverPointRef.current.y }
+        : prev
+    );
+  };
+
+  const handleCropHoverLeave = (): void => {
+    setHoveredCropId(null);
+    clearHoverTimer();
+    setCropTooltip(null);
+  };
 
   const bedAnchor = useMemo<AnchorPoint | null>(() => {
     if (mode !== 'position' || !selectedId) return null;
@@ -506,7 +576,10 @@ export default function LocationLayoutCanvas({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      ref={rootRef}
+      style={{ position: 'relative', width: '100%', height: '100%' }}
+    >
       <svg
         ref={svgRef}
         className={`location-layout-canvas__svg ${
@@ -656,6 +729,7 @@ export default function LocationLayoutCanvas({
               <LocationAssociationsLayer
                 links={associationLinks}
                 filterMode={associationFilterMode}
+                highlightCropId={showCrops ? hoveredCropId : null}
                 onSelectLink={onSelectAssociationLink}
               />
             )}
@@ -663,9 +737,11 @@ export default function LocationLayoutCanvas({
             <LocationCropsLayer
               beds={beds}
               cropsByBed={cropsByBed}
-              associationLinks={associationLinks}
-              onSelectLink={onSelectAssociationLink}
+              onInspectCrop={onInspectCrop}
               onSelectCrop={(cropId) => onCropSelect?.(cropId)}
+              onCropHoverEnter={handleCropHoverEnter}
+              onCropHoverMove={handleCropHoverMove}
+              onCropHoverLeave={handleCropHoverLeave}
             />
           )}
           {showPlacementLayer && cropsByBed && (
@@ -702,6 +778,15 @@ export default function LocationLayoutCanvas({
           onEdit={onBedEdit}
           onDelete={onBedDelete}
         />
+      )}
+      {showCrops && cropTooltip && (
+        <div
+          className="location-layout-canvas__crop-tooltip"
+          role="tooltip"
+          style={{ left: cropTooltip.x, top: cropTooltip.y }}
+        >
+          {cropTooltip.label}
+        </div>
       )}
     </div>
   );

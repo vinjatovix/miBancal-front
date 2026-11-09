@@ -32,6 +32,7 @@ export interface LocationLayoutWorkspaceProps {
   readonly associationFilterMode?: AssociationFilterMode;
   readonly showAssociations?: boolean;
   readonly onSelectAssociationLink?: (link: ActiveAssociationLink) => void;
+  readonly onInspectCrop?: (cropId: string) => void;
 }
 
 export default function LocationLayoutWorkspace({
@@ -47,7 +48,8 @@ export default function LocationLayoutWorkspace({
   associationLinks = [],
   associationFilterMode = 'all',
   showAssociations = true,
-  onSelectAssociationLink
+  onSelectAssociationLink,
+  onInspectCrop
 }: LocationLayoutWorkspaceProps): JSX.Element {
   const isPosition = editor.mode === 'position';
 
@@ -75,6 +77,7 @@ export default function LocationLayoutWorkspace({
         associationFilterMode={associationFilterMode}
         showAssociations={showAssociations}
         onSelectAssociationLink={onSelectAssociationLink}
+        onInspectCrop={onInspectCrop}
         placementPreview={placement.preview}
         selectedCropId={placement.selectedCropId}
         selectedCropIds={placement.selectedCropIds}
