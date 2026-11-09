@@ -237,7 +237,8 @@ export function createRoutes(isDevTools = IS_DEV_TOOLS): RouteObject[] {
               lazy: async () => {
                 const [{ default: BedDetailPage }] = await Promise.all([
                   import('../pages/beds/BedDetailPage/BedDetailPage'),
-                  import('../i18n/messages/beds')
+                  import('../i18n/messages/beds'),
+                  import('../i18n/messages/plantRelations')
                 ]);
                 return {
                   Component: () => (
@@ -270,7 +271,8 @@ export function createRoutes(isDevTools = IS_DEV_TOOLS): RouteObject[] {
                 const [{ default: LocationLayoutPage }] = await Promise.all([
                   import('../pages/locations/LocationLayoutPage/LocationLayoutPage'),
                   import('../i18n/messages/beds'),
-                  import('../i18n/messages/locations')
+                  import('../i18n/messages/locations'),
+                  import('../i18n/messages/plantRelations')
                 ]);
                 return {
                   Component: () => (
