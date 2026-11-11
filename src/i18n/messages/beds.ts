@@ -429,7 +429,7 @@ export const bedsMessages = {
       polarity_beneficial: 'Asociación beneficiosa / Simbiótica',
       polarity_detrimental: 'Incompatibilidad perjudicial',
       mixed_warning_notice:
-        'Advertencia fitosanitaria: Coexisten efectos simbióticos y perjudiciales documentados entre estas especies. Prevalece la recomendación de separación para evitar riesgos fitosanitarios.',
+        'Advertencia: Estas plantas se ayudan y se dañan a la vez. Es mejor separarlas para cuidar el huerto.',
       distance_label: 'Distancia física',
       distance_value: '{distance} cm (alcance efectivo: {reach} cm)',
       reach_bed_wide: 'Efectiva en todo el bancal (sin límite)',
@@ -453,6 +453,43 @@ export const bedsMessages = {
       crop_neighbor_distance: 'a {distance} cm',
       crop_neighbor_closest: 'a {distance} cm (más cercana)',
       crop_neighbor_instances: '{count} ejemplares'
+    },
+    export: {
+      button_label: 'Exportar a PDF',
+      modal_title: 'Exportar ficha técnica a PDF',
+      modal_subtitle:
+        'Configura el contenido y las láminas del documento imprimible',
+      section_content: 'Contenidos a incluir',
+      option_location_layout: 'Plano general de la ubicación',
+      option_bed_sheets: 'Planos individuales de bancales',
+      option_plant_list: 'Lista y resumen de plantas por bancal',
+      section_layers: 'Elementos técnicos del plano',
+      layer_dimensions: 'Líneas de cota métricas',
+      layer_grid: 'Malla agrícola / cuadrícula',
+      layer_compass: 'Orientación Norte / Rosa de los vientos',
+      section_beds: 'Bancales a incluir',
+      beds_select_all: 'Marcar todos',
+      beds_deselect_all: 'Desmarcar todos',
+      beds_empty: 'No hay bancales emplazados en esta ubicación',
+      action_cancel: 'Cancelar',
+      action_download: 'Descargar PDF',
+      generating: 'Generando documento...',
+      toast_success: 'Ficha técnica PDF descargada con éxito',
+      toast_error: 'No se pudo generar el documento PDF. Inténtalo de nuevo.',
+      pdf_overview_title: 'Plano general de la ubicación',
+      pdf_sheet_bed: 'Bancal: {name}',
+      pdf_sheet_location: 'Ubicación: {name}',
+      pdf_sheet_dimensions: 'Dimensiones: {width} × {height} cm',
+      pdf_sheet_date: 'Fecha: {date}',
+      pdf_table_key: 'Clave',
+      pdf_table_crop: 'Cultivo',
+      pdf_table_scientific: 'Nombre científico',
+      pdf_table_family: 'Familia botánica',
+      pdf_table_units: 'Unidades',
+      pdf_empty_bed: 'Sin cultivos sembrados (plantilla de campo en blanco)',
+      pdf_dimension_cm: '{value} cm',
+      pdf_north_label: 'N',
+      pdf_azimuth_degrees: '{value}°'
     }
   }
 };

@@ -24,6 +24,7 @@ import LocationLayoutDialogs from './components/LocationLayoutDialogs';
 import LocationLayoutEmptyState from './components/LocationLayoutEmptyState';
 import LocationLayoutTopBar from './components/LocationLayoutTopBar';
 import LocationLayoutWorkspace from './components/LocationLayoutWorkspace';
+import BedPdfExportModal from './components/BedPdfExportModal/BedPdfExportModal';
 import CropAssociationInspectionModal from '../../../components/beds/associations/CropAssociationInspectionModal';
 import CropRelationsModal from '../../../components/beds/associations/CropRelationsModal';
 import { useLayoutEditor } from './hooks/useLayoutEditor';
@@ -94,6 +95,7 @@ export default function LocationLayoutView({
   const [inspectedLink, setInspectedLink] =
     useState<ActiveAssociationLink | null>(null);
   const [inspectedCropId, setInspectedCropId] = useState<string | null>(null);
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const placement = useLayoutPlantPlacement({
     beds: editor.placedBeds,
@@ -314,6 +316,8 @@ export default function LocationLayoutView({
         onToggleGridLayer={visibility.handleToggleGridLayer}
         viewport={viewport}
         onFitToView={handleFitToView}
+        onExportPdf={() => setIsExportOpen(true)}
+        exportDisabled={editor.placedBeds.length === 0}
         showAssociations={showAssociations}
         onToggleAssociations={() => setShowAssociations((prev) => !prev)}
         associationFilterMode={associationFilterMode}
@@ -428,6 +432,16 @@ export default function LocationLayoutView({
         focusCropName={inspectedCropName}
         links={inspectedCropLinks}
         onClose={() => setInspectedCropId(null)}
+      />
+
+      <BedPdfExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        layout={layout}
+        placedBeds={editor.placedBeds}
+        cropsByBed={cropsByBed}
+        effectiveNorthAngle={visibility.effectiveNorthAngle}
+        activeGridLayers={visibility.activeGridLayers}
       />
     </main>
   );

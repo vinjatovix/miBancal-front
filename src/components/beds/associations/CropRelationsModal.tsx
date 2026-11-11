@@ -51,7 +51,7 @@ export default function CropRelationsModal({
     }
 
     return [...byPlant.entries()]
-      .map(([key, { neighbor, links: groupLinks }]) => {
+      .map<NeighborGroup>(([key, { neighbor, links: groupLinks }]) => {
         const relationsById = new Map<string, PlantRelation>();
         for (const link of groupLinks) {
           for (const relation of link.relations) {
