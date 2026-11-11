@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactElement } from 'react';
+import { useState, type SubmitEvent, type ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { t } from '../../../i18n/core/t';
@@ -69,7 +69,7 @@ export default function BedCreateDrawer({
     onClose();
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     const result = validateBedForm({ name, width, height, depth, locationId });
 

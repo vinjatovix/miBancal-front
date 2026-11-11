@@ -244,7 +244,7 @@ describe('Register Page', () => {
     expect(dto.password).toBe('Password123!');
     expect(dto.repeatPassword).toBe('Password123!');
     expect(typeof dto.id).toBe('string');
-    expect(dto.id.length).toBe(36);
+    expect(dto.id).toHaveLength(36);
 
     expect(
       await screen.findByText('Revisa tu correo para activar la cuenta')

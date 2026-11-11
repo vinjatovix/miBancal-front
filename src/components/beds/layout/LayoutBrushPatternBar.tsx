@@ -51,9 +51,8 @@ export default function LayoutBrushPatternBar({
       <span className="layout-brush-pattern-bar__label">
         {t('bed.placement.brush_pattern_label')}
       </span>
-      <div
+      <fieldset
         className="layout-brush-pattern-bar__options"
-        role="group"
         aria-label={t('bed.placement.tool_brush')}
       >
         {PATTERNS.map((pattern) => {
@@ -74,7 +73,7 @@ export default function LayoutBrushPatternBar({
             </button>
           );
         })}
-      </div>
+      </fieldset>
     </div>
   );
 }

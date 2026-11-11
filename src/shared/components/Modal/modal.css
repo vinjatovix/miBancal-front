@@ -11,7 +11,21 @@
   box-sizing: border-box;
 }
 
+.modal-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: default;
+  appearance: none;
+}
+
 .modal-card {
+  position: relative;
+  z-index: 1;
   background: var(--color-bg-surface);
   color: var(--color-fg);
   width: 100%;
@@ -121,7 +135,7 @@
   font: var(--type-headline-sm);
   color: var(--color-on-surface);
   margin: 0.125rem 0 0 0;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .modal-close-btn {

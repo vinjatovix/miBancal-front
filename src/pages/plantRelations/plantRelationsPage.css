@@ -22,7 +22,6 @@
   margin: 0;
   font: var(--type-headline-xl);
   color: var(--color-on-surface);
-  word-break: break-word;
   overflow-wrap: anywhere;
 }
 
@@ -30,7 +29,7 @@
   margin: 0;
   font: var(--type-body-lg);
   color: var(--color-on-surface-variant);
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .plant-relations-page__controls {

@@ -63,6 +63,7 @@ export function RoleManagementForm({ roles, onSave }: Props) {
           htmlFor="chkAdminRole"
           className={`admin-role-toggle-item ${isAdmin ? 'admin-role-toggle-item--active' : ''}`}
         >
+          <span className="sr-only">{t('admin.role_admin_title')}</span>
           <div className="admin-role-toggle-left">
             <div className="admin-role-toggle-icon">
               <Icon name="admin_panel_settings" decorative />
@@ -104,6 +105,7 @@ export function RoleManagementForm({ roles, onSave }: Props) {
           htmlFor="chkCollaboratorRole"
           className={`admin-role-toggle-item admin-role-toggle-item--collab ${isCollaborator ? 'admin-role-toggle-item--active' : ''}`}
         >
+          <span className="sr-only">{t('admin.role_collab_title')}</span>
           <div className="admin-role-toggle-left">
             <div className="admin-role-toggle-icon admin-role-toggle-icon--collab">
               <Icon name="eco" decorative />

@@ -53,8 +53,6 @@ export interface RelationTargetScope {
   readonly value?: string;
 }
 
-export type RelationAppliesVia = RelationTargetScopeType;
-
 export type RelationRole = 'source' | 'target';
 
 export interface PlantRelation {
@@ -70,7 +68,7 @@ export interface PlantRelation {
   readonly reason: string;
   readonly metadata: Metadata;
   readonly version: number;
-  readonly appliesVia?: RelationAppliesVia;
+  readonly appliesVia?: RelationTargetScopeType;
   readonly role?: RelationRole;
   readonly sourcePlant?: PlantSummary;
   readonly targetPlant?: PlantSummary;

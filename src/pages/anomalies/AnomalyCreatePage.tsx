@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { flushSync } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useReportedNavigate } from '../../shared/observability/useReportedNavigate';
 
 import { t } from '../../i18n/core/t';
 import { CancelConfirmModal } from '../../shared/components/Modal/CancelConfirmModal';
@@ -29,7 +29,7 @@ import './components/AnomalyForm/anomalyForm.css';
 const CATALOG_PATH = '/anomalies';
 
 export default function AnomalyCreatePage() {
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('anomaly-create');
   const createMutation = useCreateAnomaly();
   const { dismissAll, showErrorToast } = useToast();
   const [isSessionExpired, setIsSessionExpired] = useState<boolean>(false);
@@ -61,7 +61,7 @@ export default function AnomalyCreatePage() {
     leaveTo(CATALOG_PATH);
   };
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     dismissAll();
 

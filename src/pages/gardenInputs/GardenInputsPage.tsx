@@ -21,6 +21,16 @@ import {
   withoutListPage
 } from './utils/gardenInputListParams';
 
+function asArray<T>(value: unknown): readonly T[] {
+  if (Array.isArray(value)) {
+    return value as T[];
+  }
+  if (value) {
+    return [value as T];
+  }
+  return [];
+}
+
 export default function GardenInputsPage() {
   const [params, setParams] = useSearchParams();
   const request = parseGardenInputListSearchParams(params);
@@ -58,16 +68,6 @@ export default function GardenInputsPage() {
       }
       return next;
     });
-  }
-
-  function asArray<T>(value: unknown): readonly T[] {
-    if (Array.isArray(value)) {
-      return value as T[];
-    }
-    if (value) {
-      return [value as T];
-    }
-    return [];
   }
 
   const selectedCategories = asArray<GardenInputCategory>(

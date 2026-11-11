@@ -27,27 +27,46 @@ interface EmptyProps {
   readonly onGoToFirstPage: () => void;
 }
 
+function resolveEmptyAction({
+  isBeyondFirstPage,
+  hasActiveFilters,
+  onGoToFirstPage,
+  onClearFilters
+}: EmptyProps): { label: string; onClick: () => void } | null {
+  if (isBeyondFirstPage) {
+    return {
+      label: t('gardenInput.go_to_first_page'),
+      onClick: onGoToFirstPage
+    };
+  }
+  if (hasActiveFilters) {
+    return { label: t('errors.actions.clearFilters'), onClick: onClearFilters };
+  }
+  return null;
+}
+
 function GardenInputListEmpty({
   hasActiveFilters,
   isBeyondFirstPage,
   onClearFilters,
   onGoToFirstPage
 }: EmptyProps) {
-  const action = isBeyondFirstPage
-    ? { label: t('gardenInput.go_to_first_page'), onClick: onGoToFirstPage }
-    : hasActiveFilters
-      ? { label: t('errors.actions.clearFilters'), onClick: onClearFilters }
-      : null;
+  const action = resolveEmptyAction({
+    isBeyondFirstPage,
+    hasActiveFilters,
+    onGoToFirstPage,
+    onClearFilters
+  });
 
   return (
     <div className="garden-input-list__empty">
-      <p role="status" className="garden-input-list__empty-message">
+      <output className="garden-input-list__empty-message">
         {t(
           hasActiveFilters || isBeyondFirstPage
             ? 'gardenInput.empty'
             : 'gardenInput.empty_catalog'
         )}
-      </p>
+      </output>
       {action && (
         <button
           type="button"

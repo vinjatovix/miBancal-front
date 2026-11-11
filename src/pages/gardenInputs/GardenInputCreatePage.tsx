@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useReportedNavigate } from '../../shared/observability/useReportedNavigate';
 
 import { t } from '../../i18n/core/t';
 import { ApiError } from '../../shared/errors/ApiError';
@@ -13,7 +13,7 @@ import {
 import './gardenInputCreatePage.css';
 
 export default function GardenInputCreatePage() {
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('garden-input-create');
   const createMutation = useCreateGardenInput();
   const [serverError, setServerError] = useState<string | undefined>();
 

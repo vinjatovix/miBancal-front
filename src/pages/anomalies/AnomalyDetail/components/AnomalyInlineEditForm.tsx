@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
 import { t } from '../../../../i18n/core/t';
 import Button from '../../../../shared/components/Button/Button';
@@ -55,7 +55,7 @@ export function AnomalyInlineEditForm({
     onCancel();
   };
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     dismissAll();
 

@@ -149,13 +149,13 @@ export default function PlantRelationSearchCombobox({
           className="plant-search-combobox__listbox"
         >
           {isLoading && (
-            <li role="status" className="plant-search-combobox__status">
-              {t('plantRelations.loadingSearch')}
+            <li className="plant-search-combobox__status">
+              <output>{t('plantRelations.loadingSearch')}</output>
             </li>
           )}
           {!isLoading && results.length === 0 && query.trim().length >= 2 && (
-            <li role="status" className="plant-search-combobox__status">
-              {t('plantRelations.noSearchResults')}
+            <li className="plant-search-combobox__status">
+              <output>{t('plantRelations.noSearchResults')}</output>
             </li>
           )}
           {results.map((plant, index) => {
@@ -174,6 +174,12 @@ export default function PlantRelationSearchCombobox({
                     : ''
                 } ${isSelected ? 'plant-search-combobox__option--selected' : ''}`}
                 onClick={() => handleSelect(plant)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleSelect(plant);
+                  }
+                }}
               >
                 {plant.image?.url ? (
                   <img

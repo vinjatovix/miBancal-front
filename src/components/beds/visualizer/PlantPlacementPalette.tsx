@@ -155,7 +155,7 @@ export default function PlantPlacementPalette({
       )}
 
       {activePlacingPlantId && (
-        <div className="plant-placement-palette__placing" role="status">
+        <output className="plant-placement-palette__placing">
           <span>
             {t('bed.placement.placing_active', {
               name: activePlacingPlantName ?? ''
@@ -168,7 +168,7 @@ export default function PlantPlacementPalette({
           >
             <Icon name="close" decorative />
           </button>
-        </div>
+        </output>
       )}
 
       <div className="plant-placement-palette__body">

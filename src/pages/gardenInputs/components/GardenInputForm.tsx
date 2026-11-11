@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
 import { t } from '../../../i18n/core/t';
 import { tValue } from '../../../i18n/core/tValue';
@@ -47,6 +47,19 @@ const defaultValues: GardenInputFormValues = {
   videoResources: [],
   articleResources: []
 };
+
+function resolveSubmitButtonLabel(
+  isSubmitting: boolean | undefined,
+  isCreate: boolean | undefined
+): string {
+  if (isSubmitting) {
+    return t('gardenInput.form.submitting');
+  }
+  if (isCreate) {
+    return t('gardenInput.form.submit_create');
+  }
+  return t('gardenInput.form.submit_edit');
+}
 
 export default function GardenInputForm({
   initialValues,
@@ -167,7 +180,7 @@ export default function GardenInputForm({
     }));
   }
 
-  async function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     const validationErrors = validateGardenInputForm(values, { isCreate });
     setErrors(validationErrors);
@@ -407,11 +420,7 @@ export default function GardenInputForm({
           {t('gardenInput.form.cancel')}
         </Button>
         <Button variant="primary" type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? t('gardenInput.form.submitting')
-            : isCreate
-              ? t('gardenInput.form.submit_create')
-              : t('gardenInput.form.submit_edit')}
+          {resolveSubmitButtonLabel(isSubmitting, isCreate)}
         </Button>
       </div>
     </form>

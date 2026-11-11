@@ -51,10 +51,10 @@ describe('usePlantFilters', () => {
 
     expect(result.current.family).toBe('');
 
-    expect(result.current.soilPh.value).toBe(null);
-    expect(result.current.lightHours.value).toBe(null);
-    expect(result.current.spacing.value).toBe(null);
-    expect(result.current.soilDepth.value).toBe(null);
+    expect(result.current.soilPh.value).toBeNull();
+    expect(result.current.lightHours.value).toBeNull();
+    expect(result.current.spacing.value).toBeNull();
+    expect(result.current.soilDepth.value).toBeNull();
   });
 
   it('initializes sliders from URL params', () => {
@@ -135,10 +135,10 @@ describe('usePlantFilters', () => {
     expect(result.current.getParam('family')).toBe('');
     expect(result.current.getParam('identity')).toBe('');
 
-    expect(result.current.soilPh.value).toBe(null);
-    expect(result.current.lightHours.value).toBe(null);
-    expect(result.current.spacing.value).toBe(null);
-    expect(result.current.soilDepth.value).toBe(null);
+    expect(result.current.soilPh.value).toBeNull();
+    expect(result.current.lightHours.value).toBeNull();
+    expect(result.current.spacing.value).toBeNull();
+    expect(result.current.soilDepth.value).toBeNull();
   });
 
   it('sets page param when setParam is used', () => {
@@ -253,7 +253,7 @@ describe('usePlantFilters', () => {
     flushFilters();
 
     expect(result.current.getParam('soilPh')).toBe('');
-    expect(result.current.soilPh.value).toBe(null);
+    expect(result.current.soilPh.value).toBeNull();
     expect(result.current.getParam('page')).toBe('');
   });
 

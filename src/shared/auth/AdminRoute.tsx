@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from './useAuth';
 
 interface AdminRouteProps {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
 }
 
 export function AdminRoute({ children }: AdminRouteProps) {

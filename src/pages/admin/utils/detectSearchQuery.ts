@@ -1,6 +1,5 @@
-import type { EvaluatedSearchTerm, SearchTermKind } from '../../../types/users';
-
-export type { EvaluatedSearchTerm, SearchTermKind };
+export type { EvaluatedSearchTerm, SearchTermKind } from '../../../types/users';
+import type { EvaluatedSearchTerm } from '../../../types/users';
 
 export function detectSearchQuery(raw: string): EvaluatedSearchTerm {
   const trimmed = raw.trim();
@@ -9,7 +8,7 @@ export function detectSearchQuery(raw: string): EvaluatedSearchTerm {
   }
 
   if (raw.includes('@')) {
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    if (/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(trimmed)) {
       return { raw, kind: 'email', queryParam: { email: trimmed } };
     }
     return {

@@ -25,9 +25,8 @@ export default function ToggleGroup({
   const labelId = useId();
 
   return (
-    <div
+    <fieldset
       className="plant-filters__group"
-      role="group"
       aria-labelledby={labelId}
       aria-describedby={describedBy}
     >
@@ -49,7 +48,7 @@ export default function ToggleGroup({
           </button>
         ))}
       </div>
-    </div>
+    </fieldset>
   );
 }
 

@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { t } from '../../../i18n/core/t';
 import { AuthContext } from '../../../shared/auth/authContextDef';
@@ -7,21 +7,22 @@ import { ErrorResponse } from '../../../shared/components/ErrorResponse/ErrorRes
 import { Loader } from '../../../shared/components/Loader/Loader';
 import { NotFound } from '../../../shared/components/NotFound/NotFound';
 import { SectionErrorBoundary } from '../../../shared/components/SectionErrorBoundary/SectionErrorBoundary';
+import { reportRejection } from '../../../shared/observability/reportRejection';
+import { useReportedNavigate } from '../../../shared/observability/useReportedNavigate';
 import { getDetailViewState } from '../../../shared/reactQuery/detailViewState';
 import { useGardenInput } from '../hooks/useGardenInput';
 import { useGardenInputForEdit } from '../hooks/useGardenInputForEdit';
 import GardenInputDeleteDialog from './components/GardenInputDeleteDialog';
+import { GardenInputDetailEditView } from './components/GardenInputDetailEditView';
 import GardenInputHero from './components/GardenInputHero';
 import { GardenInputResources } from './components/GardenInputResources';
 import RecipeCard from './components/RecipeCard';
-import { GardenInputDetailStickyHeader } from './components/GardenInputDetailStickyHeader';
-import { GardenInputInlineEditForm } from './components/GardenInputInlineEditForm';
 
 import './gardenInputDetail.css';
 
 export default function GardenInputDetailPage() {
   const { slug } = useParams();
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('garden-input-detail');
   const auth = useContext(AuthContext);
   const isEditor = auth?.isEditor ?? false;
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -52,7 +53,12 @@ export default function GardenInputDetailPage() {
 
   if (viewState === 'error') {
     return (
-      <ErrorResponse error={query.error} onRetry={() => void query.refetch()} />
+      <ErrorResponse
+        error={query.error}
+        onRetry={() => {
+          query.refetch().catch(reportRejection('garden-input-detail'));
+        }}
+      />
     );
   }
 
@@ -61,38 +67,16 @@ export default function GardenInputDetailPage() {
   }
 
   if (isEditing) {
-    if (!forEditQuery.data) {
-      return forEditQuery.isError ? (
-        <ErrorResponse
-          error={forEditQuery.error}
-          onRetry={() => void forEditQuery.refetch()}
-        />
-      ) : (
-        <Loader labelKey="common.loading" />
-      );
-    }
-
     return (
-      <div className="garden-input-detail">
-        <SectionErrorBoundary section="gardenInput.hero">
-          <GardenInputDetailStickyHeader
-            gardenInput={gardenInput ?? forEditQuery.data.gardenInput}
-            isEditing={true}
-          />
-        </SectionErrorBoundary>
-        <GardenInputInlineEditForm
-          gardenInput={forEditQuery.data.gardenInput}
-          etag={forEditQuery.data.etag}
-          onCancel={() => setIsEditing(false)}
-          onSuccess={() => {
-            setIsEditing(false);
-            void query.refetch();
-          }}
-          onReload={() => {
-            void forEditQuery.refetch();
-          }}
-        />
-      </div>
+      <GardenInputDetailEditView
+        fallbackGardenInput={gardenInput}
+        forEditQuery={forEditQuery}
+        onCancel={() => setIsEditing(false)}
+        onSuccess={() => {
+          setIsEditing(false);
+          query.refetch().catch(reportRejection('garden-input-detail'));
+        }}
+      />
     );
   }
 
@@ -149,8 +133,10 @@ export default function GardenInputDetailPage() {
             void navigate('/garden-inputs');
           }}
           onReload={() => {
-            void query.refetch();
-            void forEditQuery.refetch();
+            query.refetch().catch(reportRejection('garden-input-detail'));
+            forEditQuery
+              .refetch()
+              .catch(reportRejection('garden-input-detail'));
           }}
         />
       )}

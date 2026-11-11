@@ -125,7 +125,7 @@ describe('animateViewportTransition', () => {
     cancel();
     vi.advanceTimersByTime(250);
 
-    expect(updates.length).toBe(countAtCancel);
+    expect(updates).toHaveLength(countAtCancel);
     expect(onComplete).not.toHaveBeenCalled();
   });
 });

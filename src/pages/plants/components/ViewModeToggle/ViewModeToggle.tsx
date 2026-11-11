@@ -23,7 +23,7 @@ export default function ViewModeToggle({ value, onChange }: Props) {
   const labelId = useId();
 
   return (
-    <div className="view-toggle" role="group" aria-labelledby={labelId}>
+    <fieldset className="view-toggle" aria-labelledby={labelId}>
       <span id={labelId} className="view-toggle__label">
         {t('plant.view.label')}
       </span>
@@ -46,6 +46,6 @@ export default function ViewModeToggle({ value, onChange }: Props) {
           {t('plant.view.list')}
         </button>
       </div>
-    </div>
+    </fieldset>
   );
 }

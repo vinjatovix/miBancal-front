@@ -45,9 +45,8 @@ export function BedCanvasToolSelector({
       role="toolbar"
       aria-label={t('bed.placement.tools_toolbar_label')}
     >
-      <div
+      <fieldset
         className="bed-canvas-tool-selector__group"
-        role="group"
         aria-label={t('bed.placement.tools_toolbar_label')}
       >
         <button
@@ -88,12 +87,11 @@ export function BedCanvasToolSelector({
           <Icon name="grain" decorative />
           <span>{t('bed.placement.tool_brush')}</span>
         </button>
-      </div>
+      </fieldset>
 
       {activeMode === 'brush' ? (
-        <div
+        <fieldset
           className="bed-canvas-tool-selector__patterns"
-          role="group"
           aria-label={t('bed.placement.tool_brush')}
         >
           {BRUSH_PATTERNS.map((pattern) => {
@@ -120,13 +118,12 @@ export function BedCanvasToolSelector({
               </button>
             );
           })}
-        </div>
+        </fieldset>
       ) : null}
 
       {onToggleAssociations && (
-        <div
+        <fieldset
           className="bed-canvas-tool-selector__group"
-          role="group"
           aria-label={t('bed.associations.layer_toggle')}
         >
           <button
@@ -163,7 +160,7 @@ export function BedCanvasToolSelector({
               <span>{t('bed.associations.filter_detrimental_only')}</span>
             </button>
           )}
-        </div>
+        </fieldset>
       )}
     </div>
   );

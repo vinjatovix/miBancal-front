@@ -417,46 +417,61 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rain-loader *,
-  .rain-loader *::before,
-  .rain-loader *::after {
-    animation: none !important;
-    transition: none !important;
-  }
-
-  .cloud,
-  .soil,
-  .stem,
-  .leaf,
-  .flower {
+  .cloud {
+    animation: none;
     opacity: 1;
   }
 
+  .sun {
+    animation: none;
+    display: none;
+  }
+
+  .rain {
+    animation: none;
+    display: none;
+  }
+
+  .rain span {
+    animation: none;
+  }
+
+  .seed {
+    animation: none;
+    display: none;
+  }
+
   .stem {
+    animation: none;
+    opacity: 1;
     height: 40px;
   }
 
   .leaf.left {
+    animation: none;
+    opacity: 1;
     left: -2px;
     bottom: 24px;
     transform: rotate(-30deg);
   }
 
   .leaf.right {
+    animation: none;
+    opacity: 1;
     right: -2px;
     bottom: 15px;
     transform: rotate(120deg);
   }
 
   .flower {
+    animation: none;
+    opacity: 1;
     bottom: 50px;
     transform: translateX(-50%) scale(1);
   }
 
-  .rain,
-  .sun,
-  .seed,
   .falling-seed {
+    animation: none;
     display: none;
   }
 }

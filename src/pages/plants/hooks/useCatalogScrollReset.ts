@@ -2,13 +2,23 @@ import { useEffect, useRef } from 'react';
 import { useNavigationType } from 'react-router-dom';
 import type { PlantListRequest } from '../../../services/plantListQuery';
 
+function compareFilterValues(a: string | number, b: string | number): number {
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
+    return 1;
+  }
+  return 0;
+}
+
 function serializeFilters(filters: PlantListRequest['filters']): string {
   const sortedEntries = Object.entries(filters)
     .filter(([, value]) => value !== undefined)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, val]) => {
       const serializedVal = Array.isArray(val)
-        ? [...val].sort((a, b) => (a === b ? 0 : a < b ? -1 : 1)).join(',')
+        ? [...val].sort(compareFilterValues).join(',')
         : String(val);
       return `${key}:${serializedVal}`;
     });

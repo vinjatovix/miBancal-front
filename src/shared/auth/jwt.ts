@@ -1,13 +1,13 @@
 import type { JwtPayload, UserRole } from '../../types/auth';
 
 function decodeBase64Url(base64Url: string): string {
-  let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  let base64 = base64Url.replaceAll('-', '+').replaceAll('_', '/');
   const padLength = (4 - (base64.length % 4)) % 4;
   base64 += '='.repeat(padLength);
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
+    bytes[i] = binary.codePointAt(i) ?? 0;
   }
   return new TextDecoder().decode(bytes);
 }

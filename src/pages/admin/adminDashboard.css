@@ -320,7 +320,10 @@
   color: var(--color-secondary);
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .admin-btn-copy:hover {
@@ -427,7 +430,9 @@
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-xl);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .admin-role-toggle-item:hover {
@@ -708,7 +713,21 @@
   box-sizing: border-box;
 }
 
+.admin-modal-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: default;
+  appearance: none;
+}
+
 .admin-modal-card {
+  position: relative;
+  z-index: 1;
   background: var(--color-surface-container-lowest);
   width: 100%;
   max-width: 520px;
@@ -719,6 +738,12 @@
   display: flex;
   flex-direction: column;
   animation: admin-modal-pop 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-modal-card {
+    animation: none;
+  }
 }
 
 @keyframes admin-modal-pop {

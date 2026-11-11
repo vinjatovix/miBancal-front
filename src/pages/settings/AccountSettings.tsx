@@ -1,14 +1,16 @@
-import { useCallback, useState, type FormEvent } from 'react';
+import { useCallback, useState, type SubmitEvent } from 'react';
 import { Link } from 'react-router-dom';
 
 import { t } from '../../i18n/core/t';
 import { useAuth } from '../../shared/auth/useAuth';
 import { validateUpdatePasswordForm } from '../../shared/auth/validation';
-import { ApiError } from '../../shared/errors/ApiError';
 import { useToast } from '../../shared/toast/useToast';
 import PasswordField from '../auth/components/PasswordField';
 import PasswordStrengthBar from '../auth/components/PasswordStrengthBar';
-import { resolveAuthErrorText } from '../auth/utils/authErrorText';
+import {
+  handlePasswordUpdateError,
+  resolveError
+} from './utils/accountSettingsErrors';
 import './accountSettings.css';
 
 interface FormValues {
@@ -22,21 +24,6 @@ const INITIAL_VALUES: FormValues = {
   password: '',
   repeatPassword: ''
 };
-
-const SAME_PASSWORD_ERROR_PATTERN =
-  /different from (?:the )?(?:old|current) password/i;
-
-function resolveError(errorKey?: string): string | null {
-  if (!errorKey) return null;
-  const translated = resolveAuthErrorText(errorKey);
-  return translated ?? errorKey;
-}
-
-function isSamePasswordErrorMessage(message?: unknown): boolean {
-  if (typeof message !== 'string') return false;
-  const trimmed = message.trim();
-  return trimmed === 'different' || SAME_PASSWORD_ERROR_PATTERN.test(trimmed);
-}
 
 export default function AccountSettings() {
   const { user, updatePassword, logout } = useAuth();
@@ -66,7 +53,7 @@ export default function AccountSettings() {
   );
 
   const handleSubmit = useCallback(
-    async (event: FormEvent) => {
+    async (event: SubmitEvent) => {
       event.preventDefault();
       dismissAll();
 
@@ -83,36 +70,11 @@ export default function AccountSettings() {
         setValues(INITIAL_VALUES);
         setFieldErrors({});
       } catch (error) {
-        if (error instanceof ApiError && error.status === 400) {
-          if (error.errors && Object.keys(error.errors).length > 0) {
-            const mappedErrors: Record<string, string> = { ...error.errors };
-            if (mappedErrors.oldPassword) {
-              mappedErrors.oldPassword = t('settings.invalid_current_password');
-            }
-            if (
-              mappedErrors.password &&
-              isSamePasswordErrorMessage(mappedErrors.password)
-            ) {
-              mappedErrors.password = t('settings.password_must_be_different');
-            }
-            setFieldErrors(mappedErrors);
-            showErrorToast({
-              title: t('admin.toast_error_title'),
-              message: t('toast.form_validation_check')
-            });
-          } else {
-            const isSamePassword = isSamePasswordErrorMessage(error.message);
-            showErrorToast(
-              isSamePassword
-                ? t('settings.password_must_be_different')
-                : error.message || t('settings.invalid_current_password')
-            );
-          }
-        } else if (error instanceof ApiError && error.status === 401) {
-          logout();
-        } else {
-          showErrorToast(error);
-        }
+        handlePasswordUpdateError(error, {
+          setFieldErrors,
+          showErrorToast,
+          logout
+        });
       } finally {
         setIsSubmitting(false);
       }
@@ -172,9 +134,9 @@ export default function AccountSettings() {
           </h2>
 
           {isSuccess && (
-            <div className="settings-alert-success" role="status">
+            <output className="settings-alert-success">
               {t('settings.success_message')}
-            </div>
+            </output>
           )}
 
           <form className="settings-form" noValidate onSubmit={handleSubmit}>

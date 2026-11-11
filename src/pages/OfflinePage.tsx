@@ -9,9 +9,7 @@ export default function OfflinePage(): ReactElement {
   return (
     <div className="offline-page">
       <h1 className="offline-page__title">{t('offline.title')}</h1>
-      <p role="status" className="offline-page__message">
-        {t('offline.message')}
-      </p>
+      <output className="offline-page__message">{t('offline.message')}</output>
       <Link to="/plants" className="offline-page__link">
         {t('offline.link')}
       </Link>

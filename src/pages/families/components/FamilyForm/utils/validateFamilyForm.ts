@@ -23,7 +23,7 @@ function validateSlug(slug: string, initialSlug?: string): string | null {
   if (!trimmed) {
     return t('family.form.validation.invalid_slug');
   }
-  if (initialSlug && trimmed === initialSlug.trim()) {
+  if (trimmed === initialSlug?.trim()) {
     return null;
   }
   if (!SLUG_REGEX.test(trimmed)) {

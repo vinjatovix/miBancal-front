@@ -97,9 +97,16 @@ export default function Modal({
   return (
     <div
       className={['modal-overlay', overlayClassName].filter(Boolean).join(' ')}
-      onClick={preventClose ? undefined : onClose}
-      role="presentation"
     >
+      {!preventClose && (
+        <button
+          type="button"
+          className="modal-overlay__backdrop"
+          tabIndex={-1}
+          aria-hidden="true"
+          onClick={onClose}
+        />
+      )}
       <div
         ref={dialogRef}
         role={role}
@@ -110,7 +117,6 @@ export default function Modal({
           .filter(Boolean)
           .join(' ')}
         style={maxWidth ? { maxWidth } : undefined}
-        onClick={(e) => e.stopPropagation()}
       >
         <div className={`modal-accent modal-accent--${variant}`} />
 

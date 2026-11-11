@@ -41,14 +41,20 @@ export default function LayoutKeyboardHelp(): JSX.Element {
       </button>
 
       {isOpen && (
-        <div className="layout-keyboard-help__backdrop" onClick={handleClose}>
+        <div className="layout-keyboard-help__backdrop">
+          <button
+            type="button"
+            className="layout-keyboard-help__backdrop-button"
+            tabIndex={-1}
+            aria-hidden="true"
+            onClick={handleClose}
+          />
           <div
             ref={dialogRef}
             className="layout-keyboard-help__dialog"
             role="dialog"
             aria-modal="true"
             aria-label={t('bed.layout.shortcuts_title')}
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="layout-keyboard-help__header">
               <h3 className="layout-keyboard-help__title">

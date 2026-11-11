@@ -21,9 +21,7 @@ export function NotFound({
   return (
     <div className="not-found">
       <h1 className="not-found__title">{t(titleKey)}</h1>
-      <p role="status" className="not-found__message">
-        {t(messageKey)}
-      </p>
+      <output className="not-found__message">{t(messageKey)}</output>
       <Link to={backTo} className="not-found__back">
         {t(backLabelKey)}
       </Link>

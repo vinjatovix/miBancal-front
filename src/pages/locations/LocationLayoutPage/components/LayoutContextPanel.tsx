@@ -82,14 +82,20 @@ export default function LayoutContextPanel({
 
   if (isMobileSheet) {
     return (
-      <div className="layout-context-panel__backdrop" onClick={onRequestClose}>
+      <div className="layout-context-panel__backdrop">
+        <button
+          type="button"
+          className="layout-context-panel__backdrop-button"
+          tabIndex={-1}
+          aria-hidden="true"
+          onClick={() => onRequestClose?.()}
+        />
         <section
           ref={panelRef}
           className="layout-context-panel layout-context-panel--sheet"
           role="dialog"
           aria-modal="true"
           aria-label={title}
-          onClick={(e) => e.stopPropagation()}
           onKeyDown={handleTrapTab}
         >
           <div className="layout-context-panel__handle" aria-hidden="true" />

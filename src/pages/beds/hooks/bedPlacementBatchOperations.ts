@@ -100,11 +100,13 @@ export function removeBatchCrops(
   };
 }
 
+const DEFAULT_DUPLICATE_OFFSET: Coordinates = { x: 20, y: 20 };
+
 export function duplicateBatchCrops(
   currentCrops: readonly CropPlacementItem[],
   bedId: string,
   idsToDuplicate: readonly string[],
-  offsetCm: Coordinates = { x: 20, y: 20 }
+  offsetCm: Coordinates = DEFAULT_DUPLICATE_OFFSET
 ): {
   readonly nextCrops: readonly CropPlacementItem[];
   readonly clonedIds: readonly string[];

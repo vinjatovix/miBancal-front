@@ -2,6 +2,10 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
 }
 
 .page-size__label {

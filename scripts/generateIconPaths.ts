@@ -2,10 +2,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import {
+  CUSTOM_GLYPHS,
   extractSvgInner,
+  formatGlyphDeclaration,
   TWEMOJI_ALIASES,
-  TWEMOJI_PRIMARY_MAPPING,
-  CUSTOM_GLYPHS
+  TWEMOJI_PRIMARY_MAPPING
 } from './iconPathExtraction.ts';
 
 const ROOT = process.cwd();
@@ -23,11 +24,11 @@ export function generateIconGlyphsContent(): string {
       );
     }
     const inner = extractSvgInner(readFileSync(filePath, 'utf8'));
-    return `const ${name}Glyph = (\n  <>\n    ${inner}\n  </>\n);`;
+    return formatGlyphDeclaration(name, inner);
   });
 
   const customDeclarations = Object.entries(CUSTOM_GLYPHS).map(
-    ([name, inner]) => `const ${name}Glyph = (\n  <>\n    ${inner}\n  </>\n);`
+    ([name, inner]) => formatGlyphDeclaration(name, inner)
   );
 
   const primaryEntries = sortedNames.map((name) => `  ${name}: ${name}Glyph`);

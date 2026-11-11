@@ -17,6 +17,19 @@ interface GitHubAuthButtonProps {
   readonly disabled?: boolean;
 }
 
+function resolveRawScrollY(
+  isAuthPage: boolean,
+  navState: { from?: unknown; scrollY?: unknown } | null
+): unknown {
+  if (isAuthPage) {
+    return navState?.scrollY;
+  }
+  if (typeof window !== 'undefined') {
+    return window.scrollY;
+  }
+  return undefined;
+}
+
 export default function GitHubAuthButton({
   disabled = false
 }: GitHubAuthButtonProps) {
@@ -45,11 +58,7 @@ export default function GitHubAuthButton({
       : location.pathname;
     const returnUrl = resolveRedirectDestination(rawTarget);
 
-    const rawScrollY = isAuthPage
-      ? navState?.scrollY
-      : typeof window !== 'undefined'
-        ? window.scrollY
-        : undefined;
+    const rawScrollY = resolveRawScrollY(isAuthPage, navState);
     const scrollY = normalizeScrollY(rawScrollY);
 
     saveGithubPkceSession({

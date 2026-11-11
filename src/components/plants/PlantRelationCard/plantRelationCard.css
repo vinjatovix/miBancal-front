@@ -167,7 +167,7 @@
   font: var(--type-body-md);
   color: var(--color-on-surface-variant);
   line-height: 1.5;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 @media (max-width: 600px) {

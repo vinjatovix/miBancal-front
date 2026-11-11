@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { t } from '../../i18n/core/t';
+import { reportRejection } from '../../shared/observability/reportRejection';
 import Icon from '../../shared/components/Icon/Icon';
 import { useToast } from '../../shared/toast/useToast';
 import type { UserRole } from '../../types/auth';
@@ -46,7 +47,7 @@ export default function AdminDashboard() {
 
   const handleSearch = (term: string) => {
     dismissAll();
-    search(term);
+    search(term).catch(reportRejection('admin-search'));
   };
 
   const handleOpenModal = (roles: UserRole[]) => {

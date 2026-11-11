@@ -24,18 +24,16 @@ function getNextThemePreference(current: ThemePreference): ThemePreference {
 }
 
 export interface ThemeProviderProps {
-  children: ReactNode;
-  initialPreference?: ThemePreference;
+  readonly children: ReactNode;
+  readonly initialPreference?: ThemePreference;
 }
 
 export function ThemeProvider({
   children,
   initialPreference
 }: ThemeProviderProps) {
-  const [preference, setPreference] = useState<ThemePreference>(() =>
-    initialPreference !== undefined
-      ? initialPreference
-      : getStoredThemePreference()
+  const [preference, setPreference] = useState<ThemePreference>(
+    () => initialPreference ?? getStoredThemePreference()
   );
 
   const resolvedTheme: ResolvedTheme = preference;

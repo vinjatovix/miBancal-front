@@ -1,4 +1,5 @@
 import { lazy, Suspense, useId, useState } from 'react';
+import { reportRejection } from '../../../../../shared/observability/reportRejection';
 
 import { t } from '../../../../../i18n/core/t';
 import {
@@ -74,8 +75,8 @@ export default function LocationFormFields({
   const latitudeNum = parseCoordinate(values.latitude);
   const longitudeNum = parseCoordinate(values.longitude);
 
-  const handleSearch = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSearch = async (event?: React.SyntheticEvent) => {
+    event?.preventDefault();
     if (searchQuery.trim().length < 2) return;
 
     setIsSearching(true);
@@ -171,7 +172,7 @@ export default function LocationFormFields({
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
                 event.preventDefault();
-                void handleSearch(event);
+                handleSearch().catch(reportRejection('location-form-fields'));
               }
             }}
           />
@@ -179,7 +180,9 @@ export default function LocationFormFields({
             type="button"
             className="location-form-fields__btn location-form-fields__btn--search"
             disabled={disabled || isSearching || searchQuery.trim().length < 2}
-            onClick={(event) => void handleSearch(event)}
+            onClick={() => {
+              handleSearch().catch(reportRejection('location-form-fields'));
+            }}
           >
             <Icon name="search" decorative />
             <span>
@@ -212,9 +215,9 @@ export default function LocationFormFields({
         )}
 
         {hasSearched && !isSearching && searchResults.length === 0 && (
-          <p className="location-form-fields__search-status" role="status">
+          <output className="location-form-fields__search-status">
             {t('location.form.search_no_results')}
-          </p>
+          </output>
         )}
 
         <button
@@ -228,9 +231,9 @@ export default function LocationFormFields({
         </button>
 
         {geoStatus && (
-          <p className="location-form-fields__search-status" role="status">
+          <output className="location-form-fields__search-status">
             {geoStatus}
-          </p>
+          </output>
         )}
       </div>
 

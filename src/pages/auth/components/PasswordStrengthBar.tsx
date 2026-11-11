@@ -6,6 +6,16 @@ interface PasswordStrengthBarProps {
   readonly password: string;
 }
 
+function resolveStrengthClass(score: number): string {
+  if (score === 1) {
+    return 'strength-weak';
+  }
+  if (score === 2) {
+    return 'strength-medium';
+  }
+  return 'strength-strong';
+}
+
 export default function PasswordStrengthBar({
   password
 }: PasswordStrengthBarProps) {
@@ -15,12 +25,7 @@ export default function PasswordStrengthBar({
     return null;
   }
 
-  const strengthClass =
-    score === 1
-      ? 'strength-weak'
-      : score === 2
-        ? 'strength-medium'
-        : 'strength-strong';
+  const strengthClass = resolveStrengthClass(score);
 
   return (
     <div className="password-strength-container" aria-live="polite">

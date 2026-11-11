@@ -18,9 +18,8 @@ export default function LayoutModeToggle({
   };
 
   return (
-    <div
+    <fieldset
       className="layout-mode-toggle"
-      role="group"
       aria-label={t('bed.layout.mode_group_label')}
     >
       <button
@@ -39,6 +38,6 @@ export default function LayoutModeToggle({
       >
         {t('bed.layout.mode_position_short')}
       </button>
-    </div>
+    </fieldset>
   );
 }

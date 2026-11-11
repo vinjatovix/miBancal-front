@@ -24,4 +24,14 @@ describe('slugify', () => {
 
     expect(result).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
   });
+
+  it('handles limit input with a massive number of edge hyphens efficiently', () => {
+    const input = '-'.repeat(10000) + 'test' + '-'.repeat(10000);
+    const start = performance.now();
+    const result = slugify(input);
+    const duration = performance.now() - start;
+
+    expect(result).toBe('test');
+    expect(duration).toBeLessThan(100);
+  });
 });

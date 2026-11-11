@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type SubmitEvent } from 'react';
 import { Link } from 'react-router-dom';
 
 import { t } from '../../../i18n/core/t';
@@ -76,7 +76,7 @@ export default function ResetPassword() {
     setTouched((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
   };
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     dismissAll();
     setTouched({ password: true, repeatPassword: true });

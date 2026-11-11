@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useCallback, useState, type KeyboardEvent } from 'react';
 
 import { t } from '../../../../i18n/core/t';
 import Icon from '../../../../shared/components/Icon/Icon';
@@ -14,22 +14,18 @@ interface Props {
 export function AnomalyImageCarousel({ images, anomalyName }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  if (images.length === 0) {
-    return null;
-  }
-
   const count = images.length;
   const currentImage = images[currentIndex];
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + count) % count);
-  };
+  }, [count]);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % count);
-  };
+  }, [count]);
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
     if (event.key === 'ArrowLeft') {
       event.preventDefault();
       prevSlide();
@@ -39,10 +35,13 @@ export function AnomalyImageCarousel({ images, anomalyName }: Props) {
     }
   };
 
+  if (images.length === 0) {
+    return null;
+  }
+
   return (
     <section
       className="anomaly-carousel"
-      role="region"
       aria-roledescription={t('anomaly.carousel.roledescription')}
       aria-label={t('anomaly.carousel.label')}
       tabIndex={0}
@@ -60,7 +59,6 @@ export function AnomalyImageCarousel({ images, anomalyName }: Props) {
 
         <div
           className="anomaly-carousel__slide"
-          role="group"
           aria-roledescription={t('anomaly.carousel.slide_roledescription')}
           aria-label={t('anomaly.carousel.slide_label', {
             current: currentIndex + 1,
@@ -102,9 +100,9 @@ export function AnomalyImageCarousel({ images, anomalyName }: Props) {
       </div>
 
       <div className="anomaly-carousel__dots">
-        {images.map((_, index) => (
+        {images.map((img, index) => (
           <button
-            key={index}
+            key={img.url}
             type="button"
             className={`anomaly-carousel__dot ${
               index === currentIndex ? 'anomaly-carousel__dot--active' : ''

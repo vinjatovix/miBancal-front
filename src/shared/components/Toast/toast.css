@@ -106,13 +106,13 @@
   font: var(--type-label-lg);
   font-weight: 700;
   color: var(--color-fg);
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .toast-item__message {
   font: var(--type-body-sm);
   color: var(--color-fg);
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .toast-item__close {

@@ -12,7 +12,7 @@ export type AnomalySubmitFailure =
       readonly message: string | null;
     };
 
-const SESSION_STATUSES: readonly number[] = [401, 403];
+const SESSION_STATUSES = new Set([401, 403]);
 const CONFLICT_STATUS = 409;
 
 function generalMessage(
@@ -26,7 +26,7 @@ function generalMessage(
 }
 
 function resolveApiError(error: ApiError): AnomalySubmitFailure {
-  if (SESSION_STATUSES.includes(error.status)) return { kind: 'session' };
+  if (SESSION_STATUSES.has(error.status)) return { kind: 'session' };
 
   const { fieldErrors, unmappedErrors } = normalizeAnomalyApiErrors(
     error.errors ?? {}

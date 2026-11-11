@@ -4,47 +4,26 @@ import { describe, expect, it, vi } from 'vitest';
 import { useLayoutKeyboardShortcuts } from '../../../../../src/pages/locations/LocationLayoutPage/hooks/useLayoutKeyboardShortcuts';
 
 describe('useLayoutKeyboardShortcuts', () => {
-  it('switches to read mode on key 1', () => {
-    const setMode = vi.fn();
-    renderHook(() =>
-      useLayoutKeyboardShortcuts({
-        mode: 'position',
-        setMode
-      })
-    );
+  it.each([
+    ['1', 'read', 'position'],
+    ['2', 'position', 'read'],
+    ['3', 'plants', 'read']
+  ] as const)(
+    'switches to %s mode on key %s',
+    (key, expectedMode, currentMode) => {
+      const setMode = vi.fn();
+      renderHook(() =>
+        useLayoutKeyboardShortcuts({
+          mode: currentMode,
+          setMode
+        })
+      );
 
-    fireEvent.keyDown(window, { key: '1' });
+      fireEvent.keyDown(window, { key });
 
-    expect(setMode).toHaveBeenCalledWith('read');
-  });
-
-  it('switches to position mode on key 2', () => {
-    const setMode = vi.fn();
-    renderHook(() =>
-      useLayoutKeyboardShortcuts({
-        mode: 'read',
-        setMode
-      })
-    );
-
-    fireEvent.keyDown(window, { key: '2' });
-
-    expect(setMode).toHaveBeenCalledWith('position');
-  });
-
-  it('switches to plants mode on key 3', () => {
-    const setMode = vi.fn();
-    renderHook(() =>
-      useLayoutKeyboardShortcuts({
-        mode: 'read',
-        setMode
-      })
-    );
-
-    fireEvent.keyDown(window, { key: '3' });
-
-    expect(setMode).toHaveBeenCalledWith('plants');
-  });
+      expect(setMode).toHaveBeenCalledWith(expectedMode);
+    }
+  );
 
   it.each([
     ['v', 'select'],

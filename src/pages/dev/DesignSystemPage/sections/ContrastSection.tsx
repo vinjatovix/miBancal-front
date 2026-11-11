@@ -37,7 +37,7 @@ export default function ContrastSection() {
       </div>
 
       <div className="design-system-catalog__demo-toasts">
-        <div className="toast-item toast-item--success" role="status">
+        <output className="toast-item toast-item--success">
           <span className="toast-item__icon toast-item__icon--success">
             <Icon name="check_circle" decorative />
           </span>
@@ -49,9 +49,9 @@ export default function ContrastSection() {
               {t('dev.designSystem.demos.toastSampleMessage')}
             </span>
           </div>
-        </div>
+        </output>
 
-        <div className="toast-item toast-item--warning" role="status">
+        <output className="toast-item toast-item--warning">
           <span className="toast-item__icon toast-item__icon--warning">
             <Icon name="warning" decorative />
           </span>
@@ -63,7 +63,7 @@ export default function ContrastSection() {
               {t('dev.designSystem.demos.toastSampleMessage')}
             </span>
           </div>
-        </div>
+        </output>
 
         <div className="toast-item toast-item--error" role="alert">
           <span className="toast-item__icon toast-item__icon--error">
@@ -79,7 +79,7 @@ export default function ContrastSection() {
           </div>
         </div>
 
-        <div className="toast-item toast-item--info" role="status">
+        <output className="toast-item toast-item--info">
           <span className="toast-item__icon toast-item__icon--info">
             <Icon name="info" decorative />
           </span>
@@ -91,7 +91,7 @@ export default function ContrastSection() {
               {t('dev.designSystem.demos.toastSampleMessage')}
             </span>
           </div>
-        </div>
+        </output>
       </div>
 
       <div className="design-system-catalog__demo-meter">

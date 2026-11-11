@@ -14,7 +14,7 @@
   color: var(--color-on-error-container);
   border-radius: var(--radius-sm);
   font: var(--type-body-sm);
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .plant-relation-form-modal__field {
@@ -30,7 +30,7 @@
   font: var(--type-label-md);
   color: var(--color-on-surface);
   font-weight: 600;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .plant-relation-form-modal__radio-group {
@@ -49,7 +49,7 @@
   font: var(--type-body-md);
   color: var(--color-on-surface);
   cursor: pointer;
-  word-break: break-word;
+  overflow-wrap: break-word;
   line-height: 1.4;
 }
 

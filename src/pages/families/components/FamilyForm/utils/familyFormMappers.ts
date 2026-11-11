@@ -1,3 +1,5 @@
+import { t } from '../../../../../i18n/core/t';
+import { ApiError } from '../../../../../shared/errors/ApiError';
 import type {
   CreateFamilyRequest,
   Family,
@@ -117,4 +119,59 @@ export function normalizeFamilyApiErrors(
   }
 
   return { fieldErrors, unmappedErrors };
+}
+
+export function focusFirstFamilyError(): void {
+  setTimeout(() => {
+    const firstErrorElement = document.querySelector<HTMLElement>(
+      '.family-form [aria-invalid="true"], .family-form [role="alert"]'
+    );
+    if (firstErrorElement) {
+      firstErrorElement.scrollIntoView?.({
+        behavior: 'smooth',
+        block: 'center'
+      });
+      firstErrorElement.focus?.();
+    }
+  }, 0);
+}
+
+export function handleFamilySubmitError(
+  err: unknown,
+  actions: {
+    setErrors: (errors: Record<string, string>) => void;
+    showErrorToast: (msg: unknown) => void;
+  }
+): void {
+  if (err instanceof ApiError) {
+    if (err.errors) {
+      const { fieldErrors, unmappedErrors } = normalizeFamilyApiErrors(
+        err.errors
+      );
+      actions.setErrors(fieldErrors);
+      if (unmappedErrors.length > 0) {
+        actions.showErrorToast(unmappedErrors.join('; '));
+      } else if (Object.keys(fieldErrors).length === 0) {
+        actions.showErrorToast({
+          title: t('admin.toast_error_title'),
+          message:
+            err.status === 409 ? t('family.form.duplicate_error') : err.message
+        });
+      } else {
+        actions.showErrorToast({
+          title: t('admin.toast_error_title'),
+          message: t('toast.form_validation_check')
+        });
+      }
+      return;
+    }
+    if (err.status === 409) {
+      actions.showErrorToast({
+        title: t('admin.toast_error_title'),
+        message: t('family.form.duplicate_error')
+      });
+      return;
+    }
+  }
+  actions.showErrorToast(err);
 }

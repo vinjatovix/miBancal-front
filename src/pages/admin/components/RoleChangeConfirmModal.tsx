@@ -111,18 +111,22 @@ export function RoleChangeConfirmModal({
     isGrantAdmin || isRevokeAdmin ? 'admin_panel_settings' : 'eco';
 
   return (
-    <div
-      className="admin-modal-overlay"
-      onClick={isLoading ? undefined : onCancel}
-      role="presentation"
-    >
+    <div className="admin-modal-overlay">
+      {!isLoading && (
+        <button
+          type="button"
+          className="admin-modal-overlay__backdrop"
+          tabIndex={-1}
+          aria-hidden="true"
+          onClick={onCancel}
+        />
+      )}
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
         className="admin-modal-card"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="admin-modal-accent" />
 

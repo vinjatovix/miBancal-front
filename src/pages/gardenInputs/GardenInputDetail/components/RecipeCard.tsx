@@ -51,8 +51,8 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         <div className="recipe-card__section">
           <h4>{t('gardenInput.recipe.instructions')}</h4>
           <ol className="recipe-card__instructions">
-            {recipe.instructions.map((inst, idx) => (
-              <li key={idx}>{inst}</li>
+            {recipe.instructions.map((inst) => (
+              <li key={inst}>{inst}</li>
             ))}
           </ol>
         </div>
@@ -125,8 +125,8 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           <div className="recipe-card__section">
             <h4>{t('gardenInput.recipe.safety_notes')}</h4>
             <ul className="recipe-card__safety-notes">
-              {recipe.safetyNotes.map((note, idx) => (
-                <li key={idx}>{note}</li>
+              {recipe.safetyNotes.map((note) => (
+                <li key={note}>{note}</li>
               ))}
             </ul>
           </div>

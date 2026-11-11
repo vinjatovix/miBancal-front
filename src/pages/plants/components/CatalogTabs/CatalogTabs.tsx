@@ -40,11 +40,7 @@ export default function CatalogTabs() {
   }
 
   return (
-    <div
-      className="catalog-tabs"
-      role="group"
-      aria-label={t('plant.tabs.group_label')}
-    >
+    <fieldset className="catalog-tabs" aria-label={t('plant.tabs.group_label')}>
       <button
         type="button"
         aria-pressed={!favoritesActive}
@@ -61,6 +57,6 @@ export default function CatalogTabs() {
       >
         {t('plant.tabs.favorites')}
       </button>
-    </div>
+    </fieldset>
   );
 }

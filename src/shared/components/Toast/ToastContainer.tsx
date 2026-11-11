@@ -22,15 +22,14 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
     : 'toast-container';
 
   return (
-    <div
+    <section
       className={containerClassName}
-      role="region"
       aria-label={t('toast.region_label')}
       aria-live="polite"
     >
       {toasts.map((toast) => (
         <ToastItemView key={toast.id} toast={toast} onDismiss={dismissToast} />
       ))}
-    </div>
+    </section>
   );
 };

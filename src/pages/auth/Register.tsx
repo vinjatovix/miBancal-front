@@ -4,9 +4,10 @@ import {
   useMemo,
   useRef,
   useState,
-  type FormEvent
+  type SubmitEvent
 } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
+import { useReportedNavigate } from '../../shared/observability/useReportedNavigate';
 
 import { GITHUB_CLIENT_ID, GOOGLE_CLIENT_ID } from '../../config/env';
 import { t } from '../../i18n/core/t';
@@ -32,7 +33,7 @@ type FormField = 'email' | 'username' | 'password' | 'repeatPassword';
 export default function Register() {
   const { isAuthenticated, register, googleLogin } = useAuth();
   const { dismissAll, showErrorToast } = useToast();
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('register');
   const location = useLocation();
 
   const navState = location.state as LoginNavigationState | null;
@@ -71,6 +72,15 @@ export default function Register() {
       });
     }
   }, [location.pathname, navState, navigate, showErrorToast]);
+
+  const ssoButtonsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = ssoButtonsRef.current;
+    if (!node) return;
+    const handleInteract = (): void => dismissAll();
+    node.addEventListener('click', handleInteract);
+    return () => node.removeEventListener('click', handleInteract);
+  }, [dismissAll]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -113,7 +123,7 @@ export default function Register() {
     setTouched((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
   };
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     dismissAll();
 
@@ -251,12 +261,7 @@ export default function Register() {
           <div className="auth-sso-separator">
             <span>{t('auth.sso_separator')}</span>
           </div>
-          <div
-            className="auth-sso-buttons"
-            onClick={() => {
-              dismissAll();
-            }}
-          >
+          <div ref={ssoButtonsRef} className="auth-sso-buttons">
             <GoogleAuthButton
               onCredential={handleGoogleCredential}
               disabled={isSubmitting}

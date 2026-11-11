@@ -103,6 +103,12 @@ select.plant-filters__input {
     transform 0.1s ease;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .plant-filters__slider-clear {
+    transition: none;
+  }
+}
+
 .plant-filters__slider-clear:hover {
   background: var(--color-error-container);
   border-color: var(--color-error);

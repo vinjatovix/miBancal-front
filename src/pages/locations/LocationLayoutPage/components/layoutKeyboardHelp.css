@@ -36,7 +36,21 @@
   box-sizing: border-box;
 }
 
+.layout-keyboard-help__backdrop-button {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: default;
+  appearance: none;
+}
+
 .layout-keyboard-help__dialog {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 24rem;
   background-color: var(--color-bg-surface);

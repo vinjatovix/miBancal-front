@@ -1,10 +1,9 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, type SubmitEvent } from 'react';
+import { useReportedNavigate } from '../../../../shared/observability/useReportedNavigate';
 
 import { t } from '../../../../i18n/core/t';
 import Button from '../../../../shared/components/Button/Button';
 import { CancelConfirmModal } from '../../../../shared/components/Modal/CancelConfirmModal';
-import { ApiError } from '../../../../shared/errors/ApiError';
 import { PreconditionFailedError } from '../../../../shared/errors/PreconditionFailedError';
 import { useToast } from '../../../../shared/toast/useToast';
 import type { Plant } from '../../../../types/Plants/Plant';
@@ -18,8 +17,9 @@ import { PlantResourcesSection } from '../../components/PlantForm/PlantResources
 import { PlantTraitsSection } from '../../components/PlantForm/PlantTraitsSection';
 import {
   canonicalPlantToFormState,
+  focusFirstPlantError,
   formStateToUpdatePlantRequest,
-  normalizePlantApiErrors
+  handlePlantSubmitError
 } from '../../components/PlantForm/utils/plantFormMappers';
 import { useDeletePlant } from '../../hooks/useDeletePlant';
 import { useUpdatePlant } from '../../hooks/useUpdatePlant';
@@ -41,7 +41,7 @@ export function PlantInlineEditForm({
   onSuccess,
   onReload
 }: Props) {
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('plant-inline-edit');
   const { values, errors, isDirty, setField, validate, setErrors } =
     usePlantFormState(canonicalPlantToFormState(plant));
   const { dismissAll, showErrorToast } = useToast();
@@ -82,24 +82,13 @@ export function PlantInlineEditForm({
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     dismissAll();
 
     if (!validate()) {
       setValidationSummary(t('plant.form.validation.summary'));
-      setTimeout(() => {
-        const firstErrorElement = document.querySelector<HTMLElement>(
-          '.plant-form [aria-invalid="true"], .plant-form [role="alert"]'
-        );
-        if (firstErrorElement) {
-          firstErrorElement.scrollIntoView?.({
-            behavior: 'smooth',
-            block: 'center'
-          });
-          firstErrorElement.focus?.();
-        }
-      }, 0);
+      focusFirstPlantError();
       return;
     }
 
@@ -117,30 +106,8 @@ export function PlantInlineEditForm({
       if (err instanceof PreconditionFailedError) {
         setHasConflict(true);
         showErrorToast(err);
-      } else if (err instanceof ApiError) {
-        if (err.errors) {
-          const { fieldErrors, unmappedErrors } = normalizePlantApiErrors(
-            err.errors
-          );
-          setErrors(fieldErrors);
-          if (unmappedErrors.length > 0) {
-            showErrorToast(unmappedErrors.join('; '));
-          } else {
-            showErrorToast({
-              title: t('admin.toast_error_title'),
-              message: t('toast.form_validation_check')
-            });
-          }
-        } else if (err.status === 409) {
-          showErrorToast({
-            title: t('admin.toast_error_title'),
-            message: t('plant.form.duplicate_error')
-          });
-        } else {
-          showErrorToast(err);
-        }
       } else {
-        showErrorToast(err);
+        handlePlantSubmitError(err, { setErrors, showErrorToast });
       }
     }
   };

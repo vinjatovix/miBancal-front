@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import { t } from '../../i18n/core/t';
+import { useReportedNavigate } from '../../shared/observability/useReportedNavigate';
 import { useAuth } from '../../shared/auth/useAuth';
 import {
   clearGithubPkceSession,
@@ -44,7 +45,7 @@ function resolvePreExchangeError(
 
 export default function GitHubCallback() {
   const { isAuthenticated, githubLogin } = useAuth();
-  const navigate = useNavigate();
+  const navigateSafely = useReportedNavigate('github-callback');
   const location = useLocation();
   const hasTriggeredRef = useRef(false);
 
@@ -64,7 +65,7 @@ export default function GitHubCallback() {
 
     if (isAuthenticated) {
       clearGithubPkceSession();
-      navigate(safeDestination, {
+      void navigateSafely(safeDestination, {
         replace: true,
         state: restoreScrollState
       });
@@ -78,7 +79,7 @@ export default function GitHubCallback() {
 
     if (isOrphanAccess(code, error, session.state)) {
       clearGithubPkceSession();
-      navigate('/login', { replace: true });
+      void navigateSafely('/login', { replace: true });
       return;
     }
 
@@ -91,7 +92,7 @@ export default function GitHubCallback() {
     if (preExchangeError) {
       clearGithubPkceSession();
       const ssoError = classifySsoError(preExchangeError);
-      navigate('/login', {
+      void navigateSafely('/login', {
         replace: true,
         state: {
           ssoError,
@@ -107,7 +108,7 @@ export default function GitHubCallback() {
       if (!code || !session.verifier) {
         clearGithubPkceSession();
         const ssoError = classifySsoError('security_error');
-        navigate('/login', {
+        void navigateSafely('/login', {
           replace: true,
           state: {
             ssoError,
@@ -125,14 +126,14 @@ export default function GitHubCallback() {
           codeVerifier: session.verifier
         });
         clearGithubPkceSession();
-        navigate(safeDestination, {
+        void navigateSafely(safeDestination, {
           replace: true,
           state: restoreScrollState
         });
       } catch (err) {
         clearGithubPkceSession();
         const ssoError = classifySsoError(err);
-        navigate('/login', {
+        void navigateSafely('/login', {
           replace: true,
           state: {
             ssoError,
@@ -145,7 +146,7 @@ export default function GitHubCallback() {
     };
 
     void processExchange();
-  }, [location.search, navigate, isAuthenticated, githubLogin]);
+  }, [location.search, navigateSafely, isAuthenticated, githubLogin]);
 
   return (
     <div className="auth-container">

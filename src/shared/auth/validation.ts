@@ -1,7 +1,7 @@
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 const LOWERCASE_PATTERN = /[a-z]/;
 const UPPERCASE_PATTERN = /[A-Z]/;
-const DIGIT_PATTERN = /[0-9]/;
+const DIGIT_PATTERN = /\d/;
 const SPECIAL_CHAR_PATTERN = /[^a-zA-Z0-9]/;
 
 export function validateEmail(email: string): string | null {
