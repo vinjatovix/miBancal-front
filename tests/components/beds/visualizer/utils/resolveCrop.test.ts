@@ -43,10 +43,11 @@ describe('resolveCrop', () => {
     const crop = resolveCrop(buildInstance(), plant);
 
     expect(crop.familyId).toBe('fam-solanaceae');
+    expect(crop.familyName).toBe('Solanáceas');
     expect(crop.genus).toBe('Solanum');
   });
 
-  it('maps familyId when family is a bare uuid string (catalog projection)', () => {
+  it('maps familyId but leaves familyName undefined for a bare uuid string', () => {
     const plant: CropPlantInfo = {
       identity: {
         name: { primary: 'Tomate' },
@@ -59,12 +60,14 @@ describe('resolveCrop', () => {
     const crop = resolveCrop(buildInstance(), plant);
 
     expect(crop.familyId).toBe('fam-solanaceae');
+    expect(crop.familyName).toBeUndefined();
   });
 
-  it('leaves familyId and genus undefined when plant data is missing', () => {
+  it('leaves familyId, familyName and genus undefined when plant data is missing', () => {
     const crop = resolveCrop(buildInstance(), undefined);
 
     expect(crop.familyId).toBeUndefined();
+    expect(crop.familyName).toBeUndefined();
     expect(crop.genus).toBeUndefined();
     expect(crop.commonName).toBe('plant-tomato');
   });

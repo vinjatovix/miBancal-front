@@ -121,7 +121,9 @@ describe('CropAssociationInspectionModal', () => {
       />
     );
 
-    expect(screen.getByText(/Advertencia fitosanitaria:/i)).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      /Advertencia: Estas plantas se ayudan y se dañan a la vez/i
+    );
     expect(
       screen.getByText(/Incompatibilidad perjudicial/i)
     ).toBeInTheDocument();

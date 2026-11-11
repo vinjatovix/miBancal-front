@@ -1,0 +1,68 @@
+.bed-pdf-export-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-block: var(--space-sm);
+  border-bottom: 1px solid var(--color-border-decor);
+}
+
+.bed-pdf-export-modal__section:last-of-type {
+  border-bottom: none;
+}
+
+.bed-pdf-export-modal__section-title {
+  margin: 0 0 var(--space-xs);
+  font: var(--type-label-lg);
+  color: var(--color-fg-muted);
+}
+
+.bed-pdf-export-modal__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-block: var(--space-2xs);
+  font: var(--type-body-md);
+  color: var(--color-fg);
+  cursor: pointer;
+}
+
+.bed-pdf-export-modal__option input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-action-bg);
+  cursor: pointer;
+}
+
+.bed-pdf-export-modal__beds {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.bed-pdf-export-modal__beds-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.bed-pdf-export-modal__bed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  max-height: 11rem;
+  overflow-y: auto;
+}
+
+.bed-pdf-export-modal__empty {
+  margin: 0;
+  font: var(--type-body-md);
+  color: var(--color-fg-placeholder);
+}
+
+.bed-pdf-export-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}

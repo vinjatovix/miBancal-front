@@ -14,6 +14,7 @@ export interface CropPlacementItem {
   readonly isNew?: boolean;
   readonly hasMoved?: boolean;
   readonly familyId?: string;
+  readonly familyName?: string;
   readonly genus?: string;
 }
 

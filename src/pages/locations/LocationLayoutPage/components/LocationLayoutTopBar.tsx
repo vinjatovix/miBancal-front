@@ -52,6 +52,8 @@ export interface LocationLayoutTopBarProps {
   readonly onToggleGridLayer: (key: BedGridLayerKey) => void;
   readonly viewport: BedViewportState;
   readonly onFitToView: () => void;
+  readonly onExportPdf: () => void;
+  readonly exportDisabled?: boolean;
   readonly showAssociations?: boolean;
   readonly onToggleAssociations?: () => void;
   readonly associationFilterMode?: AssociationFilterMode;
@@ -94,6 +96,8 @@ export default function LocationLayoutTopBar({
   onToggleGridLayer,
   viewport,
   onFitToView,
+  onExportPdf,
+  exportDisabled = false,
   showAssociations = true,
   onToggleAssociations,
   associationFilterMode = 'all',
@@ -182,6 +186,15 @@ export default function LocationLayoutTopBar({
               </Button>
             </div>
           )}
+          <Button
+            variant="secondary"
+            size="sm"
+            icon="save"
+            onClick={onExportPdf}
+            disabled={exportDisabled}
+          >
+            {t('bed.export.button_label')}
+          </Button>
           <LayersPopoverButton
             showNames={showBedNames}
             onToggleNames={onToggleShowNames}

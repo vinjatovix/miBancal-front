@@ -20,6 +20,13 @@ function resolveFamilyId(
   return typeof family === 'string' ? family : family.id;
 }
 
+function resolveFamilyName(
+  family: PlantFamilyRef | undefined
+): string | undefined {
+  if (!family || typeof family === 'string') return undefined;
+  return family.name;
+}
+
 export function resolveCrop(
   instance: PlantInstanceResponse,
   plant: CropPlantInfo | undefined,
@@ -33,6 +40,7 @@ export function resolveCrop(
     commonName: plant?.identity.name.primary ?? instance.plantId,
     scientificName: plant?.identity.scientificName,
     familyId: resolveFamilyId(plant?.identity.family),
+    familyName: resolveFamilyName(plant?.identity.family),
     genus: plant?.identity.genus,
     position: instance.position ?? { x: 0, y: 0 },
     vitalRadius: calculateVitalRadius(spacingMin),
