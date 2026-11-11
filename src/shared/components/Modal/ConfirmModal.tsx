@@ -28,6 +28,29 @@ export interface ConfirmModalProps {
   readonly className?: string;
 }
 
+function resolveVariantIcon(variant: ModalVariant): IconName | undefined {
+  if (variant === 'danger') {
+    return 'delete';
+  }
+  if (variant === 'warning') {
+    return 'warning';
+  }
+  return undefined;
+}
+
+function resolveLoadingConfirmText(
+  loadingText: string | undefined,
+  variant: ModalVariant
+): string {
+  if (loadingText) {
+    return loadingText;
+  }
+  if (variant === 'danger') {
+    return t('common.deleting');
+  }
+  return t('common.saving');
+}
+
 export function ConfirmModal({
   isOpen,
   onConfirm,
@@ -48,17 +71,10 @@ export function ConfirmModal({
   maxWidth,
   className
 }: ConfirmModalProps) {
-  const resolvedIcon =
-    icon ??
-    (variant === 'danger'
-      ? 'delete'
-      : variant === 'warning'
-        ? 'warning'
-        : undefined);
+  const resolvedIcon = icon ?? resolveVariantIcon(variant);
 
   const resolvedConfirmText = isLoading
-    ? (loadingText ??
-      (variant === 'danger' ? t('common.deleting') : t('common.saving')))
+    ? resolveLoadingConfirmText(loadingText, variant)
     : (confirmText ?? t('common.modal.confirm'));
 
   const resolvedCancelText = cancelText ?? t('common.cancel');

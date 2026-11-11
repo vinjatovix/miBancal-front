@@ -9,9 +9,9 @@ import type { PaginationParams } from '../types/Pagination';
 import { PAGINATION_QUERY_KEYS, type SortDirection } from './listQuery';
 
 export type GardenInputFilterParams = {
-  category?: GardenInputCategory | GardenInputCategory[] | string;
-  action?: GardenInputAction | GardenInputAction[] | string;
-  status?: GardenInputStatus | GardenInputStatus[] | string;
+  category?: GardenInputCategory | GardenInputCategory[] | (string & {});
+  action?: GardenInputAction | GardenInputAction[] | (string & {});
+  status?: GardenInputStatus | GardenInputStatus[] | (string & {});
 };
 
 export const GARDEN_INPUT_FIELDS_QUERY_KEY = 'fields[gardenInputs]';
@@ -73,7 +73,7 @@ function normalizeListParam(
 
 function addCategoryFilter(
   query: QueryBuilder,
-  category?: GardenInputCategory | GardenInputCategory[] | string
+  category?: GardenInputCategory | GardenInputCategory[] | (string & {})
 ): QueryBuilder {
   const serialized = normalizeListParam(category);
   if (!serialized) {
@@ -84,7 +84,7 @@ function addCategoryFilter(
 
 function addActionFilter(
   query: QueryBuilder,
-  action?: GardenInputAction | GardenInputAction[] | string
+  action?: GardenInputAction | GardenInputAction[] | (string & {})
 ): QueryBuilder {
   const serialized = normalizeListParam(action);
   if (!serialized) {
@@ -95,7 +95,7 @@ function addActionFilter(
 
 function addStatusFilter(
   query: QueryBuilder,
-  status?: GardenInputStatus | GardenInputStatus[] | string
+  status?: GardenInputStatus | GardenInputStatus[] | (string & {})
 ): QueryBuilder {
   if (!status) {
     return query;

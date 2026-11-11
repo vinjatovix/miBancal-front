@@ -1,9 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
 import { t } from '../../../../i18n/core/t';
 import Button from '../../../../shared/components/Button/Button';
 import { CancelConfirmModal } from '../../../../shared/components/Modal/CancelConfirmModal';
-import { ApiError } from '../../../../shared/errors/ApiError';
 import { PreconditionFailedError } from '../../../../shared/errors/PreconditionFailedError';
 import { useToast } from '../../../../shared/toast/useToast';
 import type { Family } from '../../../../types/Family';
@@ -11,8 +10,9 @@ import { FamilyFormFields } from '../../components/FamilyForm/FamilyFormFields';
 import { useFamilyFormState } from '../../components/FamilyForm/hooks/useFamilyFormState';
 import {
   canonicalFamilyToFormState,
+  focusFirstFamilyError,
   formStateToUpdateFamilyRequest,
-  normalizeFamilyApiErrors
+  handleFamilySubmitError
 } from '../../components/FamilyForm/utils/familyFormMappers';
 import { useUpdateFamily } from '../../hooks/useUpdateFamily';
 
@@ -57,24 +57,13 @@ export function FamilyInlineEditForm({
     onCancel();
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     dismissAll();
 
     if (!validate()) {
       setValidationSummary(t('family.form.validation.summary'));
-      setTimeout(() => {
-        const firstErrorElement = document.querySelector<HTMLElement>(
-          '.family-form [aria-invalid="true"], .family-form [role="alert"]'
-        );
-        if (firstErrorElement) {
-          firstErrorElement.scrollIntoView?.({
-            behavior: 'smooth',
-            block: 'center'
-          });
-          firstErrorElement.focus?.();
-        }
-      }, 0);
+      focusFirstFamilyError();
       return;
     }
 
@@ -92,38 +81,8 @@ export function FamilyInlineEditForm({
       if (err instanceof PreconditionFailedError) {
         setHasConflict(true);
         showErrorToast(err);
-      } else if (err instanceof ApiError) {
-        if (err.errors) {
-          const { fieldErrors, unmappedErrors } = normalizeFamilyApiErrors(
-            err.errors
-          );
-          setErrors(fieldErrors);
-          if (unmappedErrors.length > 0) {
-            showErrorToast(unmappedErrors.join('; '));
-          } else if (Object.keys(fieldErrors).length === 0) {
-            showErrorToast({
-              title: t('admin.toast_error_title'),
-              message:
-                err.status === 409
-                  ? t('family.form.duplicate_error')
-                  : err.message
-            });
-          } else {
-            showErrorToast({
-              title: t('admin.toast_error_title'),
-              message: t('toast.form_validation_check')
-            });
-          }
-        } else if (err.status === 409) {
-          showErrorToast({
-            title: t('admin.toast_error_title'),
-            message: t('family.form.duplicate_error')
-          });
-        } else {
-          showErrorToast(err);
-        }
       } else {
-        showErrorToast(err);
+        handleFamilySubmitError(err, { setErrors, showErrorToast });
       }
     }
   };

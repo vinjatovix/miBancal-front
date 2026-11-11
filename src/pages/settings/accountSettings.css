@@ -72,6 +72,7 @@
 }
 
 .settings-alert-success {
+  display: block;
   padding: 0.875rem 1rem;
   background-color: var(--color-secondary-container);
   color: var(--color-on-secondary-container);

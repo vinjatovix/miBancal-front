@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useReportedNavigate } from '../../../shared/observability/useReportedNavigate';
 
 import { t } from '../../../i18n/core/t';
 import { useAuth } from '../../../shared/auth/useAuth';
@@ -18,7 +19,7 @@ export default function AdminNavDrawer({
   triggerRef
 }: NavDrawerProps) {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('admin-nav');
   const drawerRef = useRef<HTMLElement | null>(null);
 
   const handleLogout = useCallback(() => {
@@ -81,9 +82,11 @@ export default function AdminNavDrawer({
 
   return (
     <>
-      <div
+      <button
+        type="button"
         className="nav-drawer-overlay"
         onClick={onClose}
+        tabIndex={-1}
         aria-hidden="true"
       />
       <aside

@@ -20,6 +20,16 @@ export interface SelectProps extends Omit<
   readonly selectSize?: SelectSize;
 }
 
+function resolveAriaInvalid(
+  isInvalid: boolean | undefined,
+  fallback: SelectHTMLAttributes<HTMLSelectElement>['aria-invalid']
+): SelectHTMLAttributes<HTMLSelectElement>['aria-invalid'] {
+  if (isInvalid === undefined) {
+    return fallback;
+  }
+  return isInvalid ? 'true' : 'false';
+}
+
 const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
   {
     options,
@@ -37,12 +47,10 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
     (restProps['aria-invalid'] === 'true' ||
       restProps['aria-invalid'] === true);
 
-  const ariaInvalidAttr =
-    isInvalid !== undefined
-      ? isInvalid
-        ? 'true'
-        : 'false'
-      : restProps['aria-invalid'];
+  const ariaInvalidAttr = resolveAriaInvalid(
+    isInvalid,
+    restProps['aria-invalid']
+  );
 
   const classes = [
     'app-select',

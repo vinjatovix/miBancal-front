@@ -79,15 +79,18 @@ describe('BedCompassHud in read mode', () => {
     expect(bedNeedle?.getAttribute('transform')).toBe('rotate(90 48 48)');
   });
 
-  it('exposes spinbutton accessible attributes with current angle and wind in aria-valuetext', () => {
+  it('exposes the current angle and wind direction accessibly', () => {
     render(<BedCompassHud northAngle={0} bedAzimuth={135} mode="read" />);
 
     const spinbutton = screen.getByRole('spinbutton');
-    expect(spinbutton).toHaveAttribute('aria-readonly', 'true');
-    expect(spinbutton).toHaveAttribute('aria-valuenow', '135');
-    expect(spinbutton).toHaveAttribute('aria-valuemin', '0');
-    expect(spinbutton).toHaveAttribute('aria-valuemax', '359');
-    expect(spinbutton).toHaveAttribute('aria-valuetext', '135° Sureste');
+
+    expect(spinbutton).toHaveAttribute('readonly', '');
+    expect(spinbutton).toHaveAttribute('value', '135');
+    expect(spinbutton).toHaveAttribute(
+      'aria-describedby',
+      'compass-angle-description'
+    );
+    expect(screen.getByText('135° Sureste')).toBeInTheDocument();
   });
 });
 

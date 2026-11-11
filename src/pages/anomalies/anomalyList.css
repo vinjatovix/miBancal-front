@@ -115,6 +115,7 @@
 }
 
 .anomaly-list__empty-message {
+  display: block;
   margin: 0;
   font: var(--type-body-lg);
   color: var(--color-on-surface-variant);

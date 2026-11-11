@@ -37,5 +37,15 @@ describe('urlPatterns', () => {
 
       expect(isMatched).toBe(false);
     });
+
+    it('handles limit input efficiently to avoid super-linear backtracking', () => {
+      const maliciousInput = '/api/v1/plants/' + 'a'.repeat(5000) + '/';
+      const start = performance.now();
+      const isMatched = API_PUBLIC_PLANTS_PATTERN.test(maliciousInput);
+      const duration = performance.now() - start;
+
+      expect(isMatched).toBe(false);
+      expect(duration).toBeLessThan(100);
+    });
   });
 });

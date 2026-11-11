@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import {
   CUSTOM_GLYPHS,
   extractSvgInner,
+  formatGlyphDeclaration,
+  hasMultipleRootElements,
   TWEMOJI_MAPPING
 } from '../../scripts/iconPathExtraction';
 import { ICON_GLYPHS } from '../../src/shared/components/Icon/iconPaths';
@@ -22,6 +24,39 @@ describe('extractSvgInner', () => {
     const invalidSample = '<div>not an svg</div>';
 
     expect(() => extractSvgInner(invalidSample)).toThrow();
+  });
+});
+
+describe('hasMultipleRootElements', () => {
+  it.each([
+    ['<path d="M1 1"/>', false],
+    ['<path d="M1 1"/><circle cx="1" cy="1" r="1"/>', true],
+    ['<g><path d="M1 1"/><circle cx="1" cy="1" r="1"/></g>', false],
+    ['<rect x="0" y="0"/><path d="M1 1"/>', true]
+  ])('determines root multiplicity for %s as %s', (markup, expected) => {
+    const result = hasMultipleRootElements(markup);
+
+    expect(result).toBe(expected);
+  });
+});
+
+describe('formatGlyphDeclaration', () => {
+  it('formats single child element without fragment wrapper', () => {
+    const markup = '<path d="M1 1"/>';
+
+    const result = formatGlyphDeclaration('test', markup);
+
+    expect(result).toBe('const testGlyph = (\n  <path d="M1 1"/>\n);');
+  });
+
+  it('formats multiple child elements with fragment wrapper', () => {
+    const markup = '<path d="M1 1"/><circle cx="1" cy="1" r="1"/>';
+
+    const result = formatGlyphDeclaration('test', markup);
+
+    expect(result).toBe(
+      'const testGlyph = (\n  <>\n    <path d="M1 1"/><circle cx="1" cy="1" r="1"/>\n  </>\n);'
+    );
   });
 });
 
@@ -76,7 +111,10 @@ describe('iconGlyphs catalog synchronisation', () => {
       'd="M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2zm0 11a2 2 0 1 1 2-2 2 2 0 0 1-2 2zm1.5 14h-3v-11h3z"'
     );
     expect(isValidElement(glyph)).toBe(true);
-    expect((glyph.props.children as ReactElement<{ d: string }>).props.d).toBe(
+    const pathElement = (
+      isValidElement(glyph.props.children) ? glyph.props.children : glyph
+    ) as ReactElement<{ d: string }>;
+    expect(pathElement.props.d).toBe(
       'M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2zm0 11a2 2 0 1 1 2-2 2 2 0 0 1-2 2zm1.5 14h-3v-11h3z'
     );
   });

@@ -8,7 +8,7 @@ type LoaderProps = {
 
 export const Loader = ({ labelKey = 'common.loading' }: LoaderProps) => {
   return (
-    <div className="rain-loader" role="status">
+    <output className="rain-loader">
       <span className="sr-only">{t(labelKey)}</span>
       <div className="cloud" aria-hidden="true"></div>
       <div className="sun" aria-hidden="true"></div>
@@ -44,6 +44,6 @@ export const Loader = ({ labelKey = 'common.loading' }: LoaderProps) => {
 
         <div className="falling-seed" aria-hidden="true"></div>
       </div>
-    </div>
+    </output>
   );
 };

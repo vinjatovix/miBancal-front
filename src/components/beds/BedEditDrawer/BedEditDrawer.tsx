@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactElement } from 'react';
+import { useState, type SubmitEvent, type ReactElement } from 'react';
 
 import { t } from '../../../i18n/core/t';
 import { useBedForEdit } from '../../../pages/beds/hooks/useBedForEdit';
@@ -54,7 +54,7 @@ function BedEditForm({
     }
   };
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     const values = {
       name,

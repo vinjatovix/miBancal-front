@@ -1,45 +1,28 @@
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import type { SubmitEvent } from 'react';
 import { t } from '../../../i18n/core/t';
-import { tValue } from '../../../i18n/core/tValue';
 import { useCreatePlantRelation } from '../../../pages/plantRelations/hooks/useCreatePlantRelation';
 import { useUpdatePlantRelation } from '../../../pages/plantRelations/hooks/useUpdatePlantRelation';
 import Button from '../../../shared/components/Button/Button';
 import Modal from '../../../shared/components/Modal/Modal';
-import Select from '../../../shared/components/Select/Select';
-import { ApiError } from '../../../shared/errors/ApiError';
-import { PreconditionFailedError } from '../../../shared/errors/PreconditionFailedError';
 import type {
   PlantRelation,
   PlantRelationMechanism,
   PlantRelationType
 } from '../../../types/Plants/PlantRelation';
 import { extractCompanionInfo } from '../PlantRelationCard/plantRelationCard.utils';
-import PlantRelationCompanionField from './PlantRelationCompanionField';
+import { PlantRelationFormFields } from './PlantRelationFormFields';
 import {
   buildRelationScopes,
   getAvailableCompanionScopes,
   INITIAL_COMPANION_DRAFT,
   isCompanionDraftComplete,
+  isDistanceRangeValid,
+  mapRelationSubmitError,
   type CompanionDraft,
   type RelationFormDirection
 } from './plantRelationForm.utils';
 import './plantRelationFormModal.css';
-
-const MECHANISMS: readonly PlantRelationMechanism[] = [
-  'pest_repellent',
-  'pollinator_attractor',
-  'nitrogen_fixer',
-  'nutrient_accumulator',
-  'growth_stimulator',
-  'trap_crop',
-  'physical_support',
-  'shade_provider',
-  'allelopathy',
-  'pest_host',
-  'disease_vector',
-  'resource_competition'
-];
 
 export interface PlantRelationFormModalProps {
   readonly isOpen: boolean;
@@ -89,25 +72,25 @@ function PlantRelationFormDialog({
   const updateMutation = useUpdatePlantRelation();
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setServerError(null);
 
     const trimmedReason = reason.trim();
-    if (!trimmedReason) {
-      setServerError(t('toast.form_validation_check'));
-      return;
-    }
-
     if (
-      !isBedWide &&
-      (minDistanceCm < 0 || maxDistanceCm < 0 || minDistanceCm > maxDistanceCm)
+      !trimmedReason ||
+      !isDistanceRangeValid(isBedWide, minDistanceCm, maxDistanceCm)
     ) {
       setServerError(t('toast.form_validation_check'));
       return;
     }
 
     try {
+      const proximity = {
+        minDistanceCm,
+        maxDistanceCm: isBedWide ? null : maxDistanceCm
+      };
+
       if (isEditing && relationToEdit) {
         const effectiveEtag = etag || `"${relationToEdit.version}"`;
         await updateMutation.mutateAsync({
@@ -116,10 +99,7 @@ function PlantRelationFormDialog({
             type,
             mechanism,
             strength,
-            proximity: {
-              minDistanceCm,
-              maxDistanceCm: isBedWide ? null : maxDistanceCm
-            },
+            proximity,
             reason: trimmedReason
           },
           etag: effectiveEtag
@@ -136,10 +116,7 @@ function PlantRelationFormDialog({
           type,
           mechanism,
           strength,
-          proximity: {
-            minDistanceCm,
-            maxDistanceCm: isBedWide ? null : maxDistanceCm
-          },
+          proximity,
           reason: trimmedReason
         });
       }
@@ -147,13 +124,7 @@ function PlantRelationFormDialog({
       onSuccess?.();
       onClose();
     } catch (err) {
-      if (err instanceof PreconditionFailedError) {
-        setServerError(t('toast.concurrent_modification'));
-      } else if (err instanceof ApiError && err.status === 409) {
-        setServerError(t('plantRelation.curator.errorDuplicate'));
-      } else {
-        setServerError(t('plantRelation.curator.errorSave'));
-      }
+      setServerError(mapRelationSubmitError(err));
     }
   };
 
@@ -211,181 +182,28 @@ function PlantRelationFormDialog({
           </div>
         )}
 
-        {!isEditing && (
-          <>
-            <div className="plant-relation-form-modal__field">
-              <span className="plant-relation-form-modal__label">
-                {t('plantRelation.curator.direction')}
-              </span>
-              <div className="plant-relation-form-modal__radio-group">
-                <label className="plant-relation-form-modal__radio-label">
-                  <input
-                    type="radio"
-                    name="direction"
-                    value="giving"
-                    checked={direction === 'giving'}
-                    onChange={() => handleDirectionChange('giving')}
-                  />
-                  <span>
-                    {t('plantRelation.curator.directionBenefitsGiven')}
-                  </span>
-                </label>
-                <label className="plant-relation-form-modal__radio-label">
-                  <input
-                    type="radio"
-                    name="direction"
-                    value="receiving"
-                    checked={direction === 'receiving'}
-                    onChange={() => handleDirectionChange('receiving')}
-                  />
-                  <span>
-                    {t('plantRelation.curator.directionBenefitsReceived')}
-                  </span>
-                </label>
-              </div>
-            </div>
-            <PlantRelationCompanionField
-              draft={companion}
-              availableScopes={getAvailableCompanionScopes(direction)}
-              basePlantId={basePlantId}
-              onChange={setCompanion}
-            />
-          </>
-        )}
-
-        <div className="plant-relation-form-modal__field">
-          <span className="plant-relation-form-modal__label">
-            {t('plantRelation.curator.relationType')}
-          </span>
-          <div className="plant-relation-form-modal__radio-group">
-            <label className="plant-relation-form-modal__radio-label">
-              <input
-                type="radio"
-                name="type"
-                value="beneficial"
-                checked={type === 'beneficial'}
-                onChange={() => setType('beneficial')}
-              />
-              <span>{t('plantRelation.curator.typeBeneficial')}</span>
-            </label>
-            <label className="plant-relation-form-modal__radio-label">
-              <input
-                type="radio"
-                name="type"
-                value="detrimental"
-                checked={type === 'detrimental'}
-                onChange={() => setType('detrimental')}
-              />
-              <span>{t('plantRelation.curator.typeDetrimental')}</span>
-            </label>
-          </div>
-        </div>
-
-        <div className="plant-relation-form-modal__field">
-          <label
-            htmlFor="plant-relation-mechanism"
-            className="plant-relation-form-modal__label"
-          >
-            {t('plantRelation.curator.mechanism')}
-          </label>
-          <Select
-            id="plant-relation-mechanism"
-            className="plant-relation-form-modal__select"
-            value={mechanism}
-            onChange={(e) =>
-              setMechanism(e.target.value as PlantRelationMechanism)
-            }
-            options={MECHANISMS.map((m) => ({
-              value: m,
-              label: tValue('plantRelation.mechanismValues', m)
-            }))}
-          />
-        </div>
-
-        <div className="plant-relation-form-modal__field">
-          <label
-            htmlFor="plant-relation-strength"
-            className="plant-relation-form-modal__label"
-          >
-            {t('plantRelation.curator.strength')}: {strength}
-          </label>
-          <input
-            id="plant-relation-strength"
-            type="range"
-            min="1"
-            max="5"
-            step="1"
-            value={strength}
-            onChange={(e) => setStrength(Number(e.target.value))}
-            className="plant-relation-form-modal__range"
-          />
-        </div>
-
-        <div className="plant-relation-form-modal__field">
-          <label className="plant-relation-form-modal__checkbox-label">
-            <input
-              type="checkbox"
-              checked={isBedWide}
-              onChange={(e) => setIsBedWide(e.target.checked)}
-            />
-            <span>{t('plantRelation.curator.proximityBedWide')}</span>
-          </label>
-        </div>
-
-        {!isBedWide && (
-          <div className="plant-relation-form-modal__proximity-row">
-            <div className="plant-relation-form-modal__field">
-              <label
-                htmlFor="plant-relation-proximity-min"
-                className="plant-relation-form-modal__label"
-              >
-                {t('plantRelation.curator.proximityMin')}
-              </label>
-              <input
-                id="plant-relation-proximity-min"
-                type="number"
-                min="0"
-                value={minDistanceCm}
-                onChange={(e) => setMinDistanceCm(Number(e.target.value))}
-                className="plant-relation-form-modal__input"
-              />
-            </div>
-            <div className="plant-relation-form-modal__field">
-              <label
-                htmlFor="plant-relation-proximity-max"
-                className="plant-relation-form-modal__label"
-              >
-                {t('plantRelation.curator.proximityMax')}
-              </label>
-              <input
-                id="plant-relation-proximity-max"
-                type="number"
-                min="0"
-                value={maxDistanceCm}
-                onChange={(e) => setMaxDistanceCm(Number(e.target.value))}
-                className="plant-relation-form-modal__input"
-              />
-            </div>
-          </div>
-        )}
-
-        <div className="plant-relation-form-modal__field">
-          <label
-            htmlFor="plant-relation-reason"
-            className="plant-relation-form-modal__label"
-          >
-            {t('plantRelation.curator.reason')}
-          </label>
-          <textarea
-            id="plant-relation-reason"
-            rows={3}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder={t('plantRelation.curator.reasonPlaceholder')}
-            className="plant-relation-form-modal__textarea"
-            required
-          />
-        </div>
+        <PlantRelationFormFields
+          isEditing={isEditing}
+          direction={direction}
+          onDirectionChange={handleDirectionChange}
+          companion={companion}
+          onCompanionChange={setCompanion}
+          basePlantId={basePlantId}
+          type={type}
+          onTypeChange={setType}
+          mechanism={mechanism}
+          onMechanismChange={setMechanism}
+          strength={strength}
+          onStrengthChange={setStrength}
+          isBedWide={isBedWide}
+          onBedWideChange={setIsBedWide}
+          minDistanceCm={minDistanceCm}
+          onMinDistanceChange={setMinDistanceCm}
+          maxDistanceCm={maxDistanceCm}
+          onMaxDistanceChange={setMaxDistanceCm}
+          reason={reason}
+          onReasonChange={setReason}
+        />
       </form>
     </Modal>
   );

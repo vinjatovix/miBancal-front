@@ -1,4 +1,5 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useReportedNavigate } from '../../../../../shared/observability/useReportedNavigate';
 
 import { t } from '../../../../../i18n/core/t';
 import Icon from '../../../../../shared/components/Icon/Icon';
@@ -13,15 +14,36 @@ interface PlantLikeButtonProps {
   readonly likesCount: number;
 }
 
+function resolvePlantLikeAriaLabel(
+  userId: string | undefined,
+  liked: boolean,
+  likesCount: number
+): string {
+  if (userId) {
+    if (liked) {
+      return t('plantLikeButton.aria_label_count_pressed', {
+        count: likesCount
+      });
+    }
+    return t('plantLikeButton.aria_label_count_unpressed', {
+      count: likesCount
+    });
+  }
+  if (liked) {
+    return t('plantLikeButton.aria_label_zero_pressed');
+  }
+  return t('plantLikeButton.aria_label_zero_unpressed');
+}
+
 export function PlantLikeButton({
   plantId,
   userId,
   likesCount
 }: PlantLikeButtonProps) {
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('plant-like-button');
   const location = useLocation();
   const { data } = usePlantLike(plantId, userId);
-  const { mutate, isPending } = useTogglePlantLike(plantId, userId);
+  const { like, unlike, isPending } = useTogglePlantLike(plantId, userId);
 
   const liked = data?.liked ?? false;
 
@@ -35,16 +57,14 @@ export function PlantLikeButton({
       });
       return;
     }
-    mutate(liked);
+    if (liked) {
+      unlike();
+    } else {
+      like();
+    }
   };
 
-  const ariaLabel = userId
-    ? liked
-      ? t('plantLikeButton.aria_label_count_pressed', { count: likesCount })
-      : t('plantLikeButton.aria_label_count_unpressed', { count: likesCount })
-    : liked
-      ? t('plantLikeButton.aria_label_zero_pressed')
-      : t('plantLikeButton.aria_label_zero_unpressed');
+  const ariaLabel = resolvePlantLikeAriaLabel(userId, liked, likesCount);
 
   return (
     <button

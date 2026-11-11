@@ -1,17 +1,17 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, type SubmitEvent } from 'react';
+import { useReportedNavigate } from '../../shared/observability/useReportedNavigate';
 
 import { t } from '../../i18n/core/t';
 import Button from '../../shared/components/Button/Button';
 import { CancelConfirmModal } from '../../shared/components/Modal/CancelConfirmModal';
-import { ApiError } from '../../shared/errors/ApiError';
 import { useToast } from '../../shared/toast/useToast';
 import { FamilyFormFields } from './components/FamilyForm/FamilyFormFields';
 import { useFamilyFormState } from './components/FamilyForm/hooks/useFamilyFormState';
 import {
+  focusFirstFamilyError,
   formStateToCreateFamilyRequest,
-  initialFamilyFormState,
-  normalizeFamilyApiErrors
+  handleFamilySubmitError,
+  initialFamilyFormState
 } from './components/FamilyForm/utils/familyFormMappers';
 import { useCreateFamily } from './hooks/useCreateFamily';
 
@@ -19,7 +19,7 @@ import './familyCreatePage.css';
 import './components/FamilyForm/familyForm.css';
 
 export default function FamilyCreatePage() {
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('family-create');
   const createMutation = useCreateFamily();
   const { dismissAll, showErrorToast } = useToast();
   const [validationSummary, setValidationSummary] = useState<string | null>(
@@ -43,24 +43,13 @@ export default function FamilyCreatePage() {
     navigate('/families');
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     dismissAll();
 
     if (!validate()) {
       setValidationSummary(t('family.form.validation.summary'));
-      setTimeout(() => {
-        const firstErrorElement = document.querySelector<HTMLElement>(
-          '.family-form [aria-invalid="true"], .family-form [role="alert"]'
-        );
-        if (firstErrorElement) {
-          firstErrorElement.scrollIntoView?.({
-            behavior: 'smooth',
-            block: 'center'
-          });
-          firstErrorElement.focus?.();
-        }
-      }, 0);
+      focusFirstFamilyError();
       return;
     }
 
@@ -70,39 +59,7 @@ export default function FamilyCreatePage() {
       const result = await createMutation.mutateAsync(request);
       navigate(`/families/${result.family.slug || result.family.id}`);
     } catch (err: unknown) {
-      if (err instanceof ApiError) {
-        if (err.errors) {
-          const { fieldErrors, unmappedErrors } = normalizeFamilyApiErrors(
-            err.errors
-          );
-          setErrors(fieldErrors);
-          if (unmappedErrors.length > 0) {
-            showErrorToast(unmappedErrors.join('; '));
-          } else if (Object.keys(fieldErrors).length === 0) {
-            showErrorToast({
-              title: t('admin.toast_error_title'),
-              message:
-                err.status === 409
-                  ? t('family.form.duplicate_error')
-                  : err.message
-            });
-          } else {
-            showErrorToast({
-              title: t('admin.toast_error_title'),
-              message: t('toast.form_validation_check')
-            });
-          }
-        } else if (err.status === 409) {
-          showErrorToast({
-            title: t('admin.toast_error_title'),
-            message: t('family.form.duplicate_error')
-          });
-        } else {
-          showErrorToast(err);
-        }
-      } else {
-        showErrorToast(err);
-      }
+      handleFamilySubmitError(err, { setErrors, showErrorToast });
     }
   };
 

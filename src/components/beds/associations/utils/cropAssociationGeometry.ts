@@ -60,10 +60,8 @@ export function calculateEffectiveReach(
     return defaultReachCm;
   }
 
-  const reaches = relations.map((relation) =>
-    relation.proximity?.maxDistanceCm != null
-      ? relation.proximity.maxDistanceCm
-      : defaultReachCm
+  const reaches = relations.map(
+    (relation) => relation.proximity?.maxDistanceCm ?? defaultReachCm
   );
 
   return Math.min(...reaches);

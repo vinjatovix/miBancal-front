@@ -329,7 +329,7 @@ describe('PlantDetail', () => {
     renderPlantDetail();
     await screen.findByTestId('section-recursos');
 
-    const articlesTab = await screen.getByTestId('tab-articles');
+    const articlesTab = screen.getByTestId('tab-articles');
     await user.click(articlesTab);
 
     expect(articlesTab).toHaveAttribute('aria-selected', 'true');

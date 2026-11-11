@@ -455,7 +455,14 @@ describe('AccountDropdown', () => {
       expect(document.activeElement).toBe(loginLink);
     });
 
-    it('moves focus to the next menu item on ArrowDown', () => {
+    it.each([
+      ['ArrowDown', 1, /Crear cuenta/i],
+      ['ArrowDown, wraps to first', 2, /Iniciar sesión/i],
+      ['ArrowUp, wraps to last', -1, /Crear cuenta/i],
+      ['ArrowDown, then ArrowUp', [1, -1], /Iniciar sesión/i],
+      ['ArrowDown, then Home', [1, 'Home'], /Iniciar sesión/i],
+      ['End', 'End', /Crear cuenta/i]
+    ])('moves focus correctly on %s', (_label, actions, expectedName) => {
       const triggerRef = { current: document.createElement('button') };
       renderWithProviders(
         <AccountDropdown
@@ -465,105 +472,28 @@ describe('AccountDropdown', () => {
         />
       );
 
-      fireEvent.keyDown(window, { key: 'ArrowDown' });
+      const applyAction = (action: number | string) => {
+        if (typeof action === 'number') {
+          for (let i = 0; i < Math.abs(action); i++) {
+            fireEvent.keyDown(window, {
+              key: action > 0 ? 'ArrowDown' : 'ArrowUp'
+            });
+          }
+        } else {
+          fireEvent.keyDown(window, { key: action });
+        }
+      };
 
-      const registerLink = screen.getByRole('menuitem', {
-        name: /Crear cuenta/i
+      if (Array.isArray(actions)) {
+        for (const action of actions) applyAction(action);
+      } else {
+        applyAction(actions);
+      }
+
+      const expectedLink = screen.getByRole('menuitem', {
+        name: expectedName
       });
-      expect(document.activeElement).toBe(registerLink);
-    });
-
-    it('wraps focus to the first menu item on ArrowDown from the last item', () => {
-      const triggerRef = { current: document.createElement('button') };
-      renderWithProviders(
-        <AccountDropdown
-          isOpen={true}
-          onClose={vi.fn()}
-          triggerRef={triggerRef}
-        />
-      );
-
-      fireEvent.keyDown(window, { key: 'ArrowDown' });
-      fireEvent.keyDown(window, { key: 'ArrowDown' });
-
-      const loginLink = screen.getByRole('menuitem', {
-        name: /Iniciar sesión/i
-      });
-      expect(document.activeElement).toBe(loginLink);
-    });
-
-    it('wraps focus to the last menu item on ArrowUp from the first item', () => {
-      const triggerRef = { current: document.createElement('button') };
-      renderWithProviders(
-        <AccountDropdown
-          isOpen={true}
-          onClose={vi.fn()}
-          triggerRef={triggerRef}
-        />
-      );
-
-      fireEvent.keyDown(window, { key: 'ArrowUp' });
-
-      const registerLink = screen.getByRole('menuitem', {
-        name: /Crear cuenta/i
-      });
-      expect(document.activeElement).toBe(registerLink);
-    });
-
-    it('moves focus to the previous menu item on ArrowUp', () => {
-      const triggerRef = { current: document.createElement('button') };
-      renderWithProviders(
-        <AccountDropdown
-          isOpen={true}
-          onClose={vi.fn()}
-          triggerRef={triggerRef}
-        />
-      );
-
-      fireEvent.keyDown(window, { key: 'ArrowDown' });
-      fireEvent.keyDown(window, { key: 'ArrowUp' });
-
-      const loginLink = screen.getByRole('menuitem', {
-        name: /Iniciar sesión/i
-      });
-      expect(document.activeElement).toBe(loginLink);
-    });
-
-    it('moves focus to the first menu item on Home key', () => {
-      const triggerRef = { current: document.createElement('button') };
-      renderWithProviders(
-        <AccountDropdown
-          isOpen={true}
-          onClose={vi.fn()}
-          triggerRef={triggerRef}
-        />
-      );
-
-      fireEvent.keyDown(window, { key: 'ArrowDown' });
-      fireEvent.keyDown(window, { key: 'Home' });
-
-      const loginLink = screen.getByRole('menuitem', {
-        name: /Iniciar sesión/i
-      });
-      expect(document.activeElement).toBe(loginLink);
-    });
-
-    it('moves focus to the last menu item on End key', () => {
-      const triggerRef = { current: document.createElement('button') };
-      renderWithProviders(
-        <AccountDropdown
-          isOpen={true}
-          onClose={vi.fn()}
-          triggerRef={triggerRef}
-        />
-      );
-
-      fireEvent.keyDown(window, { key: 'End' });
-
-      const registerLink = screen.getByRole('menuitem', {
-        name: /Crear cuenta/i
-      });
-      expect(document.activeElement).toBe(registerLink);
+      expect(document.activeElement).toBe(expectedLink);
     });
 
     it('closes menu on Tab key', () => {

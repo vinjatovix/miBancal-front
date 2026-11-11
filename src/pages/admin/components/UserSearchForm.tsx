@@ -10,7 +10,7 @@ interface Props {
 export function UserSearchForm({ onSearch, isLoading }: Props) {
   const [value, setValue] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     onSearch(value);
   };

@@ -5,7 +5,7 @@ export function setDomTheme(theme: ResolvedTheme): void {
     return;
   }
 
-  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.dataset.theme = theme;
 
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
   if (metaThemeColor) {

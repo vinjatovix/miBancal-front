@@ -136,3 +136,38 @@ export function extractSvgInner(svgContent: string): string {
   }
   return match[1].trim();
 }
+
+export function hasMultipleRootElements(xml: string): boolean {
+  const trimmed = xml.trim();
+  let depth = 0;
+  let rootCount = 0;
+  const tagRegex = /<\/?([a-zA-Z0-9_-]+)[^>]*?(\/?)>/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = tagRegex.exec(trimmed)) !== null) {
+    const isSelfClosing = match[2] === '/' || match[0].endsWith('/>');
+    const isClosing = match[0].startsWith('</');
+
+    if (depth === 0) {
+      rootCount++;
+      if (rootCount > 1) {
+        return true;
+      }
+    }
+
+    if (isClosing) {
+      depth--;
+    } else if (!isSelfClosing) {
+      depth++;
+    }
+  }
+
+  return false;
+}
+
+export function formatGlyphDeclaration(name: string, inner: string): string {
+  if (hasMultipleRootElements(inner)) {
+    return `const ${name}Glyph = (\n  <>\n    ${inner}\n  </>\n);`;
+  }
+  return `const ${name}Glyph = (\n  ${inner}\n);`;
+}

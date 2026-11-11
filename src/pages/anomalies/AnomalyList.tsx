@@ -72,27 +72,43 @@ interface EmptyProps {
   readonly onGoToFirstPage: () => void;
 }
 
+function resolveEmptyAction({
+  isBeyondFirstPage,
+  hasActiveFilters,
+  onGoToFirstPage,
+  onClearFilters
+}: EmptyProps): { label: string; onClick: () => void } | null {
+  if (isBeyondFirstPage) {
+    return { label: t('anomaly.go_to_first_page'), onClick: onGoToFirstPage };
+  }
+  if (hasActiveFilters) {
+    return { label: t('errors.actions.clearFilters'), onClick: onClearFilters };
+  }
+  return null;
+}
+
 function AnomalyListEmpty({
   hasActiveFilters,
   isBeyondFirstPage,
   onClearFilters,
   onGoToFirstPage
 }: EmptyProps) {
-  const action = isBeyondFirstPage
-    ? { label: t('anomaly.go_to_first_page'), onClick: onGoToFirstPage }
-    : hasActiveFilters
-      ? { label: t('errors.actions.clearFilters'), onClick: onClearFilters }
-      : null;
+  const action = resolveEmptyAction({
+    isBeyondFirstPage,
+    hasActiveFilters,
+    onGoToFirstPage,
+    onClearFilters
+  });
 
   return (
     <div className="anomaly-list__empty">
-      <p role="status" className="anomaly-list__empty-message">
+      <output className="anomaly-list__empty-message">
         {t(
           hasActiveFilters || isBeyondFirstPage
             ? 'anomaly.empty'
             : 'anomaly.empty_catalog'
         )}
-      </p>
+      </output>
       {action && (
         <button
           type="button"

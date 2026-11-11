@@ -20,6 +20,12 @@
     transform 0.15s ease;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .family-detail__cta-link {
+    transition: none;
+  }
+}
+
 .family-detail__cta-link:hover {
   background: var(--color-surface-container-high);
   transform: translateX(2px);
@@ -64,6 +70,12 @@
     transform 0.15s ease,
     box-shadow 0.15s ease;
   box-shadow: var(--elevation-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .family-plants__grid-item {
+    transition: none;
+  }
 }
 
 .family-plants__grid-item:hover {

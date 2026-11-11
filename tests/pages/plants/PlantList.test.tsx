@@ -295,7 +295,7 @@ describe('PlantList', () => {
 
     expect(
       await screen.findByText(t('plant.emptyState.outOfRange'))
-    ).toHaveAttribute('role', 'status');
+    ).toHaveRole('status');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     await userEvent.click(
       screen.getByRole('button', { name: t('plant.emptyState.goToFirstPage') })
@@ -315,7 +315,7 @@ describe('PlantList', () => {
 
     expect(
       await screen.findByText(t('plant.emptyState.emptyCatalog'))
-    ).toHaveAttribute('role', 'status');
+    ).toHaveRole('status');
     expect(
       screen.queryByRole('button', { name: t('errors.actions.clearFilters') })
     ).not.toBeInTheDocument();
@@ -332,9 +332,9 @@ describe('PlantList', () => {
 
     renderPlantList('/plants?identity=zzzzzz&limit=50&page=2');
 
-    expect(
-      await screen.findByText(t('plant.emptyState.noMatches'))
-    ).toHaveAttribute('role', 'status');
+    expect(await screen.findByText(t('plant.emptyState.noMatches'))).toHaveRole(
+      'status'
+    );
     await userEvent.click(
       screen.getByRole('button', { name: t('errors.actions.clearFilters') })
     );
@@ -382,9 +382,9 @@ describe('PlantList', () => {
 
     renderPlantList('/plants?edible=false');
 
-    expect(
-      await screen.findByText(t('plant.emptyState.noMatches'))
-    ).toHaveAttribute('role', 'status');
+    expect(await screen.findByText(t('plant.emptyState.noMatches'))).toHaveRole(
+      'status'
+    );
     expect(lastUrl(fetchMock)).toContain('filter[edible][eq]=false');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });

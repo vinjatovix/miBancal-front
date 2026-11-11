@@ -14,6 +14,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-2xs);
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
 }
 
 .bed-canvas-tool-selector__button {
@@ -60,6 +64,12 @@
   gap: var(--space-2xs);
   padding-inline-start: var(--space-xs);
   border-inline-start: 1px solid var(--color-border-subtle);
+  margin: 0;
+  padding-block: 0;
+  padding-inline-end: 0;
+  border-block: none;
+  border-inline-end: none;
+  min-width: 0;
 }
 
 .bed-canvas-tool-selector__pattern-button {

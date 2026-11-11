@@ -103,14 +103,8 @@ export function canonicalPlantToFormState(plant: Plant): PlantFormState {
     spreadMax: String(plant.traits.size.spread.max),
     spacingMin: String(plant.traits.spacingCm.min),
     spacingMax: String(plant.traits.spacingCm.max),
-    edible:
-      plant.traits.ecological?.edible !== undefined
-        ? plant.traits.ecological.edible
-        : null,
-    toxic:
-      plant.traits.ecological?.toxic !== undefined
-        ? plant.traits.ecological.toxic
-        : null,
+    edible: plant.traits.ecological?.edible ?? null,
+    toxic: plant.traits.ecological?.toxic ?? null,
     toxicityNotes: plant.traits.ecological?.toxicityNotes ?? '',
     sowingMonths: plant.phenology.sowing.months,
     seedsPerHoleMin: String(plant.phenology.sowing.seedsPerHole.min),

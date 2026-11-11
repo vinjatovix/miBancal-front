@@ -1,8 +1,34 @@
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useScrollRestore } from '../../../src/components/layout/useScrollRestore';
+import { reportUnexpectedError } from '../../../src/shared/observability/reportUnexpectedError';
+
+const { navigateOverride } = vi.hoisted(() => ({
+  navigateOverride: { impl: null as null | ((...args: unknown[]) => unknown) }
+}));
+
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>();
+  return {
+    ...actual,
+    useNavigate: () => {
+      const actualNavigate = actual.useNavigate();
+      return navigateOverride.impl ?? actualNavigate;
+    }
+  };
+});
+
+vi.mock(
+  '../../../src/shared/observability/reportUnexpectedError',
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import('../../../src/shared/observability/reportUnexpectedError')
+    >()),
+    reportUnexpectedError: vi.fn()
+  })
+);
 
 function TestConsumer() {
   useScrollRestore();
@@ -19,6 +45,8 @@ function TestConsumer() {
 describe('useScrollRestore', () => {
   beforeEach(() => {
     vi.mocked(window.scrollTo).mockClear();
+    navigateOverride.impl = null;
+    vi.mocked(reportUnexpectedError).mockClear();
   });
 
   it('scrolls instantly to restoreScrollY when present in location state', () => {
@@ -97,6 +125,31 @@ describe('useScrollRestore', () => {
 
     expect(getByTestId('state').textContent).toBe(
       JSON.stringify({ preservedData: 'abc' })
+    );
+  });
+
+  it('reports the error when navigation rejects', async () => {
+    const navigationError = new Error('navigation failed');
+    navigateOverride.impl = vi.fn(() => Promise.reject(navigationError));
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/plants',
+            state: { restoreScrollY: 450 }
+          }
+        ]}
+      >
+        <TestConsumer />
+      </MemoryRouter>
+    );
+
+    await waitFor(() =>
+      expect(reportUnexpectedError).toHaveBeenCalledWith(
+        expect.objectContaining({ section: 'scroll-restore' }),
+        navigationError
+      )
     );
   });
 });

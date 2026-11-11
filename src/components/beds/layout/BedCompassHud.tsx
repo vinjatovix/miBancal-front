@@ -1,4 +1,5 @@
 import {
+  type ChangeEvent,
   type JSX,
   type KeyboardEvent,
   type PointerEvent,
@@ -79,7 +80,7 @@ export default function BedCompassHud({
   onSaveNorthAngle,
   isSavingNorth = false
 }: BedCompassHudProps): JSX.Element {
-  const dialRef = useRef<HTMLDivElement>(null);
+  const dialRef = useRef<HTMLInputElement>(null);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const interactive = mode === 'position';
@@ -88,16 +89,23 @@ export default function BedCompassHud({
   const currentAngle = isBedSelected ? bedAzimuth : effectiveNorth;
   const windName = getWindName(currentAngle);
 
-  const headingText = isBedSelected
-    ? t('bed.cardinal.bed_heading_title', {
-        angle: String(currentAngle),
-        wind: windName
-      })
-    : northAngle === null || northAngle === 0
-      ? t('bed.cardinal.terrain_north_default')
-      : t('bed.cardinal.terrain_north_title', { angle: String(northAngle) });
+  let headingText: string;
+  if (isBedSelected) {
+    headingText = t('bed.cardinal.bed_heading_title', {
+      angle: String(currentAngle),
+      wind: windName
+    });
+  } else if (northAngle === null || northAngle === 0) {
+    headingText = t('bed.cardinal.terrain_north_default');
+  } else {
+    headingText = t('bed.cardinal.terrain_north_title', {
+      angle: String(northAngle)
+    });
+  }
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+  const handleKeyDown = (
+    event: KeyboardEvent<HTMLInputElement | HTMLDivElement>
+  ): void => {
     if (!interactive) return;
 
     const isStepUp = event.key === 'ArrowUp' || event.key === 'ArrowRight';
@@ -109,6 +117,17 @@ export default function BedCompassHud({
     const delta = isStepUp ? step : -step;
     const nextAngle = normalizeAngle(currentAngle + delta);
 
+    if (isBedSelected) {
+      onBedRotationChange?.(nextAngle);
+    } else {
+      onNorthAngleChange?.(nextAngle);
+    }
+  };
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    const parsed = Number(event.target.value);
+    if (Number.isNaN(parsed)) return;
+    const nextAngle = normalizeAngle(parsed);
     if (isBedSelected) {
       onBedRotationChange?.(nextAngle);
     } else {
@@ -168,32 +187,40 @@ export default function BedCompassHud({
   };
 
   return (
-    <aside
+    <section
       className="bed-compass-hud"
-      role="region"
       aria-label={t('bed.cardinal.compass_hud_label')}
     >
       <div
-        ref={dialRef}
         className={`bed-compass-hud__dial ${
           interactive ? 'bed-compass-hud__dial--interactive' : ''
         } ${isDragging ? 'bed-compass-hud__dial--dragging' : ''}`}
-        role="spinbutton"
-        tabIndex={interactive ? 0 : -1}
-        aria-readonly={!interactive ? true : undefined}
-        aria-valuenow={currentAngle}
-        aria-valuemin={0}
-        aria-valuemax={359}
-        aria-valuetext={`${currentAngle}° ${windName}`}
-        aria-label={headingText}
-        title={interactive ? t('bed.cardinal.compass_drag_hint') : undefined}
-        onKeyDown={handleKeyDown}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerCancel}
-        onLostPointerCapture={handlePointerCancel}
+        tabIndex={-1}
+        onPointerDown={interactive ? handlePointerDown : undefined}
+        onPointerMove={interactive ? handlePointerMove : undefined}
+        onPointerUp={interactive ? handlePointerUp : undefined}
+        onPointerCancel={interactive ? handlePointerCancel : undefined}
+        onLostPointerCapture={interactive ? handlePointerCancel : undefined}
       >
+        <input
+          ref={dialRef}
+          type="number"
+          className="sr-only"
+          tabIndex={interactive ? 0 : -1}
+          readOnly={!interactive}
+          value={currentAngle}
+          min={0}
+          max={360}
+          aria-label={headingText}
+          aria-describedby="compass-angle-description"
+          title={interactive ? t('bed.cardinal.compass_drag_hint') : undefined}
+          onKeyDown={interactive ? handleKeyDown : undefined}
+          onChange={handleInputChange}
+        />
+
+        <span id="compass-angle-description" className="sr-only">
+          {`${currentAngle}° ${windName}`}
+        </span>
         <svg
           className="bed-compass-hud__svg"
           viewBox="0 0 96 96"
@@ -307,6 +334,6 @@ export default function BedCompassHud({
           </Button>
         )}
       </div>
-    </aside>
+    </section>
   );
 }

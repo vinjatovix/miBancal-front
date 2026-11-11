@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useReportedNavigate } from '../../../shared/observability/useReportedNavigate';
 
 import { t } from '../../../i18n/core/t';
 import { isPrivateRoute } from '../../../shared/auth/isPrivateRoute';
@@ -21,7 +22,7 @@ export default function AccountDropdown({
 }: AccountDropdownProps) {
   const { isAuthenticated, user, isAdmin, logout } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('account-menu');
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -63,9 +64,7 @@ export default function AccountDropdown({
         return;
       }
 
-      const currentIndex = items.findIndex(
-        (item) => item === document.activeElement
-      );
+      const currentIndex = items.indexOf(document.activeElement as HTMLElement);
 
       if (event.key === 'ArrowDown') {
         event.preventDefault();
@@ -84,7 +83,7 @@ export default function AccountDropdown({
         items[0]?.focus();
       } else if (event.key === 'End') {
         event.preventDefault();
-        items[items.length - 1]?.focus();
+        items.at(-1)?.focus();
       } else if (
         (event.key === ' ' || event.key === 'Spacebar') &&
         document.activeElement instanceof HTMLAnchorElement

@@ -10,12 +10,23 @@ import {
   unlikePlant
 } from '../../../../src/services/plantLikes.service';
 import { plantKeys } from '../../../../src/shared/reactQuery/plantKeys';
+import { reportUnexpectedError } from '../../../../src/shared/observability/reportUnexpectedError';
 import { buildPlant } from '../../../fixtures/plants/buildPlant';
 
 vi.mock('../../../../src/services/plantLikes.service', () => ({
   likePlant: vi.fn(() => Promise.resolve()),
   unlikePlant: vi.fn(() => Promise.resolve())
 }));
+
+vi.mock(
+  '../../../../src/shared/observability/reportUnexpectedError',
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import('../../../../src/shared/observability/reportUnexpectedError')
+    >()),
+    reportUnexpectedError: vi.fn()
+  })
+);
 
 const PLANT_ID = 'p-1';
 const USER_ID = 'u-1';
@@ -39,11 +50,11 @@ describe('useTogglePlantLike', () => {
   });
 
   it.each([
-    ['da me gusta', false, 5, 6],
-    ['quita el me gusta', true, 5, 4]
-  ])(
+    ['da me gusta', 'like', 5, 6],
+    ['quita el me gusta', 'unlike', 5, 4]
+  ] as const)(
     'actualiza de forma optimista likesCount en la caché de detalle al %s',
-    async (_label, currentlyLiked, initialCount, expectedCount) => {
+    async (_label, action, initialCount, expectedCount) => {
       const queryClient = new QueryClient();
       seedDetailCache(queryClient, initialCount);
       const { result } = renderHook(
@@ -51,7 +62,7 @@ describe('useTogglePlantLike', () => {
         { wrapper: createWrapper(queryClient) }
       );
 
-      result.current.mutate(currentlyLiked);
+      result.current[action]();
 
       await waitFor(() => {
         const cached = queryClient.getQueryData<{ likesCount: number }>(
@@ -62,29 +73,50 @@ describe('useTogglePlantLike', () => {
     }
   );
 
-  it('invoca likePlant cuando la planta no estaba marcada', async () => {
+  it('invoca likePlant al dar me gusta', async () => {
     const queryClient = new QueryClient();
     seedDetailCache(queryClient, 5);
     const { result } = renderHook(() => useTogglePlantLike(PLANT_ID, USER_ID), {
       wrapper: createWrapper(queryClient)
     });
 
-    result.current.mutate(false);
+    result.current.like();
 
     await waitFor(() => expect(likePlant).toHaveBeenCalledWith(PLANT_ID));
     expect(unlikePlant).not.toHaveBeenCalled();
   });
 
-  it('invoca unlikePlant cuando la planta ya estaba marcada', async () => {
+  it('invoca unlikePlant al quitar el me gusta', async () => {
     const queryClient = new QueryClient();
     seedDetailCache(queryClient, 5);
     const { result } = renderHook(() => useTogglePlantLike(PLANT_ID, USER_ID), {
       wrapper: createWrapper(queryClient)
     });
 
-    result.current.mutate(true);
+    result.current.unlike();
 
     await waitFor(() => expect(unlikePlant).toHaveBeenCalledWith(PLANT_ID));
     expect(likePlant).not.toHaveBeenCalled();
+  });
+
+  it('reporta el error cuando la invalidación de la caché falla', async () => {
+    const queryClient = new QueryClient();
+    const invalidationError = new Error('invalidate failed');
+    vi.spyOn(queryClient, 'invalidateQueries').mockRejectedValue(
+      invalidationError
+    );
+    seedDetailCache(queryClient, 5);
+    const { result } = renderHook(() => useTogglePlantLike(PLANT_ID, USER_ID), {
+      wrapper: createWrapper(queryClient)
+    });
+
+    result.current.like();
+
+    await waitFor(() =>
+      expect(reportUnexpectedError).toHaveBeenCalledWith(
+        expect.objectContaining({ section: 'plant-like' }),
+        invalidationError
+      )
+    );
   });
 });

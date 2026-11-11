@@ -1,10 +1,9 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, type SubmitEvent } from 'react';
+import { useReportedNavigate } from '../../shared/observability/useReportedNavigate';
 
 import { t } from '../../i18n/core/t';
 import Button from '../../shared/components/Button/Button';
 import { CancelConfirmModal } from '../../shared/components/Modal/CancelConfirmModal';
-import { ApiError } from '../../shared/errors/ApiError';
 import { useToast } from '../../shared/toast/useToast';
 import { usePlantFormState } from './components/PlantForm/hooks/usePlantFormState';
 import { PlantIdentitySection } from './components/PlantForm/PlantIdentitySection';
@@ -14,9 +13,10 @@ import { PlantPhenologySection } from './components/PlantForm/PlantPhenologySect
 import { PlantResourcesSection } from './components/PlantForm/PlantResourcesSection';
 import { PlantTraitsSection } from './components/PlantForm/PlantTraitsSection';
 import {
+  focusFirstPlantError,
   formStateToCreatePlantRequest,
-  initialPlantFormState,
-  normalizePlantApiErrors
+  handlePlantSubmitError,
+  initialPlantFormState
 } from './components/PlantForm/utils/plantFormMappers';
 import { useCreatePlant } from './hooks/useCreatePlant';
 
@@ -24,7 +24,7 @@ import './plantCreatePage.css';
 import './components/PlantForm/plantForm.css';
 
 export default function PlantCreatePage() {
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('plant-create');
   const createMutation = useCreatePlant();
   const { dismissAll, showErrorToast } = useToast();
   const [validationSummary, setValidationSummary] = useState<string | null>(
@@ -48,24 +48,13 @@ export default function PlantCreatePage() {
     navigate('/plants');
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     dismissAll();
 
     if (!validate()) {
       setValidationSummary(t('plant.form.validation.summary'));
-      setTimeout(() => {
-        const firstErrorElement = document.querySelector<HTMLElement>(
-          '.plant-form [aria-invalid="true"], .plant-form [role="alert"]'
-        );
-        if (firstErrorElement) {
-          firstErrorElement.scrollIntoView?.({
-            behavior: 'smooth',
-            block: 'center'
-          });
-          firstErrorElement.focus?.();
-        }
-      }, 0);
+      focusFirstPlantError();
       return;
     }
 
@@ -75,31 +64,7 @@ export default function PlantCreatePage() {
       const result = await createMutation.mutateAsync(request);
       navigate(`/plants/${result.plant.id}`);
     } catch (err: unknown) {
-      if (err instanceof ApiError) {
-        if (err.errors) {
-          const { fieldErrors, unmappedErrors } = normalizePlantApiErrors(
-            err.errors
-          );
-          setErrors(fieldErrors);
-          if (unmappedErrors.length > 0) {
-            showErrorToast(unmappedErrors.join('; '));
-          } else {
-            showErrorToast({
-              title: t('admin.toast_error_title'),
-              message: t('toast.form_validation_check')
-            });
-          }
-        } else if (err.status === 409) {
-          showErrorToast({
-            title: t('admin.toast_error_title'),
-            message: t('plant.form.duplicate_error')
-          });
-        } else {
-          showErrorToast(err);
-        }
-      } else {
-        showErrorToast(err);
-      }
+      handlePlantSubmitError(err, { setErrors, showErrorToast });
     }
   };
 

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { t } from '../../../../i18n/core/t';
 import {
   FormAddButton,
@@ -15,7 +17,23 @@ interface Props {
 }
 
 export function PlantNotesSection({ values, errors, onChange }: Props) {
+  const [noteKeys, setNoteKeys] = useState<string[]>(() =>
+    values.notes.map(() => crypto.randomUUID())
+  );
+  const [prevCount, setPrevCount] = useState(values.notes.length);
+
+  if (values.notes.length !== prevCount) {
+    setPrevCount(values.notes.length);
+    const nextKeys = [...noteKeys];
+    while (nextKeys.length < values.notes.length) {
+      nextKeys.push(crypto.randomUUID());
+    }
+    setNoteKeys(nextKeys.slice(0, values.notes.length));
+  }
+
   const handleAddNote = () => {
+    setNoteKeys((prev) => [...prev, crypto.randomUUID()]);
+    setPrevCount(values.notes.length + 1);
     onChange('notes', [...values.notes, '']);
   };
 
@@ -26,6 +44,8 @@ export function PlantNotesSection({ values, errors, onChange }: Props) {
   };
 
   const handleRemoveNote = (index: number) => {
+    setNoteKeys((prev) => prev.filter((_, i) => i !== index));
+    setPrevCount(values.notes.length - 1);
     const updated = values.notes.filter((_, i) => i !== index);
     onChange('notes', updated);
   };
@@ -40,10 +60,11 @@ export function PlantNotesSection({ values, errors, onChange }: Props) {
         <p className="plant-form__empty-text">{t('plant.form.notes.empty')}</p>
       ) : (
         <div className="plant-form__items-list">
-          {values.notes.map((note, index) => {
+          {noteKeys.map((key, index) => {
+            const note = values.notes[index] ?? '';
             const errorKey = `note_${index}`;
             return (
-              <div key={index} className="plant-form__item-card">
+              <div key={key} className="plant-form__item-card">
                 <div className="plant-form__item-header">
                   <span className="plant-form__label">
                     {t('plant.form.notes.note_label', { n: index + 1 })}

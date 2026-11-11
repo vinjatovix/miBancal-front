@@ -34,9 +34,8 @@ export default function CropAdjustmentControls({
   );
 
   return (
-    <div
+    <fieldset
       className="crop-adjustment-controls"
-      role="group"
       aria-label={t('bed.placement.adjust_label', {
         name: selectedCrop.commonName
       })}
@@ -132,6 +131,6 @@ export default function CropAdjustmentControls({
           <Icon name="close" decorative />
         </button>
       </div>
-    </div>
+    </fieldset>
   );
 }

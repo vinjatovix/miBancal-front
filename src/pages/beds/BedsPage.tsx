@@ -1,5 +1,5 @@
 import { useState, type ReactElement } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useReportedNavigate } from '../../shared/observability/useReportedNavigate';
 import { useQuery } from '@tanstack/react-query';
 
 import BedCard from '../../components/beds/BedCard/BedCard';
@@ -21,7 +21,7 @@ const LOCATIONS_REQUEST: LocationListRequest = {
 };
 
 export default function BedsPage(): ReactElement {
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('beds');
   const { user } = useAuth();
   const userId = user?.id ?? '';
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

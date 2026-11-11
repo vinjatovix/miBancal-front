@@ -1,5 +1,6 @@
 import { lazy, startTransition, Suspense, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useReportedNavigate } from '../../../shared/observability/useReportedNavigate';
 
 import { ErrorResponse } from '../../../shared/components/ErrorResponse/ErrorResponse';
 import { Loader } from '../../../shared/components/Loader/Loader';
@@ -25,7 +26,7 @@ const FamilyInlineEditForm = lazy(() =>
 
 export default function FamilyDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('family-detail');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [prevId, setPrevId] = useState<string | undefined>(id);
 

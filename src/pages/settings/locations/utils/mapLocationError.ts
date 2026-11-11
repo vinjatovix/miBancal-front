@@ -6,7 +6,7 @@ import type {
 
 const CONFLICT_STATUS = 409;
 const VALIDATION_STATUS = 400;
-const PRECONDITION_STATUSES = [412, 428];
+const PRECONDITION_STATUSES = new Set([412, 428]);
 
 const FIELD_KEYS: readonly (keyof LocationFormValues)[] = [
   'name',
@@ -21,9 +21,7 @@ export interface MappedLocationError {
 }
 
 export function isPreconditionConflict(error: unknown): boolean {
-  return (
-    error instanceof ApiError && PRECONDITION_STATUSES.includes(error.status)
-  );
+  return error instanceof ApiError && PRECONDITION_STATUSES.has(error.status);
 }
 
 function pickFieldErrors(errors: Record<string, string>): LocationFormErrors {

@@ -134,7 +134,12 @@ describe('Modal', () => {
     ],
     [
       'overlay backdrop',
-      () => screen.getByRole('dialog').parentElement as HTMLElement
+      () =>
+        screen
+          .getByRole('dialog')
+          .parentElement?.querySelector(
+            '.modal-overlay__backdrop'
+          ) as HTMLElement
     ],
     [
       'Escape key',

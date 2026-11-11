@@ -56,6 +56,12 @@
   transition: transform 0.15s ease;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .catalog-layout__fab {
+    transition: none;
+  }
+}
+
 .catalog-layout__fab:hover {
   transform: scale(1.05);
 }

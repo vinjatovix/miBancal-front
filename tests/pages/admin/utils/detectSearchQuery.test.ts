@@ -75,4 +75,14 @@ describe('detectSearchQuery', () => {
 
     expect(result).toEqual(expected);
   });
+
+  it('handles limit input efficiently to avoid super-linear backtracking', () => {
+    const maliciousInput = 'a@' + 'a.'.repeat(5000) + 'a';
+    const start = performance.now();
+    const result = detectSearchQuery(maliciousInput);
+    const duration = performance.now() - start;
+
+    expect(result.kind).toBe('email');
+    expect(duration).toBeLessThan(100);
+  });
 });

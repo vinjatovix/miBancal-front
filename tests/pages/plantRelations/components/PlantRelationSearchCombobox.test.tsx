@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import PlantRelationSearchCombobox from '../../../../src/pages/plantRelations/components/PlantRelationSearchCombobox';
@@ -101,6 +101,39 @@ describe('PlantRelationSearchCombobox', () => {
 
     expect(onSelectPlant).toHaveBeenCalledExactlyOnceWith(mockPlants[0]);
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('invokes onSelectPlant when an option receives an Enter key press', async () => {
+    mockedUsePlantSearch.mockReturnValue({
+      data: {
+        data: mockPlants,
+        pagination: {
+          page: 1,
+          limit: 5,
+          totalPages: 1,
+          totalItems: mockPlants.length
+        }
+      },
+      isLoading: false
+    } as unknown as ReturnType<typeof usePlantSearch>);
+
+    const onSelectPlant = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <PlantRelationSearchCombobox
+        selectedPlant={null}
+        onSelectPlant={onSelectPlant}
+      />
+    );
+
+    await user.type(screen.getByRole('combobox'), 'tom');
+
+    const firstOption = await screen.findByRole('option', {
+      name: new RegExp(mockPlants[0].identity.name.primary, 'i')
+    });
+    fireEvent.keyDown(firstOption, { key: 'Enter' });
+
+    expect(onSelectPlant).toHaveBeenCalledExactlyOnceWith(mockPlants[0]);
   });
 
   it('clears selection when clear button is clicked', async () => {

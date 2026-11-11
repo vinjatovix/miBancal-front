@@ -30,8 +30,7 @@ describe('loadGoogleSdk', () => {
     await scriptPromise;
     expect(
       document.querySelectorAll('script[src*="accounts.google.com/gsi/client"]')
-        .length
-    ).toBe(1);
+    ).toHaveLength(1);
   });
 
   it('rejects and resets promise when script loading fails', async () => {

@@ -32,4 +32,15 @@ describe('formatPdfFilename', () => {
 
     expect(filename).toBe('ubicacion-2026-03-01.pdf');
   });
+
+  it('handles limit input with a massive number of edge hyphens efficiently', () => {
+    const date = new Date(2026, 0, 1);
+    const input = '-'.repeat(10000) + 'test' + '-'.repeat(10000);
+    const start = performance.now();
+    const filename = formatPdfFilename(input, date);
+    const duration = performance.now() - start;
+
+    expect(filename).toBe('test-2026-01-01.pdf');
+    expect(duration).toBeLessThan(100);
+  });
 });

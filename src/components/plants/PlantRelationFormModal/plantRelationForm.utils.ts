@@ -1,5 +1,9 @@
+import { t } from '../../../i18n/core/t';
+import { ApiError } from '../../../shared/errors/ApiError';
+import { PreconditionFailedError } from '../../../shared/errors/PreconditionFailedError';
 import type { PlantListItem } from '../../../types/Plants/Plant';
 import type {
+  PlantRelationMechanism,
   RelationSourceScope,
   RelationTargetScope,
   RelationTargetScopeType
@@ -22,6 +26,21 @@ export const INITIAL_COMPANION_DRAFT: CompanionDraft = {
 };
 
 export const GENUS_PATTERN = /^[A-Z][a-zA-Z]{1,49}$/;
+
+export const MECHANISMS: readonly PlantRelationMechanism[] = [
+  'pest_repellent',
+  'pollinator_attractor',
+  'nitrogen_fixer',
+  'nutrient_accumulator',
+  'growth_stimulator',
+  'trap_crop',
+  'physical_support',
+  'shade_provider',
+  'allelopathy',
+  'pest_host',
+  'disease_vector',
+  'resource_competition'
+];
 
 export function getAvailableCompanionScopes(
   direction: RelationFormDirection
@@ -83,4 +102,27 @@ export function buildRelationScopes(
     },
     target: basePlant
   };
+}
+
+export function isDistanceRangeValid(
+  isBedWide: boolean,
+  minDistanceCm: number,
+  maxDistanceCm: number
+): boolean {
+  if (isBedWide) {
+    return true;
+  }
+  return (
+    minDistanceCm >= 0 && maxDistanceCm >= 0 && minDistanceCm <= maxDistanceCm
+  );
+}
+
+export function mapRelationSubmitError(err: unknown): string {
+  if (err instanceof PreconditionFailedError) {
+    return t('toast.concurrent_modification');
+  }
+  if (err instanceof ApiError && err.status === 409) {
+    return t('plantRelation.curator.errorDuplicate');
+  }
+  return t('plantRelation.curator.errorSave');
 }

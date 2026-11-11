@@ -1,22 +1,13 @@
-import { type FormEvent, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import { t } from '../../../../../i18n/core/t';
-import Button from '../../../../../shared/components/Button/Button';
 import { ErrorResponse } from '../../../../../shared/components/ErrorResponse/ErrorResponse';
 import { Loader } from '../../../../../shared/components/Loader/Loader';
 import Modal from '../../../../../shared/components/Modal/Modal';
+import { reportRejection } from '../../../../../shared/observability/reportRejection';
 import { useToast } from '../../../../../shared/toast/useToast';
-import type { Location } from '../../../../../types/Location/Location';
 import { useLocationForEdit } from '../../hooks/useLocationForEdit';
-import { useLocationMutations } from '../../hooks/useLocationMutations';
-import { buildLocationPatch } from '../../utils/buildLocationPatch';
-import { mapLocationError } from '../../utils/mapLocationError';
-import {
-  type LocationFormErrors,
-  type LocationFormValues,
-  validateLocationForm
-} from '../../utils/validateLocationForm';
-import LocationFormFields from '../LocationFormFields/LocationFormFields';
+import { LocationFormBody } from './LocationFormBody';
 
 import './locationFormModal.css';
 
@@ -25,157 +16,6 @@ export interface LocationFormModalProps {
   readonly onClose: () => void;
   readonly locationIdToEdit?: string | null;
   readonly onSaved?: (locationId?: string) => void;
-}
-
-const EMPTY_VALUES: LocationFormValues = {
-  name: '',
-  latitude: '',
-  longitude: ''
-};
-
-interface LocationFormBodyProps {
-  readonly locationToEdit?: Location | null;
-  readonly etag?: string | null;
-  readonly isEditMode: boolean;
-  readonly locationIdToEdit?: string | null;
-  readonly onClose: () => void;
-  readonly onSaved?: (locationId?: string) => void;
-  readonly onConflict: () => void;
-}
-
-function LocationFormBody({
-  locationToEdit,
-  etag,
-  isEditMode,
-  locationIdToEdit,
-  onClose,
-  onSaved,
-  onConflict
-}: LocationFormBodyProps) {
-  const { showSuccessToast, showErrorToast } = useToast();
-  const { create, update } = useLocationMutations();
-
-  const [values, setValues] = useState<LocationFormValues>(() =>
-    locationToEdit
-      ? {
-          name: locationToEdit.name,
-          latitude: String(locationToEdit.latitude),
-          longitude: String(locationToEdit.longitude)
-        }
-      : EMPTY_VALUES
-  );
-  const [errors, setErrors] = useState<LocationFormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  function handleFieldChange<K extends keyof LocationFormValues>(
-    field: K,
-    val: LocationFormValues[K]
-  ) {
-    setValues((prev) => ({ ...prev, [field]: val }));
-    setErrors((prev) => {
-      if (!prev[field]) return prev;
-      const next = { ...prev };
-      delete next[field];
-      return next;
-    });
-  }
-
-  function handleApiError(err: unknown) {
-    const mapped = mapLocationError(err);
-    if (mapped.isConflict) {
-      onConflict();
-      return;
-    }
-
-    if (mapped.fieldErrors.name === 'duplicate') {
-      setErrors((prev) => ({ ...prev, name: 'duplicate' }));
-      showErrorToast(t('location.form.duplicate_error'));
-      return;
-    }
-
-    if (mapped.isHandled && Object.keys(mapped.fieldErrors).length > 0) {
-      setErrors(mapped.fieldErrors);
-      showErrorToast(t('toast.form_validation_check'));
-      return;
-    }
-
-    showErrorToast(
-      isEditMode
-        ? t('location.form.errors.update_error')
-        : t('location.form.errors.save_error')
-    );
-  }
-
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    const validationErrors = validateLocationForm(values);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      showErrorToast(t('toast.form_validation_check'));
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      if (isEditMode) {
-        if (!locationIdToEdit || !locationToEdit) {
-          return;
-        }
-        const patch = buildLocationPatch(locationToEdit, values);
-        if (Object.keys(patch).length > 0) {
-          await update.mutateAsync({
-            id: locationIdToEdit,
-            patch,
-            etag: etag ?? ''
-          });
-        }
-        showSuccessToast(t('location.form.success_edit'));
-        onSaved?.(locationIdToEdit);
-      } else {
-        const newLocationId = crypto.randomUUID();
-        const created = await create.mutateAsync({
-          id: newLocationId,
-          name: values.name.trim(),
-          latitude: Number(values.latitude.trim()),
-          longitude: Number(values.longitude.trim())
-        });
-        showSuccessToast(t('location.form.success_create'));
-        onSaved?.(created?.location?.id ?? newLocationId);
-      }
-      onClose();
-    } catch (err) {
-      handleApiError(err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  return (
-    <form
-      noValidate
-      onSubmit={handleSubmit}
-      className="location-form-modal__body"
-    >
-      <LocationFormFields
-        values={values}
-        errors={errors}
-        disabled={isSubmitting}
-        onChange={handleFieldChange}
-      />
-      <div className="location-form-modal__footer">
-        <Button variant="secondary" disabled={isSubmitting} onClick={onClose}>
-          {t('location.form.cancel')}
-        </Button>
-        <Button variant="primary" type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? t('location.form.submitting')
-            : isEditMode
-              ? t('location.form.submit_edit')
-              : t('location.form.submit_create')}
-        </Button>
-      </div>
-    </form>
-  );
 }
 
 export default function LocationFormModal({
@@ -202,7 +42,39 @@ export default function LocationFormModal({
       message: t('location.form.conflict_message'),
       variant: 'warning'
     });
-    void refetch();
+    refetch().catch(reportRejection('location-form-modal'));
+  }
+
+  function handleRetry() {
+    refetch().catch(reportRejection('location-form-modal'));
+  }
+
+  let modalContent: ReactNode;
+  if (isEditMode && isFetchingDetail) {
+    modalContent = (
+      <div className="location-form-modal__loading">
+        <Loader />
+      </div>
+    );
+  } else if (isEditMode && isError) {
+    modalContent = (
+      <div className="location-form-modal__loading">
+        <ErrorResponse error={error} onRetry={handleRetry} />
+      </div>
+    );
+  } else {
+    modalContent = (
+      <LocationFormBody
+        key={`${locationIdToEdit ?? 'create'}-${etag ?? ''}`}
+        locationToEdit={locationForEdit}
+        etag={etag}
+        isEditMode={isEditMode}
+        locationIdToEdit={locationIdToEdit}
+        onClose={onClose}
+        onSaved={onSaved}
+        onConflict={handleConflict}
+      />
+    );
   }
 
   return (
@@ -220,26 +92,7 @@ export default function LocationFormModal({
           : t('location.form.subtitle_create')
       }
     >
-      {isEditMode && isFetchingDetail ? (
-        <div className="location-form-modal__loading">
-          <Loader />
-        </div>
-      ) : isEditMode && isError ? (
-        <div className="location-form-modal__loading">
-          <ErrorResponse error={error} onRetry={() => void refetch()} />
-        </div>
-      ) : (
-        <LocationFormBody
-          key={`${locationIdToEdit ?? 'create'}-${etag ?? ''}`}
-          locationToEdit={locationForEdit}
-          etag={etag}
-          isEditMode={isEditMode}
-          locationIdToEdit={locationIdToEdit}
-          onClose={onClose}
-          onSaved={onSaved}
-          onConflict={handleConflict}
-        />
-      )}
+      {modalContent}
     </Modal>
   );
 }

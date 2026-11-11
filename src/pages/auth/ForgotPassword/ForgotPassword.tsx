@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 
 import { t } from '../../../i18n/core/t';
@@ -22,7 +22,7 @@ export default function ForgotPassword() {
     return <Navigate to="/" replace />;
   }
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     dismissAll();
 

@@ -31,9 +31,8 @@ export default function PlacementSaveBar({
   }
 
   return (
-    <div
+    <section
       className="placement-save-bar"
-      role="region"
       aria-label={t('bed.placement.save_bar_label')}
     >
       <span className="placement-save-bar__count">
@@ -58,6 +57,6 @@ export default function PlacementSaveBar({
           {isSaving ? t('bed.placement.saving') : t('bed.placement.save')}
         </Button>
       </div>
-    </div>
+    </section>
   );
 }

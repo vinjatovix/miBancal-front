@@ -9,6 +9,8 @@ export {
 } from './plantFormRequestMappers';
 
 export {
+  focusFirstPlantError,
+  handlePlantSubmitError,
   normalizePlantApiErrors,
   type NormalizedPlantErrors
 } from './normalizePlantApiErrors';

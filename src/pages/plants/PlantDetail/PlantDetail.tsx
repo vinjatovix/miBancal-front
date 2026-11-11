@@ -1,5 +1,6 @@
 import { lazy, Suspense, useContext, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useReportedNavigate } from '../../../shared/observability/useReportedNavigate';
 
 import { t } from '../../../i18n/core/t';
 import { AuthContext } from '../../../shared/auth/authContextDef';
@@ -38,7 +39,7 @@ const PlantInlineEditForm = lazy(() =>
 
 export default function PlantDetail() {
   const { slug } = useParams();
-  const navigate = useNavigate();
+  const navigate = useReportedNavigate('plant-detail');
   const auth = useContext(AuthContext);
   const isEditor = auth?.isEditor ?? false;
 

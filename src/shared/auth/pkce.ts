@@ -11,13 +11,14 @@ const UNRESERVED_CHARACTERS =
 function bufferToBase64Url(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
+  for (const byte of bytes) {
+    binary += String.fromCodePoint(byte);
   }
-  return btoa(binary)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  let base64 = btoa(binary).replaceAll('+', '-').replaceAll('/', '_');
+  while (base64.endsWith('=')) {
+    base64 = base64.slice(0, -1);
+  }
+  return base64;
 }
 
 export function generateCodeVerifier(length = 64): string {

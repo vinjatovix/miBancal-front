@@ -3,6 +3,11 @@
   inset: 0;
   background-color: var(--color-scrim);
   z-index: 1000;
+  margin: 0;
+  padding: 0;
+  border: none;
+  cursor: default;
+  appearance: none;
 }
 
 .nav-drawer {

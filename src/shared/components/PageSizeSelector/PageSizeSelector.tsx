@@ -20,7 +20,7 @@ export default function PageSizeSelector({ label, value, onChange }: Props) {
   const labelId = useId();
 
   return (
-    <div className="page-size" role="group" aria-labelledby={labelId}>
+    <fieldset className="page-size" aria-labelledby={labelId}>
       <span id={labelId} className="page-size__label">
         {label}
       </span>
@@ -38,6 +38,6 @@ export default function PageSizeSelector({ label, value, onChange }: Props) {
           </button>
         ))}
       </div>
-    </div>
+    </fieldset>
   );
 }
