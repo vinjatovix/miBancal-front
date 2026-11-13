@@ -1,0 +1,55 @@
+.location-placement-layer__node {
+  cursor: grab;
+}
+
+.location-placement-layer__node:focus-visible {
+  outline: none;
+}
+
+.location-placement-layer__radius {
+  fill: var(--color-primary);
+  fill-opacity: 0.1;
+  stroke: var(--color-border-decor);
+  stroke-width: 0.8;
+  stroke-dasharray: 2 2;
+}
+
+.location-placement-layer__center {
+  fill: var(--color-primary);
+}
+
+.location-placement-layer__node--selected .location-placement-layer__radius {
+  fill-opacity: 0.2;
+  stroke: var(--color-focus);
+  stroke-dasharray: none;
+  stroke-width: 1.2;
+}
+
+.location-placement-layer__node--selected .location-placement-layer__center {
+  fill: var(--color-focus);
+}
+
+.location-placement-layer__node:focus-visible
+  .location-placement-layer__radius {
+  stroke: var(--color-focus);
+  stroke-width: 1.2;
+}
+
+.location-placement-layer__preview .location-placement-layer__radius {
+  fill: var(--color-primary);
+  fill-opacity: 0.18;
+  stroke: var(--color-primary);
+  stroke-dasharray: none;
+}
+
+.location-placement-layer__preview--collision .location-placement-layer__radius,
+.location-placement-layer__preview--out .location-placement-layer__radius {
+  fill: var(--color-error-bg);
+  fill-opacity: 0.22;
+  stroke: var(--color-error-border);
+}
+
+.location-placement-layer__preview--collision .location-placement-layer__center,
+.location-placement-layer__preview--out .location-placement-layer__center {
+  fill: var(--color-error-border);
+}

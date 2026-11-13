@@ -1,0 +1,11 @@
+.scientific-name {
+  font: var(--type-taxonomy-scientific);
+  letter-spacing: var(--tracking-taxonomy-scientific);
+}
+
+.scientific-name--title {
+  font: inherit;
+  letter-spacing: inherit;
+  font-family: var(--font-display);
+  font-style: italic;
+}

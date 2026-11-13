@@ -1,0 +1,74 @@
+import { useContext } from 'react';
+
+import { t } from '../../../../i18n/core/t';
+import { AuthContext } from '../../../../shared/auth/authContextDef';
+import {
+  DeleteButton,
+  EditButton
+} from '../../../../shared/components/ActionButtons';
+import Badge from '../../../../shared/components/Badge/Badge';
+import { capitalizeFirstLetter } from '../../../../shared/utils/capitalizeFirstLetter';
+import type { Plant } from '../../../../types/Plants/Plant';
+import PlantSafetyIndicators from '../../components/PlantSafetyIndicators/PlantSafetyIndicators';
+import { readPlantSafety } from '../../utils/plantSafety';
+
+import './plantDetailStickyHeader.css';
+
+interface Props {
+  readonly plant: Plant;
+  readonly onEdit?: () => void;
+  readonly onDelete?: () => void;
+  readonly isEditing?: boolean;
+  readonly isDeleting?: boolean;
+}
+
+export const PlantDetailStickyHeader = ({
+  plant,
+  onEdit,
+  onDelete,
+  isEditing,
+  isDeleting
+}: Props) => {
+  const auth = useContext(AuthContext);
+  const isEditor = auth?.isEditor ?? false;
+
+  return (
+    <div className="plant-detail__sticky-header">
+      <div className="plant-detail__sticky-heading">
+        <h1 className="plant-detail__sticky-title">
+          {capitalizeFirstLetter(plant.identity.name.primary)}
+        </h1>
+        <PlantSafetyIndicators safety={readPlantSafety(plant)} />
+        {isEditor && !isEditing && (
+          <div className="plant-detail__sticky-actions">
+            {onEdit && (
+              <EditButton
+                onClick={onEdit}
+                ariaLabel={t('plant.detail.edit_plant')}
+                label={t('plant.detail.edit_plant')}
+              />
+            )}
+            {onDelete && (
+              <DeleteButton
+                onClick={onDelete}
+                isDeleting={isDeleting}
+                ariaLabel={t('plant.detail.delete_plant')}
+                label={t('plant.detail.delete_plant')}
+              />
+            )}
+          </div>
+        )}
+      </div>
+
+      {plant.identity.name.aliases.length > 0 && (
+        <div className="plant-detail__sticky-aliases">
+          {plant.identity.name.aliases.map((alias) => (
+            <Badge key={alias} variant="alias" icon="label">
+              {capitalizeFirstLetter(alias)}
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};

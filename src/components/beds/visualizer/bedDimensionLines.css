@@ -1,0 +1,30 @@
+.bed-dimension-lines {
+  stroke: var(--color-border-strong);
+  stroke-width: 1.5;
+}
+
+.bed-dimension-lines__line {
+  stroke: var(--color-border-strong);
+  stroke-width: 1.5;
+}
+
+.bed-dimension-lines__extension {
+  stroke: var(--color-border-decor);
+  stroke-width: 1;
+  stroke-dasharray: 2, 2;
+}
+
+.bed-dimension-lines__tick {
+  stroke: var(--color-border-strong);
+  stroke-width: 1.5;
+}
+
+.bed-dimension-lines__text {
+  fill: var(--color-fg);
+  font-size: 0.75rem;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  user-select: none;
+}

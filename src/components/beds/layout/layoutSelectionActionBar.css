@@ -1,0 +1,81 @@
+.layout-selection-action-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  min-height: 2.5rem;
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-bg-sunken);
+  border: 1px solid var(--color-border-decor);
+  border-radius: var(--radius-lg);
+  box-sizing: border-box;
+}
+
+.layout-selection-action-bar__count {
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-fg);
+}
+
+.layout-selection-action-bar__hint {
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  color: var(--color-fg-muted);
+}
+
+.layout-selection-action-bar__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  margin-inline-start: auto;
+}
+
+.layout-selection-action-bar__button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-fg);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fade) ease,
+    color var(--motion-fade) ease;
+}
+
+.layout-selection-action-bar__button:hover:not(:disabled) {
+  background-color: var(--color-bg-surface);
+  color: var(--color-primary);
+}
+
+.layout-selection-action-bar__button--danger:hover:not(:disabled) {
+  background-color: var(--color-bg-surface);
+  color: var(--color-error-text);
+}
+
+.layout-selection-action-bar__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.layout-selection-action-bar__button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.layout-selection-action-bar__kbd {
+  font-family: monospace;
+  font-size: 0.6875rem;
+  padding: 0.1em 0.35em;
+  background-color: var(--color-bg-sunken);
+  border: 1px solid var(--color-border-decor);
+  border-radius: var(--radius-sm);
+  color: var(--color-fg-muted);
+}

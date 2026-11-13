@@ -1,0 +1,38 @@
+.crop-relations-modal__neighbor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border-decor);
+  border-radius: 8px;
+  background-color: var(--color-bg-sunken);
+}
+
+.crop-relations-modal__neighbor-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.crop-relations-modal__neighbor-name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-fg);
+}
+
+.crop-relations-modal__neighbor-count {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-fg-muted);
+}
+
+.crop-relations-modal__empty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-fg-muted);
+}

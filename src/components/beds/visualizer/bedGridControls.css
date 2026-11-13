@@ -1,0 +1,83 @@
+.bed-grid-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.bed-grid-controls__legend {
+  font-family: var(--font-ui);
+  font-size: var(--type-label-sm);
+  font-weight: 600;
+  color: var(--color-fg-muted);
+  padding: 0;
+  margin-bottom: var(--space-2xs);
+}
+
+.bed-grid-controls__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.bed-grid-controls__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: var(--color-fg);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fade, 150ms) ease,
+    border-color var(--motion-fade, 150ms) ease,
+    color var(--motion-fade, 150ms) ease;
+}
+
+.bed-grid-controls__toggle:hover {
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-border-strong);
+}
+
+.bed-grid-controls__toggle:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+.bed-grid-controls__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-border-decor);
+  flex-shrink: 0;
+  transition:
+    background-color var(--motion-fade, 150ms) ease,
+    transform var(--motion-fade, 150ms) ease;
+}
+
+.bed-grid-controls__toggle[aria-pressed='true'] {
+  color: var(--color-on-selected);
+  background-color: var(--color-selected-bg);
+  border-color: var(--color-selected-indicator);
+  font-weight: 600;
+}
+
+.bed-grid-controls__toggle[aria-pressed='true'] .bed-grid-controls__dot {
+  background-color: var(--color-selected-indicator);
+  transform: scale(1.15);
+}
+
+.bed-grid-controls__hint {
+  font-size: var(--type-body-sm);
+  opacity: 0.85;
+}

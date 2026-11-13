@@ -1,0 +1,26 @@
+.garden-input-create-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-md);
+}
+
+.garden-input-create-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.garden-input-create-page__header h1 {
+  margin: 0;
+  font: var(--type-headline-md);
+  color: var(--color-on-surface);
+}
+
+.garden-input-create-page__subtitle {
+  margin: 0;
+  font: var(--type-body-md);
+  color: var(--color-on-surface-variant);
+}
