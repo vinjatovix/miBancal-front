@@ -115,11 +115,15 @@ export default function LocationPlacementLayer({
           >
             {crops.map((crop) => {
               const local = crop.position;
-              const isSelected =
-                crop.id === selectedCropId || selectedCropIds.has(crop.id);
+              const isGroupMember = selectedCropIds.has(crop.id);
+              const isSingleSelected = crop.id === selectedCropId;
+              const isSelected = isSingleSelected || isGroupMember;
               const classes = [
                 'location-placement-layer__node',
-                isSelected ? 'location-placement-layer__node--selected' : ''
+                isSelected ? 'location-placement-layer__node--selected' : '',
+                isGroupMember && !isSingleSelected
+                  ? 'location-placement-layer__node--group'
+                  : ''
               ]
                 .filter(Boolean)
                 .join(' ');
