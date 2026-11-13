@@ -25,6 +25,19 @@ const removeCrop: EditAction = {
   crops: []
 };
 
+const moveBed: EditAction = {
+  type: 'move-bed',
+  bedId: 'bed-1',
+  from: { position: { x: 0, y: 0 }, rotation: 0 },
+  to: { position: { x: 10, y: 10 }, rotation: 0 }
+};
+
+const placeBed: EditAction = {
+  type: 'place-bed',
+  bedId: 'bed-2',
+  from: { position: null, rotation: 0 }
+};
+
 function setup() {
   const onRevert = vi.fn();
   const utils = renderHook(() => useLayoutEditHistory({ onRevert }));
@@ -47,8 +60,23 @@ describe('useLayoutEditHistory', () => {
     act(() => result.current.push(moveCrop));
     act(() => result.current.push(plant));
     act(() => result.current.push(removeCrop));
-    expect(result.current.entries).toHaveLength(3);
+    act(() => result.current.push(moveBed));
+    act(() => result.current.push(placeBed));
+    expect(result.current.entries).toHaveLength(5);
     expect(result.current.canUndo).toBe(true);
+  });
+
+  it('reverts bed actions last-in-first-out', () => {
+    const { result, onRevert } = setup();
+    act(() => result.current.push(placeBed));
+    act(() => result.current.push(moveBed));
+
+    act(() => result.current.undo());
+    expect(onRevert).toHaveBeenLastCalledWith(moveBed);
+
+    act(() => result.current.undo());
+    expect(onRevert).toHaveBeenLastCalledWith(placeBed);
+    expect(result.current.canUndo).toBe(false);
   });
 
   it('undoes actions in last-in-first-out order, reverting each one', () => {
