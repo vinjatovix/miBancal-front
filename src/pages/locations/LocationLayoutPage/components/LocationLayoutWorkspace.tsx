@@ -1,6 +1,7 @@
 import type { RefObject, JSX } from 'react';
 
 import BedCompassHud from '../../../../components/beds/layout/BedCompassHud';
+import LayoutSaveBar from '../../../../components/beds/layout/LayoutSaveBar';
 import LayoutScaleBar from '../../../../components/beds/layout/LayoutScaleBar';
 import LocationLayoutCanvas from '../../../../components/beds/layout/LocationLayoutCanvas';
 import type { BedViewportState } from '../../../../components/beds/visualizer/hooks/useBedViewport';
@@ -38,6 +39,14 @@ export interface LocationLayoutWorkspaceProps {
   readonly editingEnabled?: boolean;
   readonly onEnableEditing?: () => void;
   readonly onDisableEditing?: () => void;
+  readonly dirty?: boolean;
+  readonly saving?: boolean;
+  readonly onSave?: () => void;
+  readonly onDiscard?: () => void;
+  readonly canUndo?: boolean;
+  readonly onUndo?: () => void;
+  readonly onExportPdf?: () => void;
+  readonly exportDisabled?: boolean;
 }
 
 export default function LocationLayoutWorkspace({
@@ -58,9 +67,18 @@ export default function LocationLayoutWorkspace({
   isMobile = false,
   editingEnabled = true,
   onEnableEditing,
-  onDisableEditing
+  onDisableEditing,
+  dirty = false,
+  saving = false,
+  onSave,
+  onDiscard,
+  canUndo = false,
+  onUndo,
+  onExportPdf,
+  exportDisabled = false
 }: LocationLayoutWorkspaceProps): JSX.Element {
   const isPosition = editor.mode === 'position';
+  const showMobileActions = isMobile && editingEnabled;
 
   return (
     <div ref={canvasContainerRef} className="location-layout-page__canvas">
@@ -159,6 +177,29 @@ export default function LocationLayoutWorkspace({
           isSavingNorth={visibility.isSavingNorth}
         />
       </div>
+      {showMobileActions && (
+        <div className="location-layout-page__mobile-actions">
+          <LayoutSaveBar
+            dirty={dirty}
+            saving={saving}
+            onSave={onSave ?? (() => undefined)}
+            onDiscard={onDiscard ?? (() => undefined)}
+            canUndo={canUndo}
+            onUndo={onUndo}
+          />
+          {onExportPdf && (
+            <Button
+              variant="secondary"
+              size="sm"
+              icon="save"
+              onClick={onExportPdf}
+              disabled={exportDisabled}
+            >
+              {t('bed.export.button_label')}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -19,14 +19,18 @@
 }
 
 .location-placement-layer__node--selected .location-placement-layer__radius {
-  fill-opacity: 0.2;
+  fill: var(--color-focus);
+  fill-opacity: 0.28;
   stroke: var(--color-focus);
   stroke-dasharray: none;
-  stroke-width: 1.2;
+  stroke-width: 2;
+  paint-order: stroke;
 }
 
 .location-placement-layer__node--selected .location-placement-layer__center {
   fill: var(--color-focus);
+  stroke: var(--color-bg-surface);
+  stroke-width: 1;
 }
 
 .location-placement-layer__node:focus-visible

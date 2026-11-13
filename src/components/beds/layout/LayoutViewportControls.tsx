@@ -3,24 +3,54 @@ import type { JSX } from 'react';
 import { t } from '../../../i18n/core/t';
 import type { BedViewportState } from '../visualizer/hooks/useBedViewport';
 import LayoutGlyph from './LayoutGlyph';
+import SnapToggle from './SnapToggle';
 
 import './layoutControls.css';
 
 export interface LayoutViewportControlsProps {
   readonly viewport: BedViewportState;
   readonly onFitToView?: () => void;
+  readonly gridSnapEnabled?: boolean;
+  readonly onToggleGridSnap?: () => void;
+  readonly neighborSnapEnabled?: boolean;
+  readonly onToggleNeighborSnap?: () => void;
 }
 
 export default function LayoutViewportControls({
   viewport,
-  onFitToView
+  onFitToView,
+  gridSnapEnabled,
+  onToggleGridSnap,
+  neighborSnapEnabled,
+  onToggleNeighborSnap
 }: LayoutViewportControlsProps): JSX.Element {
+  const showSnapToggles =
+    onToggleGridSnap !== undefined && onToggleNeighborSnap !== undefined;
+
   return (
     <div
       className="layout-viewport-controls"
       role="toolbar"
       aria-label={t('bed.layout.viewport_group_label')}
     >
+      {showSnapToggles && (
+        <>
+          <SnapToggle
+            enabled={gridSnapEnabled ?? false}
+            onToggle={onToggleGridSnap}
+            label={t('bed.layout.grid_snap_label')}
+          />
+          <SnapToggle
+            enabled={neighborSnapEnabled ?? false}
+            onToggle={onToggleNeighborSnap}
+            label={t('bed.layout.neighbor_snap_label')}
+          />
+          <span
+            className="layout-viewport-controls__divider"
+            aria-hidden="true"
+          />
+        </>
+      )}
       <button
         type="button"
         className="layout-viewport-controls__button"
