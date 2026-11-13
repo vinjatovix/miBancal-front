@@ -1,7 +1,6 @@
 import type { JSX } from 'react';
 
 import LayoutViewportControls from '../../../../components/beds/layout/LayoutViewportControls';
-import SnapToggle from '../../../../components/beds/layout/SnapToggle';
 import LayersPopoverButton from '../../../../components/beds/visualizer/LayersPopoverButton';
 import PlantingToolSelector from '../../../../components/beds/visualizer/PlantingToolSelector';
 import type { BedViewportState } from '../../../../components/beds/visualizer/hooks/useBedViewport';
@@ -115,23 +114,6 @@ export default function LocationLayoutTopBar({
             onSelectMode={onSelectToolMode}
             disabled={isSavingPlacement}
           />
-        ) : isPosition ? (
-          <div
-            className="location-layout-page__toolbar-group"
-            role="group"
-            aria-label={t('bed.placement.tools_toolbar_label')}
-          >
-            <SnapToggle
-              enabled={gridSnapEnabled}
-              onToggle={onToggleGridSnap}
-              label={t('bed.layout.grid_snap_label')}
-            />
-            <SnapToggle
-              enabled={neighborSnapEnabled}
-              onToggle={onToggleNeighborSnap}
-              label={t('bed.layout.neighbor_snap_label')}
-            />
-          </div>
         ) : null
       }
       rightZone={
@@ -216,6 +198,10 @@ export default function LocationLayoutTopBar({
           <LayoutViewportControls
             viewport={viewport}
             onFitToView={onFitToView}
+            gridSnapEnabled={isPosition ? gridSnapEnabled : undefined}
+            onToggleGridSnap={isPosition ? onToggleGridSnap : undefined}
+            neighborSnapEnabled={isPosition ? neighborSnapEnabled : undefined}
+            onToggleNeighborSnap={isPosition ? onToggleNeighborSnap : undefined}
           />
           <LayoutKeyboardHelp />
         </>

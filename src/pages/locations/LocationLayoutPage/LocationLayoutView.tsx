@@ -371,6 +371,18 @@ export default function LocationLayoutView({
           editingEnabled={inspection.editingEnabled}
           onEnableEditing={inspection.enableEditing}
           onDisableEditing={inspection.disableEditing}
+          dirty={isPlanting ? placement.hasChanges : editor.dirty}
+          saving={isPlanting ? placement.isSaving : editor.saving}
+          onSave={isPlanting ? () => void placement.save() : editor.save}
+          onDiscard={
+            isPlanting
+              ? () => setIsDiscardPlantingOpen(true)
+              : editor.promptDiscard
+          }
+          canUndo={isPlanting ? placement.canUndo : false}
+          onUndo={isPlanting ? placement.undo : undefined}
+          onExportPdf={() => setIsExportOpen(true)}
+          exportDisabled={editor.placedBeds.length === 0}
         />
 
         <LocationLayoutContextPanel
