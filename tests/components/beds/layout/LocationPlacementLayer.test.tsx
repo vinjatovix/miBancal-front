@@ -67,6 +67,40 @@ describe('LocationPlacementLayer', () => {
     ).toBeInTheDocument();
   });
 
+  it('marks every crop of a multi-selection with the group modifier', () => {
+    const secondCrop: CropPlacementItem = {
+      ...crop,
+      id: 'crop-2',
+      position: { x: 60, y: 320 }
+    };
+    const { container } = renderLayer({
+      cropsByBed: new Map([['bed-1', [crop, secondCrop]]]),
+      selectedCropId: null,
+      selectedCropIds: new Set(['crop-1', 'crop-2'])
+    });
+
+    const groupNodes = container.querySelectorAll(
+      '.location-placement-layer__node--group'
+    );
+
+    expect(groupNodes).toHaveLength(2);
+  });
+
+  it('keeps the single selected crop out of the group modifier', () => {
+    const { container } = renderLayer({
+      selectedCropId: 'crop-1',
+      selectedCropIds: new Set(['crop-1'])
+    });
+
+    const selectedNode = container.querySelector(
+      '.location-placement-layer__node--selected'
+    );
+
+    expect(
+      selectedNode?.classList.contains('location-placement-layer__node--group')
+    ).toBe(false);
+  });
+
   it('renders an invalid preview with the collision modifier', () => {
     const { container } = renderLayer({
       preview: {

@@ -33,6 +33,19 @@
   stroke-width: 1;
 }
 
+.location-placement-layer__node--group .location-placement-layer__radius {
+  fill: var(--color-primary);
+  fill-opacity: 0.22;
+  stroke: var(--color-primary);
+  stroke-width: 1.6;
+}
+
+.location-placement-layer__node--group .location-placement-layer__center {
+  fill: var(--color-primary);
+  stroke: var(--color-bg-surface);
+  stroke-width: 1;
+}
+
 .location-placement-layer__node:focus-visible
   .location-placement-layer__radius {
   stroke: var(--color-focus);
