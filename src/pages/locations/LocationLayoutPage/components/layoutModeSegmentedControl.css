@@ -7,6 +7,7 @@
   border: 1px solid var(--color-border-decor);
   border-radius: var(--radius-full);
   box-sizing: border-box;
+  max-width: 100%;
 }
 
 .layout-mode-segmented-control__item {
@@ -48,4 +49,23 @@
 .layout-mode-segmented-control__item:focus-visible {
   outline: var(--focus-ring-width) solid var(--color-focus);
   outline-offset: var(--focus-ring-offset);
+}
+
+@media (pointer: coarse) {
+  .layout-mode-segmented-control {
+    flex: 1 1 auto;
+  }
+
+  .layout-mode-segmented-control__item {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 2.75rem;
+    min-width: 0;
+    padding: var(--space-xs) var(--space-xs);
+  }
+
+  .layout-mode-segmented-control__item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }

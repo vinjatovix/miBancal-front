@@ -291,3 +291,22 @@
     flex: 0 1 auto;
   }
 }
+
+@media (orientation: landscape) and (max-height: 430px) {
+  .location-layout-page {
+    padding: var(--space-xs);
+    gap: var(--space-xs);
+  }
+
+  .location-layout-page__subtitle {
+    display: none;
+  }
+
+  .location-layout-page__title {
+    font-size: 1rem;
+  }
+
+  .location-layout-page__header {
+    align-items: center;
+  }
+}
