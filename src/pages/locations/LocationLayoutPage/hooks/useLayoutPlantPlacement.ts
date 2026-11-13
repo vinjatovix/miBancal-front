@@ -15,14 +15,10 @@ import { buildAssociationCropsByBed } from './associationPreviewCrops';
 import { evaluateStoredPlacement } from './layoutPlantingOperations';
 import { useLayoutBrushPlacement } from './useLayoutBrushPlacement';
 import { useLayoutMarqueeSelection } from './useLayoutMarqueeSelection';
-import {
-  useLayoutPalettePlacement,
-  type LayoutPlacementPreview
-} from './useLayoutPalettePlacement';
+import { useLayoutPalettePlacement } from './useLayoutPalettePlacement';
 import { useLayoutPlantingDraft } from './useLayoutPlantingDraft';
+import { useLayoutPlantingHistory } from './useLayoutPlantingHistory';
 import { useLayoutSingleCropDrag } from './useLayoutSingleCropDrag';
-
-export type { LayoutPlacementPreview };
 
 export interface UseLayoutPlantPlacementParams {
   readonly beds: readonly ResolvedBed[];
@@ -82,21 +78,23 @@ export function useLayoutPlantPlacement({
     [effectiveCropsByBed]
   );
 
+  const history = useLayoutPlantingHistory(draft, effectiveCropsByBed);
+
   const marquee = useLayoutMarqueeSelection({
     isEnabled: toolMode === 'select',
     beds,
     cropsByBed: effectiveCropsByBed,
     activeBedId,
-    addCrops: draft.addCrops,
+    addCrops: history.addCrops,
     moveCrops: draft.moveCrops,
-    removeCrops: draft.removeCrops,
+    removeCrops: history.removeCrops,
     onAnnounceError: (msg) => showErrorToast(null, msg)
   });
 
   const palette = useLayoutPalettePlacement({
     beds,
     evaluateStored,
-    addCrop: draft.addCrop,
+    addCrop: history.addCrop,
     onAnnounceError: (msg) => showErrorToast(null, msg),
     onClearSelection: marquee.clearSelection
   });
@@ -110,14 +108,14 @@ export function useLayoutPlantPlacement({
     onAnnounceSuccess: (msg) => showSuccessToast(msg),
     onAnnounceWarning: (msg) => showToast({ message: msg, variant: 'warning' }),
     onAnnounceError: (msg) => showErrorToast(null, msg),
-    addCrops: draft.addCrops
+    addCrops: history.addCrops
   });
 
   const cropDrag = useLayoutSingleCropDrag({
     bedsById,
     cropsByBed: effectiveCropsByBed,
     evaluateStored,
-    moveCrop: draft.moveCrop,
+    moveCrop: history.moveCrop,
     setPreview: palette.setPreview,
     onSelectSingleCrop: marquee.selectSingleCrop,
     onAnnounceError: (msg) => showErrorToast(null, msg)
@@ -199,7 +197,8 @@ export function useLayoutPlantPlacement({
     brush.cancelStroke();
   }, [palette, cropDrag, marquee, brush]);
 
-  const { save: draftSave } = draft;
+  const { save: draftSave, discardChanges: draftDiscardChanges } = draft;
+  const { clear: clearHistory, reset: resetHistory } = history;
   const save = useCallback(async () => {
     const status = await draftSave();
     if (status === 'conflict') {
@@ -207,9 +206,15 @@ export function useLayoutPlantPlacement({
     } else if (status === 'error') {
       showErrorToast(null, t('bed.placement.save_error'));
     } else if (status === 'ok') {
+      clearHistory();
       showSuccessToast(t('bed.placement.save_success'));
     }
-  }, [draftSave, showErrorToast, showSuccessToast]);
+  }, [draftSave, clearHistory, showErrorToast, showSuccessToast]);
+
+  const discardChanges = useCallback(() => {
+    draftDiscardChanges();
+    resetHistory();
+  }, [draftDiscardChanges, resetHistory]);
 
   return {
     toolMode,
@@ -232,7 +237,9 @@ export function useLayoutPlantPlacement({
     effectiveCropsByBed,
     associationCropsByBed,
     save,
-    discardChanges: draft.discardChanges,
+    discardChanges,
+    canUndo: history.canUndo,
+    undo: history.undo,
     selectPalettePlant: palette.selectPalettePlant,
     cancelPalettePlant: palette.cancelPalettePlant,
     dragPalettePlant: palette.dragPalettePlant,
@@ -252,7 +259,7 @@ export function useLayoutPlantPlacement({
     endCropDrag: cropDrag.endCropDrag,
     removeCrop: (crop: CropPlacementItem) => {
       marquee.selectSingleCrop(crop.id);
-      void marquee.deleteSelectedCrops();
+      marquee.deleteSelectedCrops();
     },
     reset
   };

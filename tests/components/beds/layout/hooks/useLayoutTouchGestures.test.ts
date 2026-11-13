@@ -183,6 +183,51 @@ describe('useLayoutTouchGestures', () => {
     expect(view.result.current.phase).toBe('navigating');
   });
 
+  it('never persists a displacement after a drag is cancelled', () => {
+    const { view, onDragMove, onDragEnd, onNavigateEnd } = setup();
+
+    act(() => {
+      view.result.current.onPointerDown(
+        touchPointer({ clientX: 10, clientY: 10 })
+      );
+    });
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    act(() => {
+      view.result.current.onPointerMove(
+        touchPointer({ clientX: 40, clientY: 10 })
+      );
+    });
+    onDragMove.mockClear();
+
+    act(() => {
+      view.result.current.onPointerDown(
+        touchPointer({ pointerId: 2, clientX: 80, clientY: 80 })
+      );
+    });
+    act(() => {
+      view.result.current.onPointerMove(
+        touchPointer({ pointerId: 2, clientX: 120, clientY: 120 })
+      );
+    });
+
+    expect(onDragMove).not.toHaveBeenCalled();
+
+    act(() => {
+      view.result.current.onPointerUp(
+        touchPointer({ pointerId: 2, clientX: 120, clientY: 120 })
+      );
+    });
+    act(() => {
+      view.result.current.onPointerUp(touchPointer({ clientX: 40, clientY: 10 }));
+    });
+
+    expect(onDragEnd).not.toHaveBeenCalled();
+    expect(onNavigateEnd).toHaveBeenCalledTimes(1);
+    expect(view.result.current.phase).toBe('idle');
+  });
+
   it('returns to idle only once every pointer is lifted after navigation', () => {
     const { view, onNavigateEnd } = setup();
 
