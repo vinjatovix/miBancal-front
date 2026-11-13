@@ -4,9 +4,15 @@ import {
   type BoundingBox,
   type RotatedRectInput
 } from './layoutGeometry';
+import type { PointerKind } from './pointerThreshold';
 
 export const SNAP_THRESHOLD_CM = 20;
+export const SNAP_THRESHOLD_TOUCH_CM = 30;
 export const GRID_SPACING_CM = 30;
+
+export function snapThresholdFor(kind: PointerKind): number {
+  return kind === 'mouse' ? SNAP_THRESHOLD_CM : SNAP_THRESHOLD_TOUCH_CM;
+}
 
 export interface SnapOptions {
   readonly enabled: boolean;
