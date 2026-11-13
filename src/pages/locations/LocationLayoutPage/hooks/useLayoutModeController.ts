@@ -19,7 +19,12 @@ export interface UseLayoutModeControllerParams {
   readonly beds: readonly ResolvedBed[];
   readonly viewBox: string;
   readonly initialMode?: LayoutMode;
+  readonly editingEnabled?: boolean;
   readonly onModeChange?: (mode: LayoutMode) => void;
+}
+
+function isEditingMode(mode: LayoutMode): boolean {
+  return mode === 'position' || mode === 'plants';
 }
 
 export interface LayoutModeController {
@@ -74,21 +79,24 @@ export function useLayoutModeController({
   beds,
   viewBox,
   initialMode = 'read',
+  editingEnabled = true,
   onModeChange
 }: UseLayoutModeControllerParams): LayoutModeController {
-  const [mode, setModeState] = useState<LayoutMode>(initialMode);
+  const [mode, setMode] = useState<LayoutMode>(initialMode);
 
-  const setMode = useCallback(
+  const changeMode = useCallback(
     (next: LayoutMode) => {
-      setModeState(next);
+      if (!editingEnabled && isEditingMode(next)) return;
+      setMode(next);
       onModeChange?.(next);
     },
-    [onModeChange]
+    [editingEnabled, onModeChange]
   );
 
   const enterPlanting = useCallback(
     (bedId: string | null) => {
-      setModeState('plants');
+      if (!editingEnabled) return;
+      setMode('plants');
       onModeChange?.('plants');
 
       if (!bedId) return;
@@ -100,12 +108,12 @@ export function useLayoutModeController({
         viewport.animateTo(target);
       }
     },
-    [beds, viewBox, viewport, onModeChange]
+    [beds, viewBox, viewport, editingEnabled, onModeChange]
   );
 
   return {
     mode,
-    setMode,
+    setMode: changeMode,
     enterPlanting
   };
 }

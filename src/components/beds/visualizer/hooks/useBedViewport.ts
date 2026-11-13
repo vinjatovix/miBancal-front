@@ -65,6 +65,7 @@ export function useBedViewport(): BedViewportState {
     new Map()
   );
   const initialPinchDistanceRef = useRef<number | null>(null);
+  const pinchMidpointRef = useRef<{ x: number; y: number } | null>(null);
 
   const cancelActiveAnimation = useCallback(() => {
     if (cancelAnimationRef.current) {
@@ -183,6 +184,10 @@ export function useBedViewport(): BedViewportState {
       if (activePointersRef.current.size === 2) {
         const [p1, p2] = Array.from(activePointersRef.current.values());
         initialPinchDistanceRef.current = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+        pinchMidpointRef.current = {
+          x: (p1.x + p2.x) / 2,
+          y: (p1.y + p2.y) / 2
+        };
         dragStartRef.current = null;
         return;
       }
@@ -193,6 +198,45 @@ export function useBedViewport(): BedViewportState {
     [cancelActiveAnimation]
   );
 
+  const handlePinchMove = useCallback(
+    (e: PointerEvent<SVGSVGElement>): boolean => {
+      const initialDistance = initialPinchDistanceRef.current;
+      if (activePointersRef.current.size !== 2 || !initialDistance) {
+        return false;
+      }
+      const [p1, p2] = Array.from(activePointersRef.current.values());
+      const currentDistance = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+      const ratio = currentDistance / initialDistance;
+      initialPinchDistanceRef.current = currentDistance;
+
+      const midX = (p1.x + p2.x) / 2;
+      const midY = (p1.y + p2.y) / 2;
+      const prevMid = pinchMidpointRef.current;
+      const panDx = prevMid ? midX - prevMid.x : 0;
+      const panDy = prevMid ? midY - prevMid.y : 0;
+      pinchMidpointRef.current = { x: midX, y: midY };
+
+      const rect = e.currentTarget?.getBoundingClientRect?.();
+      const focusX = rect ? midX - (rect.left + rect.width / 2) : 0;
+      const focusY = rect ? midY - (rect.top + rect.height / 2) : 0;
+
+      setZoom((prev) =>
+        Math.min(
+          MAX_ZOOM,
+          Math.max(MIN_ZOOM, Number((prev * ratio).toFixed(4)))
+        )
+      );
+      setPanX((prev) =>
+        Number((focusX * (1 - ratio) + prev * ratio + panDx).toFixed(2))
+      );
+      setPanY((prev) =>
+        Number((focusY * (1 - ratio) + prev * ratio + panDy).toFixed(2))
+      );
+      return true;
+    },
+    []
+  );
+
   const onPointerMove = useCallback(
     (e: PointerEvent<SVGSVGElement>) => {
       activePointersRef.current.set(e.pointerId, {
@@ -200,24 +244,7 @@ export function useBedViewport(): BedViewportState {
         y: e.clientY
       });
 
-      if (
-        activePointersRef.current.size === 2 &&
-        initialPinchDistanceRef.current !== null &&
-        initialPinchDistanceRef.current > 0
-      ) {
-        const [p1, p2] = Array.from(activePointersRef.current.values());
-        const currentDistance = Math.hypot(p1.x - p2.x, p1.y - p2.y);
-        const ratio = currentDistance / initialPinchDistanceRef.current;
-        initialPinchDistanceRef.current = currentDistance;
-
-        setZoom((prev) =>
-          Math.min(
-            MAX_ZOOM,
-            Math.max(MIN_ZOOM, Number((prev * ratio).toFixed(4)))
-          )
-        );
-        return;
-      }
+      if (handlePinchMove(e)) return;
 
       if (!dragStartRef.current) return;
       const dx = e.clientX - dragStartRef.current.x;
@@ -225,7 +252,7 @@ export function useBedViewport(): BedViewportState {
       dragStartRef.current = { x: e.clientX, y: e.clientY };
       panBy(dx, dy);
     },
-    [panBy]
+    [handlePinchMove, panBy]
   );
 
   const onPointerUp = useCallback((e: PointerEvent<SVGSVGElement>) => {
@@ -235,6 +262,7 @@ export function useBedViewport(): BedViewportState {
     activePointersRef.current.delete(e.pointerId);
     if (activePointersRef.current.size < 2) {
       initialPinchDistanceRef.current = null;
+      pinchMidpointRef.current = null;
     }
     dragStartRef.current = null;
     setIsDragging(false);

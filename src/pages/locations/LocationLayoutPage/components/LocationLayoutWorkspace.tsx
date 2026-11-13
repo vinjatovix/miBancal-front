@@ -4,6 +4,7 @@ import BedCompassHud from '../../../../components/beds/layout/BedCompassHud';
 import LayoutScaleBar from '../../../../components/beds/layout/LayoutScaleBar';
 import LocationLayoutCanvas from '../../../../components/beds/layout/LocationLayoutCanvas';
 import type { BedViewportState } from '../../../../components/beds/visualizer/hooks/useBedViewport';
+import Button from '../../../../shared/components/Button/Button';
 import { t } from '../../../../i18n/core/t';
 import type { LocationLayoutResponse } from '../../../../types/Location/LocationLayout';
 import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
@@ -33,6 +34,10 @@ export interface LocationLayoutWorkspaceProps {
   readonly showAssociations?: boolean;
   readonly onSelectAssociationLink?: (link: ActiveAssociationLink) => void;
   readonly onInspectCrop?: (cropId: string) => void;
+  readonly isMobile?: boolean;
+  readonly editingEnabled?: boolean;
+  readonly onEnableEditing?: () => void;
+  readonly onDisableEditing?: () => void;
 }
 
 export default function LocationLayoutWorkspace({
@@ -49,12 +54,40 @@ export default function LocationLayoutWorkspace({
   associationFilterMode = 'all',
   showAssociations = true,
   onSelectAssociationLink,
-  onInspectCrop
+  onInspectCrop,
+  isMobile = false,
+  editingEnabled = true,
+  onEnableEditing,
+  onDisableEditing
 }: LocationLayoutWorkspaceProps): JSX.Element {
   const isPosition = editor.mode === 'position';
 
   return (
     <div ref={canvasContainerRef} className="location-layout-page__canvas">
+      {isMobile && (
+        <div className="location-layout-page__inspection-bar">
+          <span
+            className={`location-layout-page__inspection-badge ${
+              editingEnabled
+                ? 'location-layout-page__inspection-badge--editing'
+                : 'location-layout-page__inspection-badge--reading'
+            }`}
+          >
+            {editingEnabled
+              ? t('location.layout.touch.editing_badge')
+              : t('location.layout.touch.inspection_badge')}
+          </span>
+          <Button
+            variant={editingEnabled ? 'neutral' : 'primary'}
+            size="sm"
+            onClick={editingEnabled ? onDisableEditing : onEnableEditing}
+          >
+            {editingEnabled
+              ? t('location.layout.touch.disable_editing')
+              : t('location.layout.touch.enable_editing')}
+          </Button>
+        </div>
+      )}
       <LocationLayoutCanvas
         beds={editor.placedBeds}
         viewBox={editor.viewBox}

@@ -118,6 +118,75 @@ describe('useBedViewport', () => {
     }
   });
 
+  function createMockSvg(): SVGSVGElement {
+    return {
+      setPointerCapture: () => {},
+      hasPointerCapture: () => true,
+      releasePointerCapture: () => {},
+      getBoundingClientRect: () => ({
+        left: 0,
+        top: 0,
+        width: 800,
+        height: 600,
+        right: 800,
+        bottom: 600
+      })
+    } as unknown as SVGSVGElement;
+  }
+
+  function pointer(
+    svg: SVGSVGElement,
+    pointerId: number,
+    clientX: number,
+    clientY: number
+  ): React.PointerEvent<SVGSVGElement> {
+    return {
+      pointerId,
+      pointerType: 'touch',
+      clientX,
+      clientY,
+      currentTarget: svg
+    } as unknown as React.PointerEvent<SVGSVGElement>;
+  }
+
+  it('centers pinch zoom on the midpoint of the two pointers', () => {
+    const { result } = renderHook(() => useBedViewport());
+    const svg = createMockSvg();
+
+    act(() => {
+      result.current.onPointerDown(pointer(svg, 1, 500, 300));
+      result.current.onPointerDown(pointer(svg, 2, 700, 300));
+    });
+    act(() => {
+      result.current.onPointerMove(pointer(svg, 1, 480, 300));
+    });
+    act(() => {
+      result.current.onPointerMove(pointer(svg, 2, 720, 300));
+    });
+
+    expect(result.current.zoom).toBeCloseTo(1.2, 1);
+    expect(result.current.panX).toBeLessThan(-10);
+  });
+
+  it('pans the plan when two fingers drag without changing the distance', () => {
+    const { result } = renderHook(() => useBedViewport());
+    const svg = createMockSvg();
+
+    act(() => {
+      result.current.onPointerDown(pointer(svg, 1, 300, 300));
+      result.current.onPointerDown(pointer(svg, 2, 500, 300));
+    });
+    act(() => {
+      result.current.onPointerMove(pointer(svg, 1, 350, 300));
+    });
+    act(() => {
+      result.current.onPointerMove(pointer(svg, 2, 550, 300));
+    });
+
+    expect(result.current.zoom).toBeCloseTo(1, 1);
+    expect(result.current.panX).toBeCloseTo(50, 0);
+  });
+
   it('zooms towards cursor position on wheel event', () => {
     const { result } = renderHook(() => useBedViewport());
     const mockSvg = {
