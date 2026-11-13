@@ -145,6 +145,9 @@ export default function LocationLayoutWorkspace({
         onSelectBed={editor.selectBed}
         onDeselect={bedActions.handleDeselectBed}
         onBedMove={editor.moveBed}
+        onBedDragStart={editor.beginBedDrag}
+        onBedDragMove={editor.moveBedDrag}
+        onBedDragEnd={editor.endBedDrag}
         onBedRotate={editor.rotateBedBy}
         onPlacementDragOver={placement.updateDropPreview}
         onPlacementDragLeave={placement.clearPreview}

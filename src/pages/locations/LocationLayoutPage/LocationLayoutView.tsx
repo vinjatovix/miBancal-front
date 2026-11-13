@@ -379,8 +379,12 @@ export default function LocationLayoutView({
               ? () => setIsDiscardPlantingOpen(true)
               : editor.promptDiscard
           }
-          canUndo={isPlanting ? placement.canUndo : false}
-          onUndo={isPlanting ? placement.undo : undefined}
+          canUndo={
+            isPlanting ? placement.canUndo : isPosition ? editor.canUndo : false
+          }
+          onUndo={
+            isPlanting ? placement.undo : isPosition ? editor.undo : undefined
+          }
           onExportPdf={() => setIsExportOpen(true)}
           exportDisabled={editor.placedBeds.length === 0}
         />

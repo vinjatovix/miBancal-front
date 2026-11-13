@@ -75,7 +75,9 @@ describe('LocationLayoutCanvas', () => {
       />
     );
 
-    const polygons = container.querySelectorAll('polygon');
+    const polygons = container.querySelectorAll(
+      '.location-layout-canvas__rect'
+    );
     expect(polygons).toHaveLength(2);
     expect(polygons[0]?.getAttribute('points')).toBe('0,0 100,0 100,50 0,50');
   });
@@ -121,7 +123,9 @@ describe('LocationLayoutCanvas', () => {
 
   it('exposes selectable draggable beds in position mode', () => {
     const onSelectBed = vi.fn();
-    const onBedMove = vi.fn();
+    const onBedDragStart = vi.fn();
+    const onBedDragMove = vi.fn();
+    const onBedDragEnd = vi.fn();
 
     render(
       <LocationLayoutCanvas
@@ -131,16 +135,21 @@ describe('LocationLayoutCanvas', () => {
         mode="position"
         viewport={buildViewport()}
         onSelectBed={onSelectBed}
-        onBedMove={onBedMove}
+        onBedDragStart={onBedDragStart}
+        onBedDragMove={onBedDragMove}
+        onBedDragEnd={onBedDragEnd}
       />
     );
 
     const bed = screen.getByRole('button', { name: /Tomates/ });
     fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
     fireEvent.pointerMove(bed, { pointerId: 1, clientX: 10, clientY: -4 });
+    fireEvent.pointerUp(bed, { pointerId: 1, clientX: 10, clientY: -4 });
 
     expect(onSelectBed).toHaveBeenCalledWith('bed-1');
-    expect(onBedMove).toHaveBeenCalledWith('bed-1', 10, -4);
+    expect(onBedDragStart).toHaveBeenCalledWith('bed-1', expect.any(String));
+    expect(onBedDragMove).toHaveBeenCalledWith(10, -4);
+    expect(onBedDragEnd).toHaveBeenCalled();
   });
 
   it.each([
@@ -429,7 +438,11 @@ describe('LocationLayoutCanvas', () => {
       });
 
       expect(onCropSelect).toHaveBeenCalledWith('crop-far');
-      expect(onCropDragStart).toHaveBeenCalledWith('crop-far', 'bed-1', 'touch');
+      expect(onCropDragStart).toHaveBeenCalledWith(
+        'crop-far',
+        'bed-1',
+        'touch'
+      );
     });
 
     it('does not start a crop drag while the select tool is active', () => {

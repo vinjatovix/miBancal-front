@@ -93,6 +93,9 @@ export interface LocationLayoutCanvasProps {
   readonly onSelectBed?: (id: string) => void;
   readonly onDeselect?: () => void;
   readonly onBedMove?: (id: string, deltaCmX: number, deltaCmY: number) => void;
+  readonly onBedDragStart?: (id: string, pointerType: string) => void;
+  readonly onBedDragMove?: (deltaCmX: number, deltaCmY: number) => void;
+  readonly onBedDragEnd?: () => void;
   readonly onBedRotate?: (id: string, deltaDegrees: number) => void;
   readonly onPlacementDragOver?: (global: Point) => void;
   readonly onPlacementDragLeave?: () => void;
@@ -209,6 +212,9 @@ export default function LocationLayoutCanvas({
   onSelectBed,
   onDeselect,
   onBedMove,
+  onBedDragStart,
+  onBedDragMove,
+  onBedDragEnd,
   onBedRotate,
   onPlacementDragOver,
   onPlacementDragLeave,
@@ -556,6 +562,7 @@ export default function LocationLayoutCanvas({
     if (!interactive) return;
     event.currentTarget.setPointerCapture?.(event.pointerId);
     dragRef.current = { id, x: event.clientX, y: event.clientY };
+    onBedDragStart?.(id, event.pointerType);
   };
 
   const handleBedPointerMove = (event: PointerEvent<SVGGElement>): void => {
@@ -564,8 +571,7 @@ export default function LocationLayoutCanvas({
     const dxPixels = event.clientX - drag.x;
     const dyPixels = event.clientY - drag.y;
     dragRef.current = { id: drag.id, x: event.clientX, y: event.clientY };
-    onBedMove?.(
-      drag.id,
+    onBedDragMove?.(
       pixelToCm(dxPixels, viewport.zoom),
       pixelToCm(dyPixels, viewport.zoom)
     );
@@ -576,10 +582,14 @@ export default function LocationLayoutCanvas({
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
     dragRef.current = null;
+    onBedDragEnd?.();
   };
 
   const handleLostPointerCapture = (): void => {
-    dragRef.current = null;
+    if (dragRef.current) {
+      dragRef.current = null;
+      onBedDragEnd?.();
+    }
   };
 
   const handleBedKeyDown = (
@@ -695,6 +705,10 @@ export default function LocationLayoutCanvas({
                 }
                 onKeyDown={(event) => handleBedKeyDown(bed.id, event)}
               >
+                <polygon
+                  className="location-layout-canvas__bed-hit"
+                  points={toPoints(vertices)}
+                />
                 <polygon
                   className="location-layout-canvas__rect"
                   points={toPoints(vertices)}
