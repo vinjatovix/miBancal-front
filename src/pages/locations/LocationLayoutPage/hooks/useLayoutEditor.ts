@@ -11,9 +11,13 @@ import type {
 } from '../../../../components/beds/layout/utils/layoutTypes';
 import {
   applySnap,
-  GRID_SPACING_CM
+  GRID_SPACING_CM,
+  snapThresholdFor
 } from '../../../../components/beds/layout/utils/snapConfig';
-import { pointerKind } from '../../../../components/beds/layout/utils/pointerThreshold';
+import {
+  pointerKind,
+  type PointerKind
+} from '../../../../components/beds/layout/utils/pointerThreshold';
 import { t } from '../../../../i18n/core/t';
 import { useToast } from '../../../../shared/toast/useToast';
 import type {
@@ -109,6 +113,7 @@ export function useLayoutEditor(
   const rawDragPositions = useRef<Map<string, BedPosition>>(new Map());
   const bedDragRef = useRef<{ id: string; from: DraftPlacement } | null>(null);
   const bedArmedRef = useRef(false);
+  const bedDragPointerRef = useRef<PointerKind>('mouse');
   const bedLongPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [draggingBedId, setDraggingBedId] = useState<string | null>(null);
   const toast = useToast();
@@ -249,6 +254,7 @@ export function useLayoutEditor(
         neighbors,
         {
           enabled: neighborSnapEnabled,
+          threshold: snapThresholdFor(bedDragPointerRef.current),
           gridSpacing: gridSnapEnabled ? GRID_SPACING_CM : undefined
         }
       );
@@ -265,6 +271,7 @@ export function useLayoutEditor(
       resetDragPositions();
       clearBedLongPress();
       bedDragRef.current = { id: bedId, from: currentPlacement(bedId) };
+      bedDragPointerRef.current = pointerKind(pointerType);
       if (pointerKind(pointerType) === 'mouse') {
         bedArmedRef.current = true;
         setDraggingBedId(bedId);
