@@ -89,7 +89,38 @@ export const locationsMessages = {
       north_angle_saved:
         'Orientación Norte de la localización guardada correctamente',
       north_angle_save_error:
-        'Error al guardar la orientación Norte de la localización'
+        'Error al guardar la orientación Norte de la localización',
+      touch: {
+        inspection_badge: 'Solo lectura',
+        editing_badge: 'Edición activa',
+        enable_editing: 'Activar edición',
+        disable_editing: 'Salir de edición',
+        inspection_hint:
+          'Pellizca para hacer zoom y arrastra para desplazar el plano.',
+        undo: 'Deshacer',
+        undo_hint: 'Deshacer el último cambio',
+        help_button: 'Ayuda de gestos',
+        help_title: 'Cómo manejar el plano con gestos',
+        help_close: 'Cerrar ayuda',
+        hint_read: 'Pellizca para ampliar • Arrastra para mover el plano',
+        hint_position:
+          'Toca para seleccionar • Mantén y arrastra para mover un bancal',
+        hint_plant_select:
+          'Toca para seleccionar • Arrastra en vacío para seleccionar un grupo',
+        hint_plant_single:
+          'Toca para seleccionar • Mantén y arrastra para mover una planta',
+        hint_plant_brush: 'Arrastra para sembrar siguiendo el trazo',
+        gesture_tap: 'Toca un elemento para seleccionarlo',
+        gesture_long_press: 'Mantén pulsado y arrastra para mover',
+        gesture_pinch: 'Pellizca con dos dedos para hacer zoom',
+        gesture_two_finger_pan: 'Arrastra con dos dedos para desplazar',
+        gesture_marquee: 'Arrastra en vacío para seleccionar un grupo',
+        gesture_brush: 'Arrastra para sembrar siguiendo el trazo',
+        catalog_title: 'Catálogo botánico',
+        catalog_search: 'Buscar planta',
+        catalog_close: 'Cerrar catálogo',
+        catalog_empty: 'No se han encontrado plantas.'
+      }
     }
   }
 } as const;

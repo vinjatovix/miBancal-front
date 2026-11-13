@@ -33,6 +33,7 @@ import {
   type Point
 } from './utils/layoutGeometry';
 import { GRID_SPACING_CM } from './utils/snapConfig';
+import { moveThresholdForPointerType } from './utils/pointerThreshold';
 import type { AnchorPoint, LayoutMode, ResolvedBed } from './utils/layoutTypes';
 import type { CropPlacementItem } from '../../../types/PlantInstance/plantPlacementTypes';
 import type {
@@ -120,7 +121,6 @@ export interface LocationLayoutCanvasProps {
 const FINE_STEP_CM = 5;
 const COARSE_STEP_CM = 25;
 const ROTATE_STEP_DEGREES = 1;
-const CLICK_MOVE_THRESHOLD_PX = 4;
 const FLOOR_DOT_PATTERN_ID = 'location-layout-floor-dots';
 
 function toPoints(vertices: readonly Point[]): string {
@@ -468,27 +468,43 @@ export default function LocationLayoutCanvas({
     viewport.onPointerMove(event);
   };
 
-  const handleSurfacePointerUp = (event: PointerEvent<SVGSVGElement>): void => {
-    if (isPlanting && (toolMode === 'brush' || toolMode === 'select')) {
-      const gesture = surfaceGestureRef.current;
-      surfaceGestureRef.current = null;
-      if (gesture === 'pan') {
-        viewport.onPointerUp(event);
-        const panStart = surfaceDownRef.current;
-        surfaceDownRef.current = null;
-        if (panStart) {
-          const panDistance = Math.hypot(
-            event.clientX - panStart.x,
-            event.clientY - panStart.y
-          );
-          if (panDistance <= CLICK_MOVE_THRESHOLD_PX) onDeselect?.();
-        }
-        return;
-      }
-      if (toolMode === 'brush') onBrushPointerUp?.();
-      else onMarqueePointerUp?.();
+  const finishSurfacePanUp = (event: PointerEvent<SVGSVGElement>): void => {
+    viewport.onPointerUp(event);
+    const panStart = surfaceDownRef.current;
+    surfaceDownRef.current = null;
+    if (!panStart) return;
+    const panDistance = Math.hypot(
+      event.clientX - panStart.x,
+      event.clientY - panStart.y
+    );
+    if (panDistance <= moveThresholdForPointerType(event.pointerType)) {
+      onDeselect?.();
+    }
+  };
+
+  const finishPlantingToolUp = (event: PointerEvent<SVGSVGElement>): void => {
+    const gesture = surfaceGestureRef.current;
+    surfaceGestureRef.current = null;
+    if (gesture === 'pan') {
+      finishSurfacePanUp(event);
       return;
     }
+    if (toolMode === 'brush') onBrushPointerUp?.();
+    else onMarqueePointerUp?.();
+  };
+
+  const handlePlantingSurfaceTap = (
+    event: PointerEvent<SVGSVGElement>
+  ): void => {
+    const global = clientToGlobal(event.clientX, event.clientY);
+    if (!global) return;
+    const insideBed = findBedAtPoint(beds, global);
+    if (insideBed) onSelectBed?.(insideBed.id);
+    else onDeselect?.();
+    onPlacementTap?.(global);
+  };
+
+  const finishSurfaceTapUp = (event: PointerEvent<SVGSVGElement>): void => {
     viewport.onPointerUp(event);
     const start = surfaceDownRef.current;
     surfaceDownRef.current = null;
@@ -497,18 +513,20 @@ export default function LocationLayoutCanvas({
       event.clientX - start.x,
       event.clientY - start.y
     );
-    if (movedDistance > CLICK_MOVE_THRESHOLD_PX) return;
+    if (movedDistance > moveThresholdForPointerType(event.pointerType)) return;
     if (isPlanting) {
-      const global = clientToGlobal(event.clientX, event.clientY);
-      if (global) {
-        const insideBed = findBedAtPoint(beds, global);
-        if (insideBed) onSelectBed?.(insideBed.id);
-        else onDeselect?.();
-        onPlacementTap?.(global);
-      }
+      handlePlantingSurfaceTap(event);
       return;
     }
     onDeselect?.();
+  };
+
+  const handleSurfacePointerUp = (event: PointerEvent<SVGSVGElement>): void => {
+    if (isPlanting && (toolMode === 'brush' || toolMode === 'select')) {
+      finishPlantingToolUp(event);
+      return;
+    }
+    finishSurfaceTapUp(event);
   };
   const center = viewBoxCenter(viewBox);
   const transform = `translate(${viewport.panX}, ${viewport.panY}) translate(${center.x}, ${center.y}) scale(${viewport.zoom}) translate(${-center.x}, ${-center.y})`;
