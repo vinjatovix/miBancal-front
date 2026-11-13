@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import LocationLayoutCanvas from '../../../../src/components/beds/layout/LocationLayoutCanvas';
 import type { BedViewportState } from '../../../../src/components/beds/visualizer/hooks/useBedViewport';
 import type { ResolvedBed } from '../../../../src/components/beds/layout/utils/layoutTypes';
+import type { CropPlacementItem } from '../../../../src/types/PlantInstance/plantPlacementTypes';
+import { buildCropPlacementItem } from '../../../fixtures/plantInstances/buildPlantInstance';
 
 function buildViewport(): BedViewportState {
   return {
@@ -355,6 +357,106 @@ describe('LocationLayoutCanvas', () => {
       tapSurface(210, 210);
 
       expect(onSelectBed).toHaveBeenCalledWith('bed-2');
+    });
+  });
+
+  describe('crop pointer interaction in planting mode', () => {
+    const originalDOMPoint = globalThis.DOMPoint;
+
+    const cropNear = buildCropPlacementItem({
+      id: 'crop-near',
+      bedId: 'bed-1',
+      commonName: 'Cerca',
+      position: { x: 20, y: 20 }
+    });
+    const cropFar = buildCropPlacementItem({
+      id: 'crop-far',
+      bedId: 'bed-1',
+      commonName: 'Lejos',
+      position: { x: 80, y: 80 }
+    });
+    const cropsByBed = new Map<string, readonly CropPlacementItem[]>([
+      ['bed-1', [cropNear, cropFar]]
+    ]);
+
+    beforeEach(() => {
+      class IdentityDOMPoint {
+        x: number;
+        y: number;
+        constructor(x = 0, y = 0) {
+          this.x = x;
+          this.y = y;
+        }
+        matrixTransform(): { x: number; y: number } {
+          return { x: this.x, y: this.y };
+        }
+      }
+      globalThis.DOMPoint = IdentityDOMPoint as unknown as typeof DOMPoint;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (SVGElement.prototype as any).getScreenCTM = () => ({
+        inverse: () => ({})
+      });
+    });
+
+    afterEach(() => {
+      globalThis.DOMPoint = originalDOMPoint;
+    });
+
+    it('starts the crop drag for the crop nearest the touch, not the one tapped', () => {
+      const onCropDragStart = vi.fn();
+      const onCropSelect = vi.fn();
+
+      render(
+        <LocationLayoutCanvas
+          beds={BEDS}
+          viewBox="0 0 400 400"
+          label="Layout"
+          mode="plants"
+          selectedId="bed-1"
+          cropsByBed={cropsByBed}
+          viewport={buildViewport()}
+          onCropSelect={onCropSelect}
+          onCropDragStart={onCropDragStart}
+        />
+      );
+
+      const tappedCrop = screen.getByRole('button', { name: /Cerca/ });
+      fireEvent.pointerDown(tappedCrop, {
+        pointerId: 1,
+        pointerType: 'touch',
+        clientX: 78,
+        clientY: 78
+      });
+
+      expect(onCropSelect).toHaveBeenCalledWith('crop-far');
+      expect(onCropDragStart).toHaveBeenCalledWith('crop-far', 'bed-1', 'touch');
+    });
+
+    it('does not start a crop drag while the select tool is active', () => {
+      const onCropDragStart = vi.fn();
+
+      render(
+        <LocationLayoutCanvas
+          beds={BEDS}
+          viewBox="0 0 400 400"
+          label="Layout"
+          mode="plants"
+          selectedId="bed-1"
+          toolMode="select"
+          cropsByBed={cropsByBed}
+          viewport={buildViewport()}
+          onCropDragStart={onCropDragStart}
+        />
+      );
+
+      fireEvent.pointerDown(screen.getByRole('button', { name: /Cerca/ }), {
+        pointerId: 1,
+        pointerType: 'touch',
+        clientX: 20,
+        clientY: 20
+      });
+
+      expect(onCropDragStart).not.toHaveBeenCalled();
     });
   });
 });

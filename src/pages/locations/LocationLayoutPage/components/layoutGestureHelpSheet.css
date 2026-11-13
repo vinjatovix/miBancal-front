@@ -1,0 +1,26 @@
+.layout-gesture-help-sheet__overlay {
+  align-items: flex-end;
+}
+
+.layout-gesture-help-sheet {
+  width: 100%;
+  max-width: 100%;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.layout-gesture-help-sheet__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.layout-gesture-help-sheet__item {
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  color: var(--color-on-surface);
+}

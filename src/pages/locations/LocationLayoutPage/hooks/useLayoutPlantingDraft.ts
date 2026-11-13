@@ -24,6 +24,47 @@ export interface UseLayoutPlantingDraftParams {
   readonly invalidateBed: (bedId: string) => Promise<void>;
 }
 
+interface SavePayload {
+  readonly affectedBedIds: ReadonlySet<string>;
+  readonly creationsByBed: ReadonlyMap<string, BatchCreateCropItem[]>;
+  readonly moves: readonly BatchCropMoveInput[];
+  readonly deletions: readonly CropPlacementItem[];
+}
+
+function buildSavePayload(
+  created: readonly CropPlacementItem[],
+  moved: ReadonlyMap<string, Coordinates>,
+  deleted: ReadonlySet<string>,
+  serverById: ReadonlyMap<string, CropPlacementItem>
+): SavePayload {
+  const affectedBedIds = new Set<string>();
+  const creationsByBed = new Map<string, BatchCreateCropItem[]>();
+  for (const crop of created) {
+    affectedBedIds.add(crop.bedId);
+    const list = creationsByBed.get(crop.bedId) ?? [];
+    list.push({ plantId: crop.plantId, position: crop.position });
+    creationsByBed.set(crop.bedId, list);
+  }
+
+  const moves: BatchCropMoveInput[] = [];
+  for (const [id, position] of moved) {
+    const crop = serverById.get(id);
+    if (!crop) continue;
+    affectedBedIds.add(crop.bedId);
+    moves.push({ id, position, version: crop.version });
+  }
+
+  const deletions: CropPlacementItem[] = [];
+  for (const id of deleted) {
+    const crop = serverById.get(id);
+    if (!crop) continue;
+    affectedBedIds.add(crop.bedId);
+    deletions.push(crop);
+  }
+
+  return { affectedBedIds, creationsByBed, moves, deletions };
+}
+
 export function useLayoutPlantingDraft({
   cropsByBed,
   invalidateBed
@@ -94,28 +135,39 @@ export function useLayoutPlantingDraft({
     [addCrops]
   );
 
-  const moveCrops = useCallback((moves: readonly LayoutMoveInput[]) => {
-    if (moves.length === 0) return;
-    const moveMap = new Map(moves.map((move) => [move.id, move.position]));
-    setCreated((prevCreated) => {
-      const createdIds = new Set(prevCreated.map((crop) => crop.id));
-      setMoved((prevMoved) => {
-        const next = new Map(prevMoved);
-        let changed = false;
-        for (const [id, position] of moveMap) {
-          if (createdIds.has(id)) continue;
-          next.set(id, position);
-          changed = true;
-        }
-        return changed ? next : prevMoved;
+  const moveCrops = useCallback(
+    (moves: readonly LayoutMoveInput[]) => {
+      if (moves.length === 0) return;
+      const moveMap = new Map(moves.map((move) => [move.id, move.position]));
+      setCreated((prevCreated) => {
+        const createdIds = new Set(prevCreated.map((crop) => crop.id));
+        setMoved((prevMoved) => {
+          const next = new Map(prevMoved);
+          let changed = false;
+          for (const [id, position] of moveMap) {
+            if (createdIds.has(id)) continue;
+            const server = serverById.get(id);
+            const isBackToOrigin =
+              server?.position.x === position.x &&
+              server.position.y === position.y;
+            if (isBackToOrigin) {
+              if (next.delete(id)) changed = true;
+            } else {
+              next.set(id, position);
+              changed = true;
+            }
+          }
+          return changed ? next : prevMoved;
+        });
+        if (!prevCreated.some((crop) => moveMap.has(crop.id))) return prevCreated;
+        return prevCreated.map((crop) => {
+          const position = moveMap.get(crop.id);
+          return position ? { ...crop, position } : crop;
+        });
       });
-      if (!prevCreated.some((crop) => moveMap.has(crop.id))) return prevCreated;
-      return prevCreated.map((crop) => {
-        const position = moveMap.get(crop.id);
-        return position ? { ...crop, position } : crop;
-      });
-    });
-  }, []);
+    },
+    [serverById]
+  );
 
   const moveCrop = useCallback(
     (id: string, position: Coordinates) => {
@@ -144,6 +196,24 @@ export function useLayoutPlantingDraft({
     });
   }, []);
 
+  const restoreCrops = useCallback((crops: readonly CropPlacementItem[]) => {
+    if (crops.length === 0) return;
+    const ids = new Set(crops.map((crop) => crop.id));
+    setDeleted((prev) => {
+      if (prev.size === 0) return prev;
+      const next = new Set(prev);
+      for (const id of ids) next.delete(id);
+      return next;
+    });
+    setCreated((prev) => {
+      const existing = new Set(prev.map((crop) => crop.id));
+      const readded = crops.filter(
+        (crop) => crop.isNew && !existing.has(crop.id)
+      );
+      return readded.length > 0 ? [...prev, ...readded] : prev;
+    });
+  }, []);
+
   const discardChanges = useCallback(() => {
     setCreated([]);
     setMoved(new Map());
@@ -157,46 +227,29 @@ export function useLayoutPlantingDraft({
     }
     setIsSaving(true);
 
-    const affectedBedIds = new Set<string>();
-    const creationsByBed = new Map<string, BatchCreateCropItem[]>();
-    for (const crop of created) {
-      affectedBedIds.add(crop.bedId);
-      const list = creationsByBed.get(crop.bedId) ?? [];
-      list.push({ plantId: crop.plantId, position: crop.position });
-      creationsByBed.set(crop.bedId, list);
-    }
+    const { affectedBedIds, creationsByBed, moves, deletions } =
+      buildSavePayload(created, moved, deleted, serverById);
 
-    const moves: BatchCropMoveInput[] = [];
-    for (const [id, position] of moved) {
-      const crop = serverById.get(id);
-      if (!crop) continue;
-      affectedBedIds.add(crop.bedId);
-      moves.push({ id, position, version: crop.version });
-    }
-
-    const deletions: CropPlacementItem[] = [];
-    for (const id of deleted) {
-      const crop = serverById.get(id);
-      if (!crop) continue;
-      affectedBedIds.add(crop.bedId);
-      deletions.push(crop);
-    }
+    const invalidateAll = () =>
+      Promise.all(Array.from(affectedBedIds, (bedId) => invalidateBed(bedId)));
 
     let creationsPersisted = false;
     let movesPersisted = false;
     try {
-      for (const [bedId, items] of creationsByBed) {
-        await batchCreateCrops(bedId, items);
-      }
+      await Promise.all(
+        Array.from(creationsByBed, ([bedId, items]) =>
+          batchCreateCrops(bedId, items)
+        )
+      );
       creationsPersisted = true;
       await batchUpdateCrops(moves);
       movesPersisted = true;
       await batchDeleteCrops(deletions);
-      for (const bedId of affectedBedIds) await invalidateBed(bedId);
+      await invalidateAll();
       discardChanges();
       return 'ok';
     } catch (error) {
-      for (const bedId of affectedBedIds) await invalidateBed(bedId);
+      await invalidateAll();
       if (creationsPersisted) setCreated([]);
       if (movesPersisted) setMoved(new Map());
       return error instanceof PreconditionFailedError ? 'conflict' : 'error';
@@ -223,6 +276,7 @@ export function useLayoutPlantingDraft({
     moveCrop,
     moveCrops,
     removeCrops,
+    restoreCrops,
     discardChanges,
     save
   };

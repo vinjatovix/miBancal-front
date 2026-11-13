@@ -18,7 +18,11 @@ import LocationPlacementLayer, {
   type LocationPlacementPreview
 } from './LocationPlacementLayer';
 import { readDraggedPlantId } from '../visualizer/placementDnd';
-import { findBedAtPoint } from './utils/plantPlacementGeometry';
+import {
+  findBedAtPoint,
+  globalToBedLocal
+} from './utils/plantPlacementGeometry';
+import { resolveCropAtPoint } from './utils/touchSelection';
 import {
   calculateNetAzimuth,
   getBedEdgeCardinals
@@ -103,7 +107,7 @@ export interface LocationLayoutCanvasProps {
   readonly onCropDragStart?: (
     cropId: string,
     bedId: string,
-    global: Point
+    pointerType: string
   ) => void;
   readonly onCropDragMove?: (global: Point) => void;
   readonly onCropDragEnd?: (global: Point) => void;
@@ -388,6 +392,17 @@ export default function LocationLayoutCanvas({
     if (plantId && global) onPlacementDrop?.(global, plantId);
   };
 
+  const resolveCropForTap = (
+    global: Point | null,
+    bedId: string
+  ): string | null => {
+    if (!global || !cropsByBed) return null;
+    const bed = beds.find((candidate) => candidate.id === bedId);
+    const crops = cropsByBed.get(bedId);
+    if (!bed || !crops) return null;
+    return resolveCropAtPoint(globalToBedLocal(bed, global), crops);
+  };
+
   const handleCropPointerDown = (
     cropId: string,
     bedId: string,
@@ -397,12 +412,13 @@ export default function LocationLayoutCanvas({
       return;
     }
     event.stopPropagation();
-    onCropSelect?.(cropId);
     const global = clientToGlobal(event.clientX, event.clientY);
+    const resolvedId = resolveCropForTap(global, bedId) ?? cropId;
+    onCropSelect?.(resolvedId);
     if (!global || !onCropDragStart) return;
     event.currentTarget.setPointerCapture?.(event.pointerId);
     cropDragActiveRef.current = true;
-    onCropDragStart(cropId, bedId, global);
+    onCropDragStart(resolvedId, bedId, event.pointerType);
   };
 
   const handleCropPointerMove = (event: PointerEvent<SVGGElement>): void => {
