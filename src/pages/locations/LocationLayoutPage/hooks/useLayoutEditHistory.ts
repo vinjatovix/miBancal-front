@@ -1,15 +1,36 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import type { DraftPlacement } from '../../../../components/beds/layout/utils/layoutTypes';
 import type { Point } from '../../../../components/beds/layout/utils/layoutGeometry';
 import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
 
 export type EditAction =
-  | { readonly type: 'move-crop'; readonly cropId: string; readonly from: Point; readonly to: Point }
-  | { readonly type: 'plant'; readonly cropIds: readonly string[]; readonly bedId: string }
+  | {
+      readonly type: 'move-crop';
+      readonly cropId: string;
+      readonly from: Point;
+      readonly to: Point;
+    }
+  | {
+      readonly type: 'plant';
+      readonly cropIds: readonly string[];
+      readonly bedId: string;
+    }
   | {
       readonly type: 'remove-crop';
       readonly bedId: string;
       readonly crops: readonly CropPlacementItem[];
+    }
+  | {
+      readonly type: 'move-bed';
+      readonly bedId: string;
+      readonly from: DraftPlacement;
+      readonly to: DraftPlacement;
+    }
+  | {
+      readonly type: 'place-bed';
+      readonly bedId: string;
+      readonly from: DraftPlacement;
     };
 
 export interface UseLayoutEditHistoryParams {
