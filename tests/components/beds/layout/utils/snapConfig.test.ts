@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { applySnap } from '../../../../../src/components/beds/layout/utils/snapConfig';
+import {
+  applySnap,
+  snapThresholdFor,
+  SNAP_THRESHOLD_CM,
+  SNAP_THRESHOLD_TOUCH_CM
+} from '../../../../../src/components/beds/layout/utils/snapConfig';
 import type { RotatedRectInput } from '../../../../../src/components/beds/layout/utils/layoutGeometry';
 
 const neighbor: RotatedRectInput = {
@@ -98,5 +103,37 @@ describe('applySnap', () => {
     const result = applySnap(dragged, [neighbor], { enabled: true });
 
     expect(result).toEqual({ position: { x: 400, y: 400 }, rotation: 0 });
+  });
+
+  it('snaps a coarser touch gap that the mouse threshold would miss', () => {
+    const dragged: RotatedRectInput = {
+      position: { x: 125, y: 0 },
+      width: 100,
+      height: 50,
+      rotation: 0
+    };
+
+    const mouseResult = applySnap(dragged, [neighbor], {
+      enabled: true,
+      threshold: snapThresholdFor('mouse')
+    });
+    expect(mouseResult.position.x).toBeCloseTo(125);
+
+    const touchResult = applySnap(dragged, [neighbor], {
+      enabled: true,
+      threshold: snapThresholdFor('touch')
+    });
+    expect(touchResult.position.x).toBeCloseTo(100);
+  });
+});
+
+describe('snapThresholdFor', () => {
+  it('uses the base threshold for the mouse', () => {
+    expect(snapThresholdFor('mouse')).toBe(SNAP_THRESHOLD_CM);
+  });
+
+  it('uses a more forgiving threshold for touch', () => {
+    expect(snapThresholdFor('touch')).toBe(SNAP_THRESHOLD_TOUCH_CM);
+    expect(SNAP_THRESHOLD_TOUCH_CM).toBeGreaterThan(SNAP_THRESHOLD_CM);
   });
 });
