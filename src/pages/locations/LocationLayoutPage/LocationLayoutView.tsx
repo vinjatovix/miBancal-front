@@ -28,6 +28,7 @@ import BedPdfExportModal from './components/BedPdfExportModal/BedPdfExportModal'
 import CropAssociationInspectionModal from '../../../components/beds/associations/CropAssociationInspectionModal';
 import CropRelationsModal from '../../../components/beds/associations/CropRelationsModal';
 import { useLayoutEditor } from './hooks/useLayoutEditor';
+import { useLayoutInspectionMode } from './hooks/useLayoutInspectionMode';
 import { useLayoutKeyboardShortcuts } from './hooks/useLayoutKeyboardShortcuts';
 import { useLayoutModeController } from './hooks/useLayoutModeController';
 import { useLayoutPlantPlacement } from './hooks/useLayoutPlantPlacement';
@@ -56,6 +57,7 @@ export default function LocationLayoutView({
   const queryClient = useQueryClient();
   const editor = useLayoutEditor(id, etag, layout);
   const viewport = useBedViewport();
+  const inspection = useLayoutInspectionMode();
   const [searchParams] = useSearchParams();
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const prevWidthRef = useRef<number | null>(null);
@@ -65,6 +67,7 @@ export default function LocationLayoutView({
     beds: editor.placedBeds,
     viewBox: editor.viewBox,
     initialMode: editor.mode,
+    editingEnabled: inspection.editingEnabled,
     onModeChange: editor.setMode
   });
 
@@ -182,6 +185,12 @@ export default function LocationLayoutView({
     [editor.mode, modeController, placement, selectedBedId]
   );
 
+  useEffect(() => {
+    if (!inspection.editingEnabled && editor.mode !== 'read') {
+      performModeChange('read');
+    }
+  }, [inspection.editingEnabled, editor.mode, performModeChange]);
+
   const handleModeChange = useCallback(
     (nextMode: LayoutMode) => {
       if (
@@ -239,14 +248,14 @@ export default function LocationLayoutView({
     },
     onDeleteSelected: () => {
       if (isPlanting && placement.selectedCropCount > 0) {
-        void placement.deleteSelectedCrops();
+        placement.deleteSelectedCrops();
       } else if (isPosition && selectedBed) {
         bedActions.setIsDeleteOpen(true);
       }
     },
     onDuplicateSelected: () => {
       if (isPlanting && placement.selectedCropCount > 0) {
-        void placement.duplicateSelectedCrops();
+        placement.duplicateSelectedCrops();
       }
     },
     onClearSelection: () => {
@@ -327,8 +336,8 @@ export default function LocationLayoutView({
       {isPlanting && placement.toolMode === 'select' && (
         <LayoutSelectionActionBar
           count={placement.selectedCropCount}
-          onDuplicate={() => void placement.duplicateSelectedCrops()}
-          onDelete={() => void placement.deleteSelectedCrops()}
+          onDuplicate={() => placement.duplicateSelectedCrops()}
+          onDelete={() => placement.deleteSelectedCrops()}
           onClear={placement.clearSelection}
           disabled={placement.isSaving}
         />
@@ -358,6 +367,10 @@ export default function LocationLayoutView({
           showAssociations={showAssociations}
           onSelectAssociationLink={setInspectedLink}
           onInspectCrop={setInspectedCropId}
+          isMobile={inspection.isMobile}
+          editingEnabled={inspection.editingEnabled}
+          onEnableEditing={inspection.enableEditing}
+          onDisableEditing={inspection.disableEditing}
         />
 
         <LocationLayoutContextPanel

@@ -10,7 +10,7 @@ if (typeof window !== 'undefined') {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: vi.fn().mockImplementation((query: string) => ({
-      matches: false,
+      matches: query === '(pointer: fine)',
       media: query,
       onchange: null,
       addListener: vi.fn(),
@@ -59,10 +59,8 @@ if (typeof window !== 'undefined') {
 }
 
 vi.mock('leaflet', () => {
-  class MockMap {
-    private handlers: Record<string, ((e: unknown) => void)[]> = {};
-    zoom = 6;
-    center: [number, number] = [40.4168, -3.7038];
+  class MockEmitter {
+    protected handlers: Record<string, ((e: unknown) => void)[]> = {};
 
     on(event: string, handler: (e: unknown) => void) {
       this.handlers[event] = this.handlers[event] || [];
@@ -70,11 +68,16 @@ vi.mock('leaflet', () => {
       return this;
     }
 
-    _trigger(event: string, data: unknown) {
+    _trigger(event: string, data?: unknown) {
       for (const h of this.handlers[event] ?? []) {
         h(data);
       }
     }
+  }
+
+  class MockMap extends MockEmitter {
+    zoom = 6;
+    center: [number, number] = [40.4168, -3.7038];
 
     setView(center: [number, number], zoom?: number) {
       this.center = center;
@@ -90,28 +93,16 @@ vi.mock('leaflet', () => {
     remove = vi.fn();
   }
 
-  class MockMarker {
-    private handlers: Record<string, ((e: unknown) => void)[]> = {};
+  class MockMarker extends MockEmitter {
     latlng: { lat: number; lng: number };
 
     constructor(latlng: [number, number]) {
+      super();
       this.latlng = { lat: latlng[0], lng: latlng[1] };
     }
 
     addTo() {
       return this;
-    }
-
-    on(event: string, handler: (e: unknown) => void) {
-      this.handlers[event] = this.handlers[event] || [];
-      this.handlers[event].push(handler);
-      return this;
-    }
-
-    _trigger(event: string, data?: unknown) {
-      for (const h of this.handlers[event] ?? []) {
-        h(data);
-      }
     }
 
     getLatLng() {

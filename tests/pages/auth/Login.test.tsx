@@ -24,6 +24,19 @@ import { toastStore } from '../../../src/shared/toast/toastStore';
 import { VALID_TEST_TOKEN } from '../../fixtures/auth/authFixtures';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 
+function mockCoarsePointer(): void {
+  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn()
+  }));
+}
+
 function TestApp() {
   return (
     <Routes>
@@ -41,6 +54,7 @@ describe('Login Page', () => {
     clearStoredToken();
     toastStore.clearToasts();
     vi.restoreAllMocks();
+    mockCoarsePointer();
     vi.stubGlobal('google', {
       accounts: {
         id: {
@@ -399,6 +413,7 @@ describe('Login Page - password visibility toggle', () => {
     clearStoredToken();
     toastStore.clearToasts();
     vi.restoreAllMocks();
+    mockCoarsePointer();
   });
 
   it('renders password input initially masked with type password (C6)', () => {
@@ -528,6 +543,7 @@ describe('Login Page - Alerts & Navigation Integration', () => {
     clearStoredToken();
     toastStore.clearToasts();
     vi.restoreAllMocks();
+    mockCoarsePointer();
     Object.defineProperty(window, 'location', {
       value: {
         origin: 'http://localhost:3000',
