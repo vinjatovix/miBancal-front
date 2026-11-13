@@ -9,6 +9,12 @@
   box-shadow: var(--elevation-2);
   gap: 0.375rem;
   user-select: none;
+  pointer-events: none;
+}
+
+.bed-compass-hud__dial--interactive,
+.bed-compass-hud__info button {
+  pointer-events: auto;
 }
 
 .bed-compass-hud__dial {

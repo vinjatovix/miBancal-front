@@ -60,6 +60,13 @@
   color: var(--color-primary);
 }
 
+@media (pointer: coarse) {
+  .layout-viewport-controls__button {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
 .layout-save-bar,
 .layout-snap-toggle,
 .layout-rotation-control {

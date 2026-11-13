@@ -7,6 +7,10 @@
   outline: none;
 }
 
+.location-crops-layer__hit {
+  fill: transparent;
+}
+
 .location-crops-layer__radius {
   fill: var(--color-primary);
   fill-opacity: 0.08;
