@@ -19,13 +19,11 @@ export interface AssociationPreviewInput {
   readonly brushPreviewCrops?: BrushPreviewCrops | null;
 }
 
-export function buildAssociationCropsByBed({
-  effectiveCropsByBed,
-  draggingCropId,
-  singlePreview,
-  groupMovePreview,
-  brushPreviewCrops
-}: AssociationPreviewInput): ReadonlyMap<string, readonly CropPlacementItem[]> {
+function collectOverrides(
+  draggingCropId: string | null,
+  singlePreview: LayoutPlacementPreview | null,
+  groupMovePreview: GroupMovePreview | null
+): Map<string, Coordinates> {
   const overrides = new Map<string, Coordinates>();
   if (draggingCropId && singlePreview) {
     overrides.set(draggingCropId, singlePreview.local);
@@ -35,22 +33,40 @@ export function buildAssociationCropsByBed({
       overrides.set(item.id, item.local);
     }
   }
+  return overrides;
+}
 
-  const hasOverrides = overrides.size > 0;
+function applyOverrides(
+  crops: readonly CropPlacementItem[],
+  overrides: ReadonlyMap<string, Coordinates>
+): readonly CropPlacementItem[] {
+  if (overrides.size === 0) return crops;
+  return crops.map((crop) => {
+    const override = overrides.get(crop.id);
+    return override ? { ...crop, position: override } : crop;
+  });
+}
+
+export function buildAssociationCropsByBed({
+  effectiveCropsByBed,
+  draggingCropId,
+  singlePreview,
+  groupMovePreview,
+  brushPreviewCrops
+}: AssociationPreviewInput): ReadonlyMap<string, readonly CropPlacementItem[]> {
+  const overrides = collectOverrides(
+    draggingCropId,
+    singlePreview,
+    groupMovePreview
+  );
   const hasBrushPreview =
     brushPreviewCrops != null && brushPreviewCrops.crops.length > 0;
 
-  if (!hasOverrides && !hasBrushPreview) return effectiveCropsByBed;
+  if (overrides.size === 0 && !hasBrushPreview) return effectiveCropsByBed;
 
   const next = new Map<string, readonly CropPlacementItem[]>();
   for (const [bedId, crops] of effectiveCropsByBed) {
-    const repositioned = hasOverrides
-      ? crops.map((crop) => {
-          const override = overrides.get(crop.id);
-          return override ? { ...crop, position: override } : crop;
-        })
-      : crops;
-
+    const repositioned = applyOverrides(crops, overrides);
     if (hasBrushPreview && brushPreviewCrops.bedId === bedId) {
       next.set(bedId, [...repositioned, ...brushPreviewCrops.crops]);
     } else {

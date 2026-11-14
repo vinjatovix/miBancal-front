@@ -1,4 +1,11 @@
-import { useCallback, useMemo, useRef, useState, type JSX } from 'react';
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type JSX,
+  type PointerEvent
+} from 'react';
 
 import { t } from '../../../i18n/core/t';
 import type { Coordinates } from '../../../types/PlantInstance/PlantInstance';
@@ -18,6 +25,25 @@ import type { BedVisualizerCanvasProps } from './types/bedVisualizerCanvasTypes'
 import './bedVisualizerCanvas.css';
 
 export type { BedVisualizerCanvasProps };
+
+type CanvasPointerHandler = (event: PointerEvent<SVGSVGElement>) => void;
+
+interface CanvasPointerHandlers {
+  readonly onPointerDown: CanvasPointerHandler;
+  readonly onPointerMove: CanvasPointerHandler;
+  readonly onPointerUp: CanvasPointerHandler;
+}
+
+function resolveCanvasPointerHandlers(
+  activeToolMode: BedVisualizerCanvasProps['activeToolMode'],
+  brush: CanvasPointerHandlers,
+  marquee: CanvasPointerHandlers,
+  pan: CanvasPointerHandlers
+): CanvasPointerHandlers {
+  if (activeToolMode === 'brush') return brush;
+  if (activeToolMode === 'select') return marquee;
+  return pan;
+}
 
 export default function BedVisualizerCanvas({
   bed,
@@ -142,26 +168,24 @@ export default function BedVisualizerCanvas({
     onAttemptInvalidPlacement
   });
 
-  const pointerDown =
-    activeToolMode === 'brush'
-      ? brushStroke.handlePointerDown
-      : activeToolMode === 'select'
-        ? marquee.handlePointerDown
-        : viewport.onPointerDown;
-
-  const pointerMove =
-    activeToolMode === 'brush'
-      ? brushStroke.handlePointerMove
-      : activeToolMode === 'select'
-        ? marquee.handlePointerMove
-        : viewport.onPointerMove;
-
-  const pointerUp =
-    activeToolMode === 'brush'
-      ? brushStroke.handlePointerUp
-      : activeToolMode === 'select'
-        ? marquee.handlePointerUp
-        : viewport.onPointerUp;
+  const pointer = resolveCanvasPointerHandlers(
+    activeToolMode,
+    {
+      onPointerDown: brushStroke.handlePointerDown,
+      onPointerMove: brushStroke.handlePointerMove,
+      onPointerUp: brushStroke.handlePointerUp
+    },
+    {
+      onPointerDown: marquee.handlePointerDown,
+      onPointerMove: marquee.handlePointerMove,
+      onPointerUp: marquee.handlePointerUp
+    },
+    {
+      onPointerDown: viewport.onPointerDown,
+      onPointerMove: viewport.onPointerMove,
+      onPointerUp: viewport.onPointerUp
+    }
+  );
 
   const cx = geometry.containerWidth / 2;
   const cy = geometry.containerHeight / 2;
@@ -177,9 +201,9 @@ export default function BedVisualizerCanvas({
         role="img"
         aria-label={canvasLabel}
         viewBox={geometry.viewBox}
-        onPointerDown={pointerDown}
-        onPointerMove={pointerMove}
-        onPointerUp={pointerUp}
+        onPointerDown={pointer.onPointerDown}
+        onPointerMove={pointer.onPointerMove}
+        onPointerUp={pointer.onPointerUp}
         onWheel={viewport.onWheel}
         onDoubleClick={viewport.resetZoom}
         onDragOver={placement.onDragOver}

@@ -79,6 +79,40 @@ function cropLabel(
   return base;
 }
 
+function handleCropKeyDown(
+  event: KeyboardEvent<SVGGElement>,
+  crop: CropPlacementItem,
+  onCropKeyDown?: (event: KeyboardEvent<SVGGElement>, id: string) => void,
+  onKeyboardMove?: (id: string, position: Coordinates) => void
+): void {
+  if (event.shiftKey && event.key === ' ' && onCropKeyDown) {
+    onCropKeyDown(event, crop.id);
+    return;
+  }
+  const delta = KEY_DELTAS[event.key];
+  if (!delta || !onKeyboardMove) return;
+  event.preventDefault();
+  const step = event.shiftKey ? FAST_STEP_CM : STEP_CM;
+  onKeyboardMove(crop.id, {
+    x: crop.position.x + delta.dx * step,
+    y: crop.position.y + delta.dy * step
+  });
+}
+
+function handleCropClick(
+  event: MouseEvent<SVGGElement>,
+  crop: CropPlacementItem,
+  onCropClick?: (event: MouseEvent<SVGGElement>, id: string) => void,
+  onSelect?: (id: string) => void
+): void {
+  if (onCropClick) {
+    onCropClick(event, crop.id);
+  } else {
+    event.stopPropagation();
+    onSelect?.(crop.id);
+  }
+}
+
 export default function BedCropNode({
   crop,
   hasCollision = false,
@@ -95,20 +129,8 @@ export default function BedCropNode({
   onPointerMoveNode,
   onPointerUpNode
 }: BedCropNodeProps): JSX.Element {
-  const handleKeyDown = (event: KeyboardEvent<SVGGElement>) => {
-    if (event.shiftKey && event.key === ' ' && onCropKeyDown) {
-      onCropKeyDown(event, crop.id);
-      return;
-    }
-    const delta = KEY_DELTAS[event.key];
-    if (!delta || !onKeyboardMove) return;
-    event.preventDefault();
-    const step = event.shiftKey ? FAST_STEP_CM : STEP_CM;
-    onKeyboardMove(crop.id, {
-      x: crop.position.x + delta.dx * step,
-      y: crop.position.y + delta.dy * step
-    });
-  };
+  const handleKeyDown = (event: KeyboardEvent<SVGGElement>): void =>
+    handleCropKeyDown(event, crop, onCropKeyDown, onKeyboardMove);
 
   const classes = [
     'bed-crop-node',
@@ -128,32 +150,27 @@ export default function BedCropNode({
     incompatibilityCount
   );
 
+  const interactiveProps = isPreview
+    ? {}
+    : {
+        role: 'button' as const,
+        tabIndex: 0,
+        'aria-label': label,
+        'aria-pressed': isSelected,
+        onClick: (event: MouseEvent<SVGGElement>) =>
+          handleCropClick(event, crop, onCropClick, onSelect),
+        onPointerDown: (event: PointerEvent<SVGGElement>) =>
+          onPointerDownNode?.(crop.id, event),
+        onPointerMove: onPointerMoveNode,
+        onPointerUp: onPointerUpNode,
+        onKeyDown: handleKeyDown
+      };
+
   return (
     <g
       className={classes}
       transform={`translate(${crop.position.x} ${crop.position.y})`}
-      role={isPreview ? undefined : 'button'}
-      tabIndex={isPreview ? undefined : 0}
-      aria-label={isPreview ? undefined : label}
-      aria-pressed={isPreview ? undefined : isSelected}
-      onClick={
-        isPreview
-          ? undefined
-          : (event) => {
-              if (onCropClick) {
-                onCropClick(event, crop.id);
-              } else {
-                event.stopPropagation();
-                onSelect?.(crop.id);
-              }
-            }
-      }
-      onPointerDown={
-        isPreview ? undefined : (event) => onPointerDownNode?.(crop.id, event)
-      }
-      onPointerMove={isPreview ? undefined : onPointerMoveNode}
-      onPointerUp={isPreview ? undefined : onPointerUpNode}
-      onKeyDown={isPreview ? undefined : handleKeyDown}
+      {...interactiveProps}
     >
       <circle
         className="bed-crop-node__radius"
