@@ -220,7 +220,9 @@ describe('useLayoutTouchGestures', () => {
       );
     });
     act(() => {
-      view.result.current.onPointerUp(touchPointer({ clientX: 40, clientY: 10 }));
+      view.result.current.onPointerUp(
+        touchPointer({ clientX: 40, clientY: 10 })
+      );
     });
 
     expect(onDragEnd).not.toHaveBeenCalled();

@@ -35,6 +35,7 @@
 
 .location-layout-canvas__bed {
   cursor: inherit;
+  touch-action: none;
 }
 
 .location-layout-canvas__bed[role='button'] {

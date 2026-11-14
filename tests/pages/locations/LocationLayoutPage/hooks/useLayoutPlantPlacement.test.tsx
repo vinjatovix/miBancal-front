@@ -61,7 +61,7 @@ describe('useLayoutPlantPlacement', () => {
 
   it('exposes placement defaults', () => {
     const { result } = renderPlantPlacement();
-    expect(result.current.toolMode).toBe('plant-single');
+    expect(result.current.toolMode).toBe('brush');
     expect(result.current.activePlantId).toBeNull();
     expect(result.current.selectedCropId).toBeNull();
     expect(result.current.hasChanges).toBe(false);

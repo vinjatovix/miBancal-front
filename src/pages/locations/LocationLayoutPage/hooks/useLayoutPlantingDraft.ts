@@ -159,7 +159,8 @@ export function useLayoutPlantingDraft({
           }
           return changed ? next : prevMoved;
         });
-        if (!prevCreated.some((crop) => moveMap.has(crop.id))) return prevCreated;
+        if (!prevCreated.some((crop) => moveMap.has(crop.id)))
+          return prevCreated;
         return prevCreated.map((crop) => {
           const position = moveMap.get(crop.id);
           return position ? { ...crop, position } : crop;

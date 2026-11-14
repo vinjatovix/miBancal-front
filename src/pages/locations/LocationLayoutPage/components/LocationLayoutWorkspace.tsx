@@ -1,11 +1,12 @@
 import type { RefObject, JSX } from 'react';
 
 import BedCompassHud from '../../../../components/beds/layout/BedCompassHud';
+import LayoutFloatingToolDock from '../../../../components/beds/layout/LayoutFloatingToolDock';
 import LayoutSaveBar from '../../../../components/beds/layout/LayoutSaveBar';
 import LayoutScaleBar from '../../../../components/beds/layout/LayoutScaleBar';
 import LocationLayoutCanvas from '../../../../components/beds/layout/LocationLayoutCanvas';
+import type { LayersPopoverButtonProps } from '../../../../components/beds/visualizer/LayersPopoverButton';
 import type { BedViewportState } from '../../../../components/beds/visualizer/hooks/useBedViewport';
-import Button from '../../../../shared/components/Button/Button';
 import { t } from '../../../../i18n/core/t';
 import type { LocationLayoutResponse } from '../../../../types/Location/LocationLayout';
 import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
@@ -36,17 +37,18 @@ export interface LocationLayoutWorkspaceProps {
   readonly onSelectAssociationLink?: (link: ActiveAssociationLink) => void;
   readonly onInspectCrop?: (cropId: string) => void;
   readonly isMobile?: boolean;
-  readonly editingEnabled?: boolean;
-  readonly onEnableEditing?: () => void;
-  readonly onDisableEditing?: () => void;
   readonly dirty?: boolean;
   readonly saving?: boolean;
   readonly onSave?: () => void;
   readonly onDiscard?: () => void;
   readonly canUndo?: boolean;
   readonly onUndo?: () => void;
-  readonly onExportPdf?: () => void;
-  readonly exportDisabled?: boolean;
+  readonly canRedo?: boolean;
+  readonly onRedo?: () => void;
+  readonly onFitToView: () => void;
+  readonly isFullscreen: boolean;
+  readonly onToggleFullscreen: () => void;
+  readonly layersProps: LayersPopoverButtonProps;
 }
 
 export default function LocationLayoutWorkspace({
@@ -65,144 +67,127 @@ export default function LocationLayoutWorkspace({
   onSelectAssociationLink,
   onInspectCrop,
   isMobile = false,
-  editingEnabled = true,
-  onEnableEditing,
-  onDisableEditing,
   dirty = false,
   saving = false,
   onSave,
   onDiscard,
   canUndo = false,
   onUndo,
-  onExportPdf,
-  exportDisabled = false
+  canRedo = false,
+  onRedo,
+  onFitToView,
+  isFullscreen,
+  onToggleFullscreen,
+  layersProps
 }: LocationLayoutWorkspaceProps): JSX.Element {
   const isPosition = editor.mode === 'position';
-  const showMobileActions = isMobile && editingEnabled;
 
   return (
-    <div ref={canvasContainerRef} className="location-layout-page__canvas">
-      {isMobile && (
-        <div className="location-layout-page__inspection-bar">
-          <span
-            className={`location-layout-page__inspection-badge ${
-              editingEnabled
-                ? 'location-layout-page__inspection-badge--editing'
-                : 'location-layout-page__inspection-badge--reading'
-            }`}
-          >
-            {editingEnabled
-              ? t('location.layout.touch.editing_badge')
-              : t('location.layout.touch.inspection_badge')}
-          </span>
-          <Button
-            variant={editingEnabled ? 'neutral' : 'primary'}
-            size="sm"
-            onClick={editingEnabled ? onDisableEditing : onEnableEditing}
-          >
-            {editingEnabled
-              ? t('location.layout.touch.disable_editing')
-              : t('location.layout.touch.enable_editing')}
-          </Button>
-        </div>
-      )}
-      <LocationLayoutCanvas
-        beds={editor.placedBeds}
-        viewBox={editor.viewBox}
-        label={t('bed.layout.canvas_label', {
-          name: layout.location.name
-        })}
-        mode={editor.mode}
-        selectedId={editor.selectedId}
-        viewport={viewport}
-        gridLayers={isPosition ? null : visibility.activeGridLayers}
-        showNames={visibility.showBedNames}
-        showDimensions={visibility.showDimensions}
-        northAngle={visibility.effectiveNorthAngle}
-        showCardinalOrientation={visibility.showCardinalOrientation}
-        floorWidth={layout.location.width}
-        floorHeight={layout.location.height}
-        cropsByBed={cropsByBed}
-        showPlants={visibility.showPlants}
-        associationLinks={associationLinks}
-        associationFilterMode={associationFilterMode}
-        showAssociations={showAssociations}
-        onSelectAssociationLink={onSelectAssociationLink}
-        onInspectCrop={onInspectCrop}
-        placementPreview={placement.preview}
-        selectedCropId={placement.selectedCropId}
-        selectedCropIds={placement.selectedCropIds}
-        toolMode={placement.toolMode}
-        brushDirectrix={placement.brush.directrix}
-        brushCandidates={placement.brush.candidates}
-        isBrushDrawing={placement.brush.isDrawing}
-        brushBedId={placement.brush.strokeBedId}
-        boundingBox={placement.marquee.boundingBox}
-        boundingBoxBedId={placement.marquee.boundingBoxBedId ?? selectedBedId}
-        marqueeBox={placement.marquee.marqueeBox}
-        marqueeBedId={placement.marquee.marqueeBedId}
-        groupMovePreview={placement.marquee.groupMovePreview}
-        onSelectBed={editor.selectBed}
-        onDeselect={bedActions.handleDeselectBed}
-        onBedMove={editor.moveBed}
-        onBedDragStart={editor.beginBedDrag}
-        onBedDragMove={editor.moveBedDrag}
-        onBedDragEnd={editor.endBedDrag}
-        onBedRotate={editor.rotateBedBy}
-        onPlacementDragOver={placement.updateDropPreview}
-        onPlacementDragLeave={placement.clearPreview}
-        onPlacementDrop={placement.dropPlant}
-        onPlacementTap={placement.tapPlace}
-        onCropSelect={placement.selectCrop}
-        onCropClick={placement.marquee.handleCropClick}
-        onCropDragStart={placement.beginCropDrag}
-        onCropDragMove={placement.moveCropDrag}
-        onCropDragEnd={placement.endCropDrag}
-        onBrushPointerDown={placement.brush.handlePointerDown}
-        onBrushPointerMove={placement.brush.handlePointerMove}
-        onBrushPointerUp={placement.brush.handlePointerUp}
-        onMarqueePointerDown={placement.marquee.handlePointerDown}
-        onMarqueePointerMove={placement.marquee.handlePointerMove}
-        onMarqueePointerUp={placement.marquee.handlePointerUp}
-        onBedUnplace={editor.unplaceSelected}
-        onBedEdit={() => bedActions.setIsEditOpen(true)}
-        onBedDelete={() => bedActions.setIsDeleteOpen(true)}
-      />
-      <LayoutScaleBar viewBox={editor.viewBox} zoom={viewport.zoom} />
-      <div className="location-layout-page__hud">
-        <BedCompassHud
-          northAngle={visibility.effectiveNorthAngle}
-          bedAzimuth={visibility.bedAzimuth}
-          mode={editor.mode === 'position' ? 'position' : 'read'}
-          onBedRotationChange={visibility.handleBedRotationChange}
-          onNorthAngleChange={visibility.setCalibratedNorth}
-          onSaveNorthAngle={visibility.handleSaveNorth}
-          isSavingNorth={visibility.isSavingNorth}
+    <>
+      <div ref={canvasContainerRef} className="location-layout-page__canvas">
+        <LayoutFloatingToolDock
+          className={
+            isMobile && editor.mode !== 'read'
+              ? 'layout-floating-tool-dock--stacked'
+              : undefined
+          }
+          onZoomIn={viewport.zoomIn}
+          onZoomOut={viewport.zoomOut}
+          onFitToScreen={onFitToView}
+          canUndo={canUndo}
+          onUndo={onUndo ?? (() => undefined)}
+          canRedo={canRedo}
+          onRedo={onRedo ?? (() => undefined)}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={onToggleFullscreen}
+          layersProps={layersProps}
         />
+        <LocationLayoutCanvas
+          beds={editor.placedBeds}
+          viewBox={editor.viewBox}
+          label={t('bed.layout.canvas_label', {
+            name: layout.location.name
+          })}
+          mode={editor.mode}
+          selectedId={editor.selectedId}
+          isMobile={isMobile}
+          viewport={viewport}
+          gridLayers={isPosition ? null : visibility.activeGridLayers}
+          showNames={visibility.showBedNames}
+          showDimensions={visibility.showDimensions}
+          northAngle={visibility.effectiveNorthAngle}
+          showCardinalOrientation={visibility.showCardinalOrientation}
+          floorWidth={layout.location.width}
+          floorHeight={layout.location.height}
+          cropsByBed={cropsByBed}
+          showPlants={visibility.showPlants}
+          associationLinks={associationLinks}
+          associationFilterMode={associationFilterMode}
+          showAssociations={showAssociations}
+          onSelectAssociationLink={onSelectAssociationLink}
+          onInspectCrop={onInspectCrop}
+          placementPreview={placement.preview}
+          selectedCropId={placement.selectedCropId}
+          selectedCropIds={placement.selectedCropIds}
+          toolMode={placement.toolMode}
+          brushDirectrix={placement.brush.directrix}
+          brushCandidates={placement.brush.candidates}
+          isBrushDrawing={placement.brush.isDrawing}
+          brushBedId={placement.brush.strokeBedId}
+          boundingBox={placement.marquee.boundingBox}
+          boundingBoxBedId={placement.marquee.boundingBoxBedId ?? selectedBedId}
+          marqueeBox={placement.marquee.marqueeBox}
+          marqueeBedId={placement.marquee.marqueeBedId}
+          groupMovePreview={placement.marquee.groupMovePreview}
+          onSelectBed={editor.selectBed}
+          onDeselect={bedActions.handleDeselectBed}
+          onBedMove={editor.moveBed}
+          onBedDragStart={editor.beginBedDrag}
+          onBedDragMove={editor.moveBedDrag}
+          onBedDragEnd={editor.endBedDrag}
+          onBedRotate={editor.rotateBedBy}
+          onPlacementDragOver={placement.updateDropPreview}
+          onPlacementDragLeave={placement.clearPreview}
+          onPlacementDrop={placement.dropPlant}
+          onPlacementTap={placement.tapPlace}
+          onCropSelect={placement.selectCrop}
+          onCropClick={placement.marquee.handleCropClick}
+          onCropDragStart={placement.beginCropDrag}
+          onCropDragMove={placement.moveCropDrag}
+          onCropDragEnd={placement.endCropDrag}
+          onBrushPointerDown={placement.brush.handlePointerDown}
+          onBrushPointerMove={placement.brush.handlePointerMove}
+          onBrushPointerUp={placement.brush.handlePointerUp}
+          onMarqueePointerDown={placement.marquee.handlePointerDown}
+          onMarqueePointerMove={placement.marquee.handlePointerMove}
+          onMarqueePointerUp={placement.marquee.handlePointerUp}
+          onBedUnplace={editor.unplaceSelected}
+          onBedEdit={() => bedActions.setIsEditOpen(true)}
+          onBedDelete={() => bedActions.setIsDeleteOpen(true)}
+        />
+        <LayoutScaleBar viewBox={editor.viewBox} zoom={viewport.zoom} />
+        <div className="location-layout-page__hud">
+          <BedCompassHud
+            northAngle={visibility.effectiveNorthAngle}
+            bedAzimuth={visibility.bedAzimuth}
+            mode={editor.mode === 'position' ? 'position' : 'read'}
+            onBedRotationChange={visibility.handleBedRotationChange}
+            onNorthAngleChange={visibility.setCalibratedNorth}
+            onSaveNorthAngle={visibility.handleSaveNorth}
+            isSavingNorth={visibility.isSavingNorth}
+          />
+        </div>
       </div>
-      {showMobileActions && (
+      {isMobile && editor.mode !== 'read' && (
         <div className="location-layout-page__mobile-actions">
           <LayoutSaveBar
             dirty={dirty}
             saving={saving}
             onSave={onSave ?? (() => undefined)}
             onDiscard={onDiscard ?? (() => undefined)}
-            canUndo={canUndo}
-            onUndo={onUndo}
           />
-          {onExportPdf && (
-            <Button
-              variant="secondary"
-              size="sm"
-              icon="save"
-              onClick={onExportPdf}
-              disabled={exportDisabled}
-            >
-              {t('bed.export.button_label')}
-            </Button>
-          )}
         </div>
       )}
-    </div>
+    </>
   );
 }

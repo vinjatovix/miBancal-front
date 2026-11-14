@@ -1,4 +1,5 @@
 import type { BedPosition } from '../../../../types/Location/LocationLayout';
+import type { ViewportCoordinates } from './viewportTransition';
 
 export interface Point {
   readonly x: number;
@@ -156,4 +157,55 @@ export function computeViewBox(input: ViewBoxInput): string {
     box.maxX - box.minX + margin * 2,
     box.maxY - box.minY + margin * 2
   );
+}
+
+const FIT_MIN_ZOOM = 0.25;
+const FIT_MAX_ZOOM = 5;
+const DEFAULT_FILL_FACTOR = 0.85;
+
+export function calculateFitBounds(
+  bounds: BoundingBox | null,
+  viewBox: string,
+  fillFactor: number = DEFAULT_FILL_FACTOR
+): ViewportCoordinates | null {
+  if (bounds === null) {
+    return { zoom: 1, panX: 0, panY: 0 };
+  }
+
+  const [vx, vy, vw, vh] = viewBox.split(/\s+/).map(Number);
+  if ([vx, vy, vw, vh].some((value) => !Number.isFinite(value))) return null;
+
+  const boundsWidth = bounds.maxX - bounds.minX;
+  const boundsHeight = bounds.maxY - bounds.minY;
+  if (boundsWidth <= 0 || boundsHeight <= 0) return null;
+
+  const zoom = Math.min(
+    FIT_MAX_ZOOM,
+    Math.max(
+      FIT_MIN_ZOOM,
+      Number(
+        (Math.min(vw / boundsWidth, vh / boundsHeight) * fillFactor).toFixed(4)
+      )
+    )
+  );
+  const viewCenterX = vx + vw / 2;
+  const viewCenterY = vy + vh / 2;
+  const boundsCenterX = (bounds.minX + bounds.maxX) / 2;
+  const boundsCenterY = (bounds.minY + bounds.maxY) / 2;
+
+  return {
+    zoom,
+    panX: Number((zoom * (viewCenterX - boundsCenterX)).toFixed(2)),
+    panY: Number((zoom * (viewCenterY - boundsCenterY)).toFixed(2))
+  };
+}
+
+export function unionAabb(boxes: readonly BoundingBox[]): BoundingBox | null {
+  if (boxes.length === 0) return null;
+  return {
+    minX: Math.min(...boxes.map((box) => box.minX)),
+    minY: Math.min(...boxes.map((box) => box.minY)),
+    maxX: Math.max(...boxes.map((box) => box.maxX)),
+    maxY: Math.max(...boxes.map((box) => box.maxY))
+  };
 }

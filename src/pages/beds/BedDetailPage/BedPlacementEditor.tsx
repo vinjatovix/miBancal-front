@@ -262,7 +262,6 @@ export default function BedPlacementEditor({
           onSelectPlant={handleSelectPlant}
           onDragPlant={handleDragPlant}
           activePlacingPlantId={activePlacing?.id ?? null}
-          activePlacingPlantName={activePlacing?.identity.name.primary ?? null}
           onCancelPlacing={() => setActivePlacing(null)}
           onOpenManual={() => setManualOpen(true)}
         />

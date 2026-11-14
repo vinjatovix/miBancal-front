@@ -17,19 +17,24 @@ const serverCrop = buildCropPlacementItem({
   position: { x: 50, y: 50 }
 });
 
+const secondServerCrop = buildCropPlacementItem({
+  id: 'crop-2',
+  bedId: BED_ID,
+  position: { x: 80, y: 80 }
+});
+
 function buildDraft(): PlantingDraftOps {
   return {
     addCrop: vi.fn(() => 'new-1'),
     addCrops: vi.fn(() => ['new-1']),
     moveCrop: vi.fn(),
+    moveCrops: vi.fn(),
     removeCrops: vi.fn(),
     restoreCrops: vi.fn()
   };
 }
 
-function setup(
-  crops: readonly CropPlacementItem[] = [serverCrop]
-) {
+function setup(crops: readonly CropPlacementItem[] = [serverCrop]) {
   const draft = buildDraft();
   const effective = new Map([[BED_ID, crops]]);
   const view = renderHook(() => useLayoutPlantingHistory(draft, effective));
@@ -74,6 +79,35 @@ describe('useLayoutPlantingHistory', () => {
   it('does not record a move that keeps the same position', () => {
     const { result } = setup();
     act(() => result.current.moveCrop('crop-1', { x: 50, y: 50 }));
+    expect(result.current.canUndo).toBe(false);
+  });
+
+  it('records a group move as one undoable step per displaced crop', () => {
+    const { result, draft } = setup([serverCrop, secondServerCrop]);
+    act(() =>
+      result.current.moveCrops([
+        { id: 'crop-1', position: { x: 60, y: 60 } },
+        { id: 'crop-2', position: { x: 90, y: 90 } }
+      ])
+    );
+    expect(draft.moveCrops).toHaveBeenCalledTimes(1);
+    expect(result.current.canUndo).toBe(true);
+
+    act(() => result.current.undo());
+    expect(draft.moveCrop).toHaveBeenLastCalledWith('crop-2', { x: 80, y: 80 });
+    act(() => result.current.undo());
+    expect(draft.moveCrop).toHaveBeenLastCalledWith('crop-1', { x: 50, y: 50 });
+    expect(result.current.canUndo).toBe(false);
+  });
+
+  it('does not record a group move when no crop changes position', () => {
+    const { result } = setup([serverCrop, secondServerCrop]);
+    act(() =>
+      result.current.moveCrops([
+        { id: 'crop-1', position: { x: 50, y: 50 } },
+        { id: 'crop-2', position: { x: 80, y: 80 } }
+      ])
+    );
     expect(result.current.canUndo).toBe(false);
   });
 
@@ -122,7 +156,10 @@ describe('useLayoutPlantingHistory wired to the real planting draft', () => {
     const cropsByBed = new Map([[BED_ID, crops]]);
     return renderHook(() => {
       const draft = useLayoutPlantingDraft({ cropsByBed, invalidateBed });
-      const history = useLayoutPlantingHistory(draft, draft.effectiveCropsByBed);
+      const history = useLayoutPlantingHistory(
+        draft,
+        draft.effectiveCropsByBed
+      );
       return { draft, history };
     });
   }
@@ -139,9 +176,9 @@ describe('useLayoutPlantingHistory wired to the real planting draft', () => {
         position: { x: 10, y: 10 }
       })
     );
-    expect(cropsOf(result.current.draft.effectiveCropsByBed, BED_ID)).toHaveLength(
-      2
-    );
+    expect(
+      cropsOf(result.current.draft.effectiveCropsByBed, BED_ID)
+    ).toHaveLength(2);
 
     act(() => result.current.history.undo());
 
@@ -162,7 +199,10 @@ describe('useLayoutPlantingHistory wired to the real planting draft', () => {
 
     act(() => result.current.history.undo());
 
-    const reverted = cropsOf(result.current.draft.effectiveCropsByBed, BED_ID)[0];
+    const reverted = cropsOf(
+      result.current.draft.effectiveCropsByBed,
+      BED_ID
+    )[0];
     expect(reverted.position).toEqual({ x: 50, y: 50 });
     expect(reverted.hasMoved).toBeUndefined();
     expect(result.current.draft.hasChanges).toBe(false);
@@ -172,9 +212,9 @@ describe('useLayoutPlantingHistory wired to the real planting draft', () => {
     const { result } = setupWithRealDraft();
 
     act(() => result.current.history.removeCrops(['crop-1']));
-    expect(cropsOf(result.current.draft.effectiveCropsByBed, BED_ID)).toHaveLength(
-      0
-    );
+    expect(
+      cropsOf(result.current.draft.effectiveCropsByBed, BED_ID)
+    ).toHaveLength(0);
 
     act(() => result.current.history.undo());
 

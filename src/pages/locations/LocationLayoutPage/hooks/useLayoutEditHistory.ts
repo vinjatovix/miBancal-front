@@ -33,15 +33,24 @@ export type EditAction =
       readonly from: DraftPlacement;
     };
 
+export type RedoHandler = () => void;
+
 export interface UseLayoutEditHistoryParams {
-  readonly onRevert: (action: EditAction) => void;
+  readonly onRevert: (action: EditAction) => RedoHandler | void;
+}
+
+interface RedoEntry {
+  readonly action: EditAction;
+  readonly reapply: RedoHandler | undefined;
 }
 
 export interface LayoutEditHistory {
   readonly entries: readonly EditAction[];
   readonly canUndo: boolean;
+  readonly canRedo: boolean;
   readonly push: (action: EditAction) => void;
   readonly undo: () => void;
+  readonly redo: () => void;
   readonly clear: () => void;
   readonly reset: () => void;
 }
@@ -60,32 +69,63 @@ export function useLayoutEditHistory({
     entriesRef.current = entries;
   });
 
-  const push = useCallback((action: EditAction): void => {
-    entriesRef.current = [...entriesRef.current, action];
-    setEntries(entriesRef.current);
+  const [redoStack, setRedoStack] = useState<readonly RedoEntry[]>([]);
+  const redoStackRef = useRef<readonly RedoEntry[]>(redoStack);
+  useEffect(() => {
+    redoStackRef.current = redoStack;
+  });
+
+  const clearRedo = useCallback((): void => {
+    if (redoStackRef.current.length === 0) return;
+    redoStackRef.current = [];
+    setRedoStack(redoStackRef.current);
   }, []);
+
+  const push = useCallback(
+    (action: EditAction): void => {
+      entriesRef.current = [...entriesRef.current, action];
+      setEntries(entriesRef.current);
+      clearRedo();
+    },
+    [clearRedo]
+  );
 
   const undo = useCallback((): void => {
     const stack = entriesRef.current;
-    if (stack.length === 0) return;
     const top = stack.at(-1);
     if (top === undefined) return;
     entriesRef.current = stack.slice(0, -1);
     setEntries(entriesRef.current);
-    onRevertRef.current(top);
+    const reapply = onRevertRef.current(top) ?? undefined;
+    redoStackRef.current = [...redoStackRef.current, { action: top, reapply }];
+    setRedoStack(redoStackRef.current);
+  }, []);
+
+  const redo = useCallback((): void => {
+    const stack = redoStackRef.current;
+    const top = stack.at(-1);
+    if (top === undefined) return;
+    redoStackRef.current = stack.slice(0, -1);
+    setRedoStack(redoStackRef.current);
+    top.reapply?.();
+    entriesRef.current = [...entriesRef.current, top.action];
+    setEntries(entriesRef.current);
   }, []);
 
   const clear = useCallback((): void => {
+    clearRedo();
     if (entriesRef.current.length === 0) return;
     entriesRef.current = [];
     setEntries(entriesRef.current);
-  }, []);
+  }, [clearRedo]);
 
   return {
     entries,
     canUndo: entries.length > 0,
+    canRedo: redoStack.length > 0,
     push,
     undo,
+    redo,
     clear,
     reset: clear
   };

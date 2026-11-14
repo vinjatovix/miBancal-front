@@ -22,7 +22,8 @@ export interface PlantCatalogSheetProps {
 
 function matchesQuery(plant: PlantCatalogSheetItem, query: string): boolean {
   if (query === '') return true;
-  const haystack = `${plant.commonName} ${plant.scientificName ?? ''}`.toLowerCase();
+  const haystack =
+    `${plant.commonName} ${plant.scientificName ?? ''}`.toLowerCase();
   return haystack.includes(query);
 }
 

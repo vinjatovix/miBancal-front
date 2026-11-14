@@ -32,6 +32,7 @@ export interface LayersPopoverButtonProps {
     mode: AssociationFilterMode
   ) => void;
   readonly disabled?: boolean;
+  readonly isMobile?: boolean;
 }
 
 export default function LayersPopoverButton({
@@ -51,7 +52,8 @@ export default function LayersPopoverButton({
   onToggleAssociations,
   associationFilterMode = 'all',
   onSelectAssociationFilterMode,
-  disabled = false
+  disabled = false,
+  isMobile = false
 }: LayersPopoverButtonProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -97,11 +99,12 @@ export default function LayersPopoverButton({
         className="layers-popover-button__trigger"
         aria-haspopup="dialog"
         aria-expanded={isOpen}
+        aria-label={isMobile ? t('bed.layout.layers_button') : undefined}
         disabled={disabled}
         onClick={toggle}
       >
         <LayoutGlyph name="layers" />
-        <span>{t('bed.layout.layers_button')}</span>
+        {!isMobile && <span>{t('bed.layout.layers_button')}</span>}
       </button>
 
       {isOpen && (

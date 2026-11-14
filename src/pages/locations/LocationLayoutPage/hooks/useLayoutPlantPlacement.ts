@@ -36,7 +36,7 @@ export function useLayoutPlantPlacement({
   const queryClient = useQueryClient();
   const { showSuccessToast, showErrorToast, showToast } = useToast();
 
-  const [toolMode, setToolMode] = useState<PlantingToolMode>('plant-single');
+  const [toolMode, setToolMode] = useState<PlantingToolMode>('brush');
 
   const bedsById = useMemo(() => {
     const map = new Map<string, ResolvedBed>();
@@ -86,7 +86,7 @@ export function useLayoutPlantPlacement({
     cropsByBed: effectiveCropsByBed,
     activeBedId,
     addCrops: history.addCrops,
-    moveCrops: draft.moveCrops,
+    moveCrops: history.moveCrops,
     removeCrops: history.removeCrops,
     onAnnounceError: (msg) => showErrorToast(null, msg)
   });
@@ -105,6 +105,7 @@ export function useLayoutPlantPlacement({
     cropsByBed: effectiveCropsByBed,
     activePlant: palette.activePlant,
     activeBedId,
+    initialPattern: 'individual',
     onAnnounceSuccess: (msg) => showSuccessToast(msg),
     onAnnounceWarning: (msg) => showToast({ message: msg, variant: 'warning' }),
     onAnnounceError: (msg) => showErrorToast(null, msg),
@@ -240,6 +241,8 @@ export function useLayoutPlantPlacement({
     discardChanges,
     canUndo: history.canUndo,
     undo: history.undo,
+    canRedo: history.canRedo,
+    redo: history.redo,
     selectPalettePlant: palette.selectPalettePlant,
     cancelPalettePlant: palette.cancelPalettePlant,
     dragPalettePlant: palette.dragPalettePlant,
@@ -247,7 +250,12 @@ export function useLayoutPlantPlacement({
     clearPreview: palette.clearPreview,
     dropPlant: palette.dropPlant,
     tapPlace: (g: Point) => {
-      if (toolMode === 'plant-single') palette.tapPlace(g);
+      if (
+        toolMode === 'plant-single' ||
+        (toolMode === 'brush' && brush.brushPattern === 'individual')
+      ) {
+        palette.tapPlace(g);
+      }
     },
     selectCrop: marquee.selectSingleCrop,
     toggleCropSelection: marquee.toggleCropSelection,

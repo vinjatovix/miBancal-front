@@ -5,29 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import LocationLayoutTopBar, {
   type LocationLayoutTopBarProps
 } from '../../../../../src/pages/locations/LocationLayoutPage/components/LocationLayoutTopBar';
-import type { BedViewportState } from '../../../../../src/components/beds/visualizer/hooks/useBedViewport';
-import { DEFAULT_ACTIVE_GRID_LAYERS } from '../../../../../src/components/beds/visualizer/utils/bedGridConfig';
 import '../../../../../src/i18n/messages/beds';
-
-function buildViewport(): BedViewportState {
-  return {
-    zoom: 1,
-    panX: 0,
-    panY: 0,
-    isDragging: false,
-    zoomPercent: 100,
-    zoomIn: vi.fn(),
-    zoomOut: vi.fn(),
-    resetZoom: vi.fn(),
-    fitToBounds: vi.fn(),
-    panBy: vi.fn(),
-    animateTo: vi.fn(),
-    compensateWidthChange: vi.fn(),
-    onPointerDown: vi.fn(),
-    onPointerMove: vi.fn(),
-    onPointerUp: vi.fn()
-  } as unknown as BedViewportState;
-}
 
 function buildProps(
   overrides: Partial<LocationLayoutTopBarProps> = {}
@@ -52,20 +30,6 @@ function buildProps(
     onToggleGridSnap: vi.fn(),
     neighborSnapEnabled: false,
     onToggleNeighborSnap: vi.fn(),
-    showBedNames: true,
-    onToggleShowNames: vi.fn(),
-    showDimensions: true,
-    onToggleShowDimensions: vi.fn(),
-    showPlants: true,
-    onToggleShowPlants: vi.fn(),
-    showCardinalOrientation: true,
-    onToggleShowCardinalOrientation: vi.fn(),
-    showGrids: true,
-    onToggleGrids: vi.fn(),
-    activeGridLayers: DEFAULT_ACTIVE_GRID_LAYERS,
-    onToggleGridLayer: vi.fn(),
-    viewport: buildViewport(),
-    onFitToView: vi.fn(),
     onExportPdf: vi.fn(),
     ...overrides
   };
@@ -97,5 +61,74 @@ describe('LocationLayoutTopBar export action', () => {
     expect(
       screen.getByRole('button', { name: 'Exportar a PDF' })
     ).toBeDisabled();
+  });
+});
+
+describe('LocationLayoutTopBar snap toggles', () => {
+  it('shows magnet snap toggles only in position mode', () => {
+    const { rerender } = render(
+      <LocationLayoutTopBar {...buildProps({ isPosition: false })} />
+    );
+
+    expect(
+      screen.queryByRole('group', { name: 'Ajuste magnético' })
+    ).not.toBeInTheDocument();
+
+    rerender(<LocationLayoutTopBar {...buildProps({ isPosition: true })} />);
+
+    expect(
+      screen.getByRole('group', { name: 'Ajuste magnético' })
+    ).toBeInTheDocument();
+  });
+
+  it('toggles grid snap from the top bar in position mode', async () => {
+    const onToggleGridSnap = vi.fn();
+    render(
+      <LocationLayoutTopBar
+        {...buildProps({ isPosition: true, onToggleGridSnap })}
+      />
+    );
+
+    await userEvent.click(
+      screen.getByRole('switch', { name: 'Ajustar a la rejilla' })
+    );
+
+    expect(onToggleGridSnap).toHaveBeenCalledTimes(1);
+  });
+
+  it('no longer renders the standalone layers popover trigger', () => {
+    render(<LocationLayoutTopBar {...buildProps({ isPosition: true })} />);
+
+    expect(
+      screen.queryByRole('button', { name: 'Capas' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('passes iconOnly to snap toggles when isMobile is true in position mode', () => {
+    render(
+      <LocationLayoutTopBar
+        {...buildProps({ isPosition: true, isMobile: true })}
+      />
+    );
+
+    expect(screen.queryByText('Rejilla')).not.toBeInTheDocument();
+    expect(screen.queryByText('Bancales')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('switch', { name: 'Ajustar a la rejilla' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('switch', { name: 'Ajustar a bancales vecinos' })
+    ).toBeInTheDocument();
+  });
+
+  it('renders visible short labels for snap toggles when isMobile is false in position mode', () => {
+    render(
+      <LocationLayoutTopBar
+        {...buildProps({ isPosition: true, isMobile: false })}
+      />
+    );
+
+    expect(screen.getByText('Rejilla')).toBeInTheDocument();
+    expect(screen.getByText('Bancales')).toBeInTheDocument();
   });
 });

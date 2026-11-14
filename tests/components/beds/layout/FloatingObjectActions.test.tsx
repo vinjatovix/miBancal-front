@@ -85,6 +85,30 @@ describe('FloatingObjectActions', () => {
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
+  it('applies modifier class when placement is below', () => {
+    render(
+      <FloatingObjectActions
+        anchor={{ x: 150, y: 200 }}
+        kind="bed"
+        placement="below"
+      />
+    );
+
+    const toolbar = screen.getByRole('toolbar', {
+      name: 'Acciones de selección'
+    });
+    expect(toolbar).toHaveClass('floating-object-actions--below');
+  });
+
+  it('does not apply modifier class when placement is above or omitted', () => {
+    render(<FloatingObjectActions anchor={{ x: 150, y: 200 }} kind="bed" />);
+
+    const toolbar = screen.getByRole('toolbar', {
+      name: 'Acciones de selección'
+    });
+    expect(toolbar).not.toHaveClass('floating-object-actions--below');
+  });
+
   it('invokes onClearSelection callback when clicking clear selection button', async () => {
     const user = userEvent.setup();
     const onClearSelection = vi.fn();

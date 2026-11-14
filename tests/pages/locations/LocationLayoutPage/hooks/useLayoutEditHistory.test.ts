@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   useLayoutEditHistory,
-  type EditAction
+  type EditAction,
+  type LayoutEditHistory
 } from '../../../../../src/pages/locations/LocationLayoutPage/hooks/useLayoutEditHistory';
 
 const moveCrop: EditAction = {
@@ -118,5 +119,63 @@ describe('useLayoutEditHistory', () => {
     expect(result.current.entries).toHaveLength(0);
     expect(result.current.canUndo).toBe(false);
     expect(onRevert).not.toHaveBeenCalled();
+  });
+
+  it('starts with nothing to redo', () => {
+    const { result } = setup();
+    expect(result.current.canRedo).toBe(false);
+  });
+
+  it('moves an undone action onto the redo stack and enables redo', () => {
+    const { result } = setup();
+    act(() => result.current.push(plant));
+    act(() => result.current.undo());
+    expect(result.current.canRedo).toBe(true);
+    expect(result.current.canUndo).toBe(false);
+  });
+
+  it('replays the reapply handler and restores the entry on redo', () => {
+    const reapply = vi.fn();
+    const onRevert = vi.fn().mockReturnValue(reapply);
+    const { result } = renderHook(() => useLayoutEditHistory({ onRevert }));
+
+    act(() => result.current.push(moveBed));
+    act(() => result.current.undo());
+    act(() => result.current.redo());
+
+    expect(reapply).toHaveBeenCalledTimes(1);
+    expect(result.current.entries).toEqual([moveBed]);
+    expect(result.current.canRedo).toBe(false);
+    expect(result.current.canUndo).toBe(true);
+  });
+
+  it('does nothing when redo is called on an empty redo stack', () => {
+    const reapply = vi.fn();
+    const onRevert = vi.fn().mockReturnValue(reapply);
+    const { result } = renderHook(() => useLayoutEditHistory({ onRevert }));
+
+    act(() => result.current.redo());
+
+    expect(reapply).not.toHaveBeenCalled();
+    expect(result.current.canRedo).toBe(false);
+  });
+
+  it('clears the redo stack when a new action is pushed', () => {
+    const { result } = setup();
+    act(() => result.current.push(plant));
+    act(() => result.current.undo());
+    act(() => result.current.push(moveCrop));
+    expect(result.current.canRedo).toBe(false);
+  });
+
+  it.each([
+    ['clear', (history: LayoutEditHistory) => history.clear()],
+    ['reset', (history: LayoutEditHistory) => history.reset()]
+  ])('clears the redo stack on %s', (_name, action) => {
+    const { result } = setup();
+    act(() => result.current.push(plant));
+    act(() => result.current.undo());
+    act(() => action(result.current));
+    expect(result.current.canRedo).toBe(false);
   });
 });
