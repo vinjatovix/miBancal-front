@@ -3,6 +3,7 @@ import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
+import sonarjs from 'eslint-plugin-sonarjs';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import localRules from './.eslint/plugins/local-rules.js';
 
@@ -29,10 +30,12 @@ export default defineConfig([
   {
     files: ['src/**/*.{ts,tsx}'],
     plugins: {
-      local: localRules
+      local: localRules,
+      sonarjs
     },
     rules: {
-      'local/no-hardcoded-ui-text': 'error'
+      'local/no-hardcoded-ui-text': 'error',
+      'sonarjs/cognitive-complexity': ['error', 15]
     }
   }
 ]);
