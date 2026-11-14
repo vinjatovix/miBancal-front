@@ -36,7 +36,6 @@ export default function PlantPlacementPalette({
   onClose,
   onSelectPlant,
   activePlacingPlantId,
-  activePlacingPlantName,
   onCancelPlacing,
   onOpenManual,
   onDragPlant
@@ -154,23 +153,6 @@ export default function PlantPlacementPalette({
         </Button>
       )}
 
-      {activePlacingPlantId && (
-        <output className="plant-placement-palette__placing">
-          <span>
-            {t('bed.placement.placing_active', {
-              name: activePlacingPlantName ?? ''
-            })}
-          </span>
-          <button
-            type="button"
-            onClick={onCancelPlacing}
-            aria-label={t('bed.placement.placing_cancel')}
-          >
-            <Icon name="close" decorative />
-          </button>
-        </output>
-      )}
-
       <div className="plant-placement-palette__body">
         {query.isLoading && <Loader labelKey="bed.placement.palette_loading" />}
         {query.isError && (
@@ -211,7 +193,9 @@ export default function PlantPlacementPalette({
                   }`}
                   draggable
                   onDragStart={handleDragStart(plant)}
-                  onClick={() => onSelectPlant(plant)}
+                  onClick={() =>
+                    isActive ? onCancelPlacing?.() : onSelectPlant(plant)
+                  }
                   aria-pressed={isActive}
                   aria-label={t('bed.placement.plant_place_action', {
                     name: plant.identity.name.primary

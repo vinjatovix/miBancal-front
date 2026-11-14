@@ -139,7 +139,7 @@ a {
 }
 
 .app-shell {
-  --app-header-height: 64px;
+  --app-header-height: 48px;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;

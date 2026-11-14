@@ -1,17 +1,10 @@
 import type { JSX } from 'react';
 
-import LayoutViewportControls from '../../../../components/beds/layout/LayoutViewportControls';
-import LayersPopoverButton from '../../../../components/beds/visualizer/LayersPopoverButton';
+import SnapToggle from '../../../../components/beds/layout/SnapToggle';
 import PlantingToolSelector from '../../../../components/beds/visualizer/PlantingToolSelector';
-import type { BedViewportState } from '../../../../components/beds/visualizer/hooks/useBedViewport';
 import type { LayoutMode } from '../../../../components/beds/layout/utils/layoutTypes';
 import { t } from '../../../../i18n/core/t';
 import Button from '../../../../shared/components/Button/Button';
-import type {
-  ActiveGridLayers,
-  BedGridLayerKey
-} from '../../../../components/beds/visualizer/utils/bedGridConfig';
-import type { AssociationFilterMode } from '../../../../components/beds/associations/types/cropAssociationTypes';
 import type { PlantingToolMode } from '../../../../types/PlantInstance/brushSelectionTypes';
 import LayoutKeyboardHelp from './LayoutKeyboardHelp';
 import LayoutModeSegmentedControl from './LayoutModeSegmentedControl';
@@ -37,28 +30,9 @@ export interface LocationLayoutTopBarProps {
   readonly onToggleGridSnap: () => void;
   readonly neighborSnapEnabled: boolean;
   readonly onToggleNeighborSnap: () => void;
-  readonly showBedNames: boolean;
-  readonly onToggleShowNames: () => void;
-  readonly showDimensions: boolean;
-  readonly onToggleShowDimensions: () => void;
-  readonly showPlants: boolean;
-  readonly onToggleShowPlants: () => void;
-  readonly showCardinalOrientation: boolean;
-  readonly onToggleShowCardinalOrientation: () => void;
-  readonly showGrids: boolean;
-  readonly onToggleGrids: () => void;
-  readonly activeGridLayers: ActiveGridLayers;
-  readonly onToggleGridLayer: (key: BedGridLayerKey) => void;
-  readonly viewport: BedViewportState;
-  readonly onFitToView: () => void;
   readonly onExportPdf: () => void;
   readonly exportDisabled?: boolean;
-  readonly showAssociations?: boolean;
-  readonly onToggleAssociations?: () => void;
-  readonly associationFilterMode?: AssociationFilterMode;
-  readonly onSelectAssociationFilterMode?: (
-    mode: AssociationFilterMode
-  ) => void;
+  readonly isMobile?: boolean;
 }
 
 export default function LocationLayoutTopBar({
@@ -81,26 +55,9 @@ export default function LocationLayoutTopBar({
   onToggleGridSnap,
   neighborSnapEnabled,
   onToggleNeighborSnap,
-  showBedNames,
-  onToggleShowNames,
-  showDimensions,
-  onToggleShowDimensions,
-  showPlants,
-  onToggleShowPlants,
-  showCardinalOrientation,
-  onToggleShowCardinalOrientation,
-  showGrids,
-  onToggleGrids,
-  activeGridLayers,
-  onToggleGridLayer,
-  viewport,
-  onFitToView,
   onExportPdf,
   exportDisabled = false,
-  showAssociations = true,
-  onToggleAssociations,
-  associationFilterMode = 'all',
-  onSelectAssociationFilterMode
+  isMobile = false
 }: LocationLayoutTopBarProps): JSX.Element {
   return (
     <LayoutTopBar
@@ -168,41 +125,40 @@ export default function LocationLayoutTopBar({
               </Button>
             </div>
           )}
+          {isPosition && (
+            <div
+              className="layout-snap-toggle-group"
+              role="group"
+              aria-label={t('bed.layout.snap_group_label')}
+            >
+              <SnapToggle
+                enabled={gridSnapEnabled}
+                onToggle={onToggleGridSnap}
+                glyph="magnet-grid"
+                label={t('bed.layout.grid_snap_label')}
+                shortLabel={t('bed.layout.grid_snap_short')}
+                iconOnly={isMobile}
+              />
+              <SnapToggle
+                enabled={neighborSnapEnabled}
+                onToggle={onToggleNeighborSnap}
+                glyph="magnet-beds"
+                label={t('bed.layout.neighbor_snap_label')}
+                shortLabel={t('bed.layout.neighbor_snap_short')}
+                iconOnly={isMobile}
+              />
+            </div>
+          )}
           <Button
             variant="secondary"
             size="sm"
-            icon="save"
+            icon="description"
             onClick={onExportPdf}
             disabled={exportDisabled}
+            aria-label={isMobile ? t('bed.export.button_label') : undefined}
           >
-            {t('bed.export.button_label')}
+            {isMobile ? '' : t('bed.export.button_label')}
           </Button>
-          <LayersPopoverButton
-            showNames={showBedNames}
-            onToggleNames={onToggleShowNames}
-            showDimensions={showDimensions}
-            onToggleDimensions={onToggleShowDimensions}
-            showPlants={showPlants}
-            onTogglePlants={onToggleShowPlants}
-            showCardinalOrientation={showCardinalOrientation}
-            onToggleCardinalOrientation={onToggleShowCardinalOrientation}
-            showGrids={showGrids}
-            onToggleGrids={onToggleGrids}
-            activeGridLayers={activeGridLayers}
-            onToggleGridLayer={onToggleGridLayer}
-            showAssociations={showAssociations}
-            onToggleAssociations={onToggleAssociations}
-            associationFilterMode={associationFilterMode}
-            onSelectAssociationFilterMode={onSelectAssociationFilterMode}
-          />
-          <LayoutViewportControls
-            viewport={viewport}
-            onFitToView={onFitToView}
-            gridSnapEnabled={isPosition ? gridSnapEnabled : undefined}
-            onToggleGridSnap={isPosition ? onToggleGridSnap : undefined}
-            neighborSnapEnabled={isPosition ? neighborSnapEnabled : undefined}
-            onToggleNeighborSnap={isPosition ? onToggleNeighborSnap : undefined}
-          />
           <LayoutKeyboardHelp />
         </>
       }

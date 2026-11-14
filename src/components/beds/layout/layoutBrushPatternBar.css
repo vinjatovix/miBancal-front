@@ -67,3 +67,35 @@
   outline: var(--focus-ring-width) solid var(--color-focus);
   outline-offset: var(--focus-ring-offset);
 }
+
+.layout-brush-pattern-bar--mobile {
+  padding: var(--space-2xs);
+  min-height: 2.25rem;
+  gap: var(--space-2xs);
+}
+
+.layout-brush-pattern-bar--mobile .layout-brush-pattern-bar__option {
+  padding: var(--space-2xs);
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  justify-content: center;
+}
+
+@media (max-width: 768px), (pointer: coarse), (pointer: none) {
+  .layout-brush-pattern-bar {
+    padding: var(--space-2xs);
+    min-height: 2.25rem;
+    gap: var(--space-2xs);
+  }
+
+  .layout-brush-pattern-bar .layout-brush-pattern-bar__label {
+    display: none;
+  }
+
+  .layout-brush-pattern-bar .layout-brush-pattern-bar__option {
+    padding: var(--space-2xs);
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    justify-content: center;
+  }
+}

@@ -75,6 +75,8 @@ export interface LayoutEditor {
   readonly renameBedInline: (id: string, newName: string) => void;
   readonly canUndo: boolean;
   readonly undo: () => void;
+  readonly canRedo: boolean;
+  readonly redo: () => void;
   readonly save: () => void;
 }
 
@@ -170,18 +172,30 @@ export function useLayoutEditor(
   );
 
   const onRevert = useCallback(
-    (action: EditAction): void => {
+    (action: EditAction): (() => void) | void => {
       if (action.type === 'move-bed') {
+        const to = currentPlacement(action.bedId);
         draft.placeBed(action.bedId, action.from);
-      } else if (action.type === 'place-bed') {
+        return () => draft.placeBed(action.bedId, to);
+      }
+      if (action.type === 'place-bed') {
+        const to = currentPlacement(action.bedId);
         if (action.from.position === null) {
           draft.unplaceBed(action.bedId);
         } else {
           draft.placeBed(action.bedId, action.from);
         }
+        return () => {
+          if (to.position === null) {
+            draft.unplaceBed(action.bedId);
+          } else {
+            draft.placeBed(action.bedId, to);
+          }
+        };
       }
+      return undefined;
     },
-    [draft]
+    [draft, currentPlacement]
   );
 
   const history = useLayoutEditHistory({ onRevert });
@@ -518,6 +532,8 @@ export function useLayoutEditor(
     renameBedInline,
     canUndo: history.canUndo,
     undo: history.undo,
+    canRedo: history.canRedo,
+    redo: history.redo,
     save
   };
 }

@@ -123,6 +123,7 @@ export interface LocationLayoutCanvasProps {
   readonly onBedUnplace?: () => void;
   readonly onBedEdit?: () => void;
   readonly onBedDelete?: () => void;
+  readonly isMobile?: boolean;
 }
 
 const FINE_STEP_CM = 5;
@@ -233,7 +234,8 @@ export default function LocationLayoutCanvas({
   onMarqueePointerUp,
   onBedUnplace,
   onBedEdit,
-  onBedDelete
+  onBedDelete,
+  isMobile = false
 }: LocationLayoutCanvasProps): JSX.Element {
   const interactive = mode === 'position';
   const isPlanting = mode === 'plants';
@@ -265,6 +267,8 @@ export default function LocationLayoutCanvas({
     readonly width: number;
     readonly height: number;
   }>({ width: 800, height: 600 });
+  const [isDraggingBed, setIsDraggingBed] = useState(false);
+  const dragStartPointRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -340,12 +344,21 @@ export default function LocationLayoutCanvas({
     setCropTooltip(null);
   };
 
-  const bedAnchor = useMemo<AnchorPoint | null>(() => {
-    if (mode !== 'position' || !selectedId) return null;
+  const { bedAnchor, bedAnchorPlacement } = useMemo<{
+    readonly bedAnchor: AnchorPoint | null;
+    readonly bedAnchorPlacement: 'above' | 'below';
+  }>(() => {
+    if (mode !== 'position' || !selectedId) {
+      return { bedAnchor: null, bedAnchorPlacement: 'above' };
+    }
     const bed = beds.find((b) => b.id === selectedId);
-    if (!bed) return null;
+    if (!bed) {
+      return { bedAnchor: null, bedAnchorPlacement: 'above' };
+    }
 
     const vertices = rotatedRectVertices(bed);
+    const minY = Math.min(...vertices.map((v) => v.y));
+    const maxY = Math.max(...vertices.map((v) => v.y));
     const center = centroid(vertices);
     const vbCenter = viewBoxCenter(viewBox);
     const bounds = viewBoxBounds(viewBox);
@@ -357,12 +370,21 @@ export default function LocationLayoutCanvas({
 
     const screenX =
       svgWidth / 2 + viewport.panX + (center.x - vbCenter.x) * scale;
-    const screenY =
-      svgHeight / 2 + viewport.panY + (center.y - vbCenter.y) * scale;
+    const screenTopY =
+      svgHeight / 2 + viewport.panY + (minY - vbCenter.y) * scale;
+    const screenBottomY =
+      svgHeight / 2 + viewport.panY + (maxY - vbCenter.y) * scale;
+
+    const placeBelow = screenTopY < 64;
+    const clampedX = Math.max(
+      110,
+      Math.min(svgWidth - 110, Math.round(screenX))
+    );
+    const y = placeBelow ? Math.round(screenBottomY) : Math.round(screenTopY);
 
     return {
-      x: Math.round(screenX),
-      y: Math.max(30, Math.round(screenY))
+      bedAnchor: { x: clampedX, y },
+      bedAnchorPlacement: placeBelow ? 'below' : 'above'
     };
   }, [
     mode,
@@ -562,6 +584,8 @@ export default function LocationLayoutCanvas({
     if (!interactive) return;
     event.currentTarget.setPointerCapture?.(event.pointerId);
     dragRef.current = { id, x: event.clientX, y: event.clientY };
+    dragStartPointRef.current = { x: event.clientX, y: event.clientY };
+    setIsDraggingBed(false);
     onBedDragStart?.(id, event.pointerType);
   };
 
@@ -571,6 +595,18 @@ export default function LocationLayoutCanvas({
     const dxPixels = event.clientX - drag.x;
     const dyPixels = event.clientY - drag.y;
     dragRef.current = { id: drag.id, x: event.clientX, y: event.clientY };
+
+    const start = dragStartPointRef.current;
+    if (start) {
+      const moved = Math.hypot(
+        event.clientX - start.x,
+        event.clientY - start.y
+      );
+      if (moved > moveThresholdForPointerType(event.pointerType)) {
+        setIsDraggingBed(true);
+      }
+    }
+
     onBedDragMove?.(
       pixelToCm(dxPixels, viewport.zoom),
       pixelToCm(dyPixels, viewport.zoom)
@@ -578,16 +614,27 @@ export default function LocationLayoutCanvas({
   };
 
   const handleBedPointerUp = (event: PointerEvent<SVGGElement>): void => {
-    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
+    const wasDragging = dragRef.current !== null;
     dragRef.current = null;
-    onBedDragEnd?.();
+    dragStartPointRef.current = null;
+    setIsDraggingBed(false);
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      try {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      } catch {
+        // pointer capture is best-effort
+      }
+    }
+    if (wasDragging) {
+      onBedDragEnd?.();
+    }
   };
 
   const handleLostPointerCapture = (): void => {
     if (dragRef.current) {
       dragRef.current = null;
+      dragStartPointRef.current = null;
+      setIsDraggingBed(false);
       onBedDragEnd?.();
     }
   };
@@ -622,7 +669,12 @@ export default function LocationLayoutCanvas({
   return (
     <div
       ref={rootRef}
-      style={{ position: 'relative', width: '100%', height: '100%' }}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden'
+      }}
     >
       <svg
         ref={svgRef}
@@ -700,6 +752,9 @@ export default function LocationLayoutCanvas({
                 }
                 onPointerMove={interactive ? handleBedPointerMove : undefined}
                 onPointerUp={interactive ? handleBedPointerUp : undefined}
+                onPointerCancel={
+                  interactive ? handleLostPointerCapture : undefined
+                }
                 onLostPointerCapture={
                   interactive ? handleLostPointerCapture : undefined
                 }
@@ -817,16 +872,21 @@ export default function LocationLayoutCanvas({
           )}
         </g>
       </svg>
-      {interactive && selectedId && bedAnchor && (
-        <FloatingObjectActions
-          anchor={bedAnchor}
-          kind="bed"
-          onRotate={() => onBedRotate?.(selectedId, 90)}
-          onUnplace={onBedUnplace}
-          onEdit={onBedEdit}
-          onDelete={onBedDelete}
-        />
-      )}
+      {interactive &&
+        selectedId &&
+        bedAnchor &&
+        !isDraggingBed &&
+        !isMobile && (
+          <FloatingObjectActions
+            anchor={bedAnchor}
+            kind="bed"
+            placement={bedAnchorPlacement}
+            onRotate={() => onBedRotate?.(selectedId, 90)}
+            onUnplace={onBedUnplace}
+            onEdit={onBedEdit}
+            onDelete={onBedDelete}
+          />
+        )}
       {showCrops && cropTooltip && (
         <div
           className="location-layout-canvas__crop-tooltip"

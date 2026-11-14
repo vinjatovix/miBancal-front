@@ -65,7 +65,7 @@ function mockCoarsePointer(): void {
   }));
 }
 
-describe('LocationLayoutView - mobile inspection mode', () => {
+describe('LocationLayoutView - mobile editing via mode selector', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCoarsePointer();
@@ -79,7 +79,7 @@ describe('LocationLayoutView - mobile inspection mode', () => {
     vi.restoreAllMocks();
   });
 
-  it('opens in read-only inspection on mobile', async () => {
+  it('opens in read-only mode on mobile with no botanical catalog', async () => {
     renderWithProviders(<LocationLayoutPage />, {
       path: PATH,
       route: ROUTE,
@@ -90,13 +90,15 @@ describe('LocationLayoutView - mobile inspection mode', () => {
       expect(screen.getByRole('img')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Solo lectura')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Activar edición' })
+      screen.getByRole('radio', { name: 'Ver', checked: true })
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'Catálogo botánico' })
+    ).not.toBeInTheDocument();
   });
 
-  it('does not let editing take effect until editing is explicitly enabled', async () => {
+  it('enters editing directly when selecting an editing mode', async () => {
     const user = userEvent.setup();
     renderWithProviders(<LocationLayoutPage />, {
       path: PATH,
@@ -106,14 +108,6 @@ describe('LocationLayoutView - mobile inspection mode', () => {
 
     await user.click(await screen.findByRole('radio', { name: 'Sembrar' }));
 
-    expect(
-      screen.queryByRole('heading', { name: 'Catálogo botánico' })
-    ).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'Activar edición' }));
-    expect(screen.getByText('Edición activa')).toBeInTheDocument();
-
-    await user.click(await screen.findByRole('radio', { name: 'Sembrar' }));
     expect(
       screen.getByRole('heading', { name: 'Catálogo botánico' })
     ).toBeInTheDocument();

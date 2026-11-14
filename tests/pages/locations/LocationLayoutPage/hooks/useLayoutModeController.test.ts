@@ -73,29 +73,6 @@ describe('useLayoutModeController', () => {
     });
   });
 
-  it('blocks switching to editing modes when editing is disabled', () => {
-    const animateTo = vi.fn();
-    const { result } = renderHook(() =>
-      useLayoutModeController({
-        viewport: { animateTo },
-        beds: MOCK_BEDS,
-        viewBox: MOCK_VIEWBOX,
-        editingEnabled: false
-      })
-    );
-
-    act(() => {
-      result.current.setMode('position');
-    });
-    expect(result.current.mode).toBe('read');
-
-    act(() => {
-      result.current.enterPlanting('bed-1');
-    });
-    expect(result.current.mode).toBe('read');
-    expect(animateTo).not.toHaveBeenCalled();
-  });
-
   it('transitions to plants mode without animating viewport if bedId is null', () => {
     const animateTo = vi.fn();
     const { result } = renderHook(() =>

@@ -6,6 +6,7 @@ import {
   type WheelEvent
 } from 'react';
 
+import { calculateFitBounds } from '../../layout/utils/layoutGeometry';
 import {
   animateViewportTransition,
   type ViewportCoordinates
@@ -138,31 +139,11 @@ export function useBedViewport(): BedViewportState {
       fillFactor = 0.85
     ) => {
       cancelActiveAnimation();
-      const [vx, vy, vw, vh] = viewBox.split(/\s+/).map(Number);
-      if ([vx, vy, vw, vh].some((value) => !Number.isFinite(value))) return;
-      const boundsWidth = bounds.maxX - bounds.minX;
-      const boundsHeight = bounds.maxY - bounds.minY;
-      if (boundsWidth <= 0 || boundsHeight <= 0) return;
-
-      const nextZoom = Math.min(
-        MAX_ZOOM,
-        Math.max(
-          MIN_ZOOM,
-          Number(
-            (
-              Math.min(vw / boundsWidth, vh / boundsHeight) * fillFactor
-            ).toFixed(4)
-          )
-        )
-      );
-      const viewCenterX = vx + vw / 2;
-      const viewCenterY = vy + vh / 2;
-      const boundsCenterX = (bounds.minX + bounds.maxX) / 2;
-      const boundsCenterY = (bounds.minY + bounds.maxY) / 2;
-
-      setZoom(nextZoom);
-      setPanX(nextZoom * (viewCenterX - boundsCenterX));
-      setPanY(nextZoom * (viewCenterY - boundsCenterY));
+      const next = calculateFitBounds(bounds, viewBox, fillFactor);
+      if (next === null) return;
+      setZoom(next.zoom);
+      setPanX(next.panX);
+      setPanY(next.panY);
     },
     [cancelActiveAnimation]
   );

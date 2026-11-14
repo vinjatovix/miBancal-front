@@ -106,6 +106,13 @@ describe('useLayoutBrushPlacement', () => {
     expect(result.current.candidates.length).toBeGreaterThan(0);
   });
 
+  it('computes a single position when pattern is individual', () => {
+    const { result } = setup();
+    act(() => result.current.setBrushPattern('individual'));
+    drawStroke(result);
+    expect(result.current.candidates.length).toBe(1);
+  });
+
   it('ignores pointer moves when not drawing', () => {
     const { result } = setup();
     act(() => result.current.handlePointerMove({ x: 90, y: 50 }));

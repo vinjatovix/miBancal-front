@@ -2,8 +2,10 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useState,
   type JSX,
   type KeyboardEvent,
+  type PointerEvent,
   type ReactNode
 } from 'react';
 
@@ -36,6 +38,49 @@ export default function LayoutContextPanel({
   children
 }: LayoutContextPanelProps): JSX.Element | null {
   const panelRef = useRef<HTMLElement>(null);
+  const dragStartRef = useRef<number | null>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragStart = useCallback(
+    (event: PointerEvent<HTMLDivElement>): void => {
+      dragStartRef.current = event.clientY;
+      setIsDragging(true);
+      try {
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+      } catch {
+        // pointer capture is best-effort
+      }
+    },
+    []
+  );
+
+  const handleDragMove = useCallback(
+    (event: PointerEvent<HTMLDivElement>): void => {
+      if (dragStartRef.current === null) return;
+      const delta = event.clientY - dragStartRef.current;
+      setDragOffset(delta > 0 ? delta : 0);
+    },
+    []
+  );
+
+  const handleDragEnd = useCallback(
+    (event: PointerEvent<HTMLDivElement>): void => {
+      const start = dragStartRef.current;
+      if (start === null) return;
+      const delta = event.clientY - start;
+      dragStartRef.current = null;
+      setIsDragging(false);
+      try {
+        event.currentTarget.releasePointerCapture?.(event.pointerId);
+      } catch {
+        // pointer capture is best-effort
+      }
+      setDragOffset(0);
+      if (delta > 96) onRequestClose?.();
+    },
+    [onRequestClose]
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -92,13 +137,28 @@ export default function LayoutContextPanel({
         />
         <section
           ref={panelRef}
-          className="layout-context-panel layout-context-panel--sheet"
+          className={`layout-context-panel layout-context-panel--sheet ${
+            isDragging ? 'layout-context-panel--dragging' : ''
+          }`}
           role="dialog"
           aria-modal="true"
           aria-label={title}
           onKeyDown={handleTrapTab}
+          style={
+            dragOffset > 0
+              ? { transform: `translateY(${dragOffset}px)` }
+              : undefined
+          }
         >
-          <div className="layout-context-panel__handle" aria-hidden="true" />
+          <div
+            className="layout-context-panel__drag-zone"
+            onPointerDown={handleDragStart}
+            onPointerMove={handleDragMove}
+            onPointerUp={handleDragEnd}
+            onPointerCancel={handleDragEnd}
+          >
+            <div className="layout-context-panel__handle" aria-hidden="true" />
+          </div>
           <div className="layout-context-panel__content">{children}</div>
         </section>
       </div>
