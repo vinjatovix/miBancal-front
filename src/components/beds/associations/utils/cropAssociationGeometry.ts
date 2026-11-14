@@ -4,8 +4,10 @@ import type {
 } from '../../../../types/Plants/PlantRelation';
 import type {
   ActiveAssociationLink,
+  AssociationCropPoint,
   AssociationFilterMode,
   AssociationScope,
+  BotanicalRelationIndex,
   ComputeAssociationsParams
 } from '../types/cropAssociationTypes';
 import {
@@ -91,6 +93,47 @@ function buildCanonicalLinkId(cropAId: string, cropBId: string): string {
   return cropAId <= cropBId ? `${cropAId}:${cropBId}` : `${cropBId}:${cropAId}`;
 }
 
+function buildLinkForPair(
+  cropA: AssociationCropPoint,
+  cropB: AssociationCropPoint,
+  relationIndex: BotanicalRelationIndex,
+  defaultReachCm: number
+): ActiveAssociationLink | null {
+  if (cropA.id === cropB.id) return null;
+
+  const pairRelations = getRelationsForPair(
+    relationIndex,
+    cropA.plantId,
+    cropB.plantId
+  );
+  if (pairRelations.length === 0) return null;
+
+  const scope: AssociationScope =
+    cropA.bedId === cropB.bedId ? 'intra_bed' : 'cross_bed';
+  const relations = filterRelationsForScope(pairRelations, scope);
+  if (relations.length === 0) return null;
+
+  const distanceCm = calculateEuclideanDistance(cropA, cropB);
+  const effectiveReachCm = calculateEffectiveReach(relations, defaultReachCm);
+  if (distanceCm > effectiveReachCm) return null;
+
+  const { visualPolarity, isWarningPriority } =
+    resolveVisualPolarity(relations);
+
+  return {
+    id: buildCanonicalLinkId(cropA.id, cropB.id),
+    cropA,
+    cropB,
+    distanceCm,
+    effectiveReachCm,
+    scope,
+    relations,
+    visualPolarity,
+    isWarningPriority,
+    midpoint: calculateMidpoint(cropA, cropB)
+  };
+}
+
 export function computeActiveAssociationLinks(
   params: ComputeAssociationsParams
 ): readonly ActiveAssociationLink[] {
@@ -101,58 +144,14 @@ export function computeActiveAssociationLinks(
   const links: ActiveAssociationLink[] = [];
 
   for (let i = 0; i < crops.length; i += 1) {
-    const cropA = crops[i];
-
     for (let j = i + 1; j < crops.length; j += 1) {
-      const cropB = crops[j];
-
-      if (cropA.id === cropB.id) {
-        continue;
-      }
-
-      const pairRelations = getRelationsForPair(
+      const link = buildLinkForPair(
+        crops[i],
+        crops[j],
         relationIndex,
-        cropA.plantId,
-        cropB.plantId
-      );
-
-      if (pairRelations.length === 0) {
-        continue;
-      }
-
-      const scope: AssociationScope =
-        cropA.bedId === cropB.bedId ? 'intra_bed' : 'cross_bed';
-      const relations = filterRelationsForScope(pairRelations, scope);
-
-      if (relations.length === 0) {
-        continue;
-      }
-
-      const distanceCm = calculateEuclideanDistance(cropA, cropB);
-      const effectiveReachCm = calculateEffectiveReach(
-        relations,
         defaultReachCm
       );
-
-      if (distanceCm > effectiveReachCm) {
-        continue;
-      }
-
-      const { visualPolarity, isWarningPriority } =
-        resolveVisualPolarity(relations);
-
-      links.push({
-        id: buildCanonicalLinkId(cropA.id, cropB.id),
-        cropA,
-        cropB,
-        distanceCm,
-        effectiveReachCm,
-        scope,
-        relations,
-        visualPolarity,
-        isWarningPriority,
-        midpoint: calculateMidpoint(cropA, cropB)
-      });
+      if (link) links.push(link);
     }
   }
 
