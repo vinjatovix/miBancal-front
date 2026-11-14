@@ -13,7 +13,17 @@ export type LayoutGlyphName =
   | 'zoom-in'
   | 'zoom-out'
   | 'fit'
-  | 'info';
+  | 'info'
+  | 'magnet-grid'
+  | 'magnet-beds'
+  | 'rotate'
+  | 'unplace'
+  | 'edit'
+  | 'trash'
+  | 'undo'
+  | 'redo'
+  | 'fullscreen'
+  | 'fullscreen-exit';
 
 export interface LayoutGlyphProps {
   readonly name: LayoutGlyphName;
@@ -160,10 +170,8 @@ const GLYPHS: Record<LayoutGlyphName, JSX.Element> = {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M4 8.5V5.5A1.5 1.5 0 0 1 5.5 4H8.5" />
-      <path d="M15.5 4H18.5A1.5 1.5 0 0 1 20 5.5V8.5" />
-      <path d="M20 15.5V18.5A1.5 1.5 0 0 1 18.5 20H15.5" />
-      <path d="M8.5 20H5.5A1.5 1.5 0 0 1 4 18.5V15.5" />
+      <rect x="3.6" y="5.6" width="16.8" height="12.8" rx="2.2" />
+      <circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none" />
     </g>
   ),
   info: (
@@ -178,6 +186,169 @@ const GLYPHS: Record<LayoutGlyphName, JSX.Element> = {
       />
       <circle cx="12" cy="7.9" r="1.25" fill="currentColor" />
       <rect x="11" y="10.6" width="2" height="7" rx="1" fill="currentColor" />
+    </g>
+  ),
+  'magnet-grid': (
+    <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <path
+        d="M3 15.4 V10 a3.7 3.7 0 0 1 7.4 0 V15.4"
+        fill="none"
+        strokeWidth={2.6}
+      />
+      <rect
+        x="1.4"
+        y="15"
+        width="3.2"
+        height="3.4"
+        rx="0.5"
+        fill="currentColor"
+      />
+      <rect
+        x="8.8"
+        y="15"
+        width="3.2"
+        height="3.4"
+        rx="0.5"
+        fill="currentColor"
+      />
+      <g fill="none" strokeWidth={1.8}>
+        <path d="M16.2 8 L15.2 19" />
+        <path d="M20.8 8 L19.8 19" />
+        <path d="M14 11.8 H21.4" />
+        <path d="M13.5 15.4 H20.9" />
+      </g>
+    </g>
+  ),
+  'magnet-beds': (
+    <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <path
+        d="M3 15.4 V10 a3.7 3.7 0 0 1 7.4 0 V15.4"
+        fill="none"
+        strokeWidth={2.6}
+      />
+      <rect
+        x="1.4"
+        y="15"
+        width="3.2"
+        height="3.4"
+        rx="0.5"
+        fill="currentColor"
+      />
+      <rect
+        x="8.8"
+        y="15"
+        width="3.2"
+        height="3.4"
+        rx="0.5"
+        fill="currentColor"
+      />
+      <g fill="none" strokeWidth={1.8}>
+        <rect x="13.6" y="7.6" width="7.8" height="4.4" rx="1" />
+        <rect x="13.6" y="13.4" width="7.8" height="4.4" rx="1" />
+      </g>
+    </g>
+  ),
+  undo: (
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 9 H13.5 A5 5 0 0 1 13.5 19 H9" />
+      <path d="M8.5 5.5 L5 9 L8.5 12.5" />
+    </g>
+  ),
+  redo: (
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M19 9 H10.5 A5 5 0 0 0 10.5 19 H15" />
+      <path d="M15.5 5.5 L19 9 L15.5 12.5" />
+    </g>
+  ),
+  fullscreen: (
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 9 V4 H9" />
+      <path d="M15 4 H20 V9" />
+      <path d="M20 15 V20 H15" />
+      <path d="M9 20 H4 V15" />
+    </g>
+  ),
+  'fullscreen-exit': (
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 4 V9 H4" />
+      <path d="M20 9 H15 V4" />
+      <path d="M15 20 V15 H20" />
+      <path d="M4 15 H9 V20" />
+    </g>
+  ),
+  rotate: (
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M18.6 8.4 A7 7 0 1 0 19 12.6" />
+      <path d="M18.9 4.6 L18.9 8.6 L14.9 8.6" />
+    </g>
+  ),
+  unplace: (
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 13 V18 A1 1 0 0 0 6 19 H18 A1 1 0 0 0 19 18 V13" />
+      <path d="M12 15 V4.5" />
+      <path d="M8.3 8 L12 4.3 L15.7 8" />
+    </g>
+  ),
+  edit: (
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 20 L4.2 16.3 L15.5 5 L19 8.5 L7.7 19.8 Z" />
+      <path d="M13.5 7 L17 10.5" />
+    </g>
+  ),
+  trash: (
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 7 H19" />
+      <path d="M8 7 V5.2 A1 1 0 0 1 9 4.2 H15 A1 1 0 0 1 16 5.2 V7" />
+      <path d="M6.6 7 L7.4 19 A1 1 0 0 0 8.4 20 H15.6 A1 1 0 0 0 16.6 19 L17.4 7" />
+      <path d="M10 10 V17 M14 10 V17" />
     </g>
   )
 };

@@ -91,14 +91,12 @@ export const locationsMessages = {
       north_angle_save_error:
         'Error al guardar la orientación Norte de la localización',
       touch: {
-        inspection_badge: 'Solo lectura',
-        editing_badge: 'Edición activa',
-        enable_editing: 'Activar edición',
-        disable_editing: 'Salir de edición',
         inspection_hint:
           'Pellizca para hacer zoom y arrastra para desplazar el plano.',
         undo: 'Deshacer',
         undo_hint: 'Deshacer el último cambio',
+        redo: 'Rehacer',
+        redo_hint: 'Rehacer el último cambio deshecho',
         help_button: 'Ayuda de gestos',
         help_title: 'Cómo manejar el plano con gestos',
         help_close: 'Cerrar ayuda',
@@ -106,7 +104,7 @@ export const locationsMessages = {
         hint_position:
           'Toca para seleccionar • Mantén y arrastra para mover un bancal',
         hint_plant_select:
-          'Toca para seleccionar • Arrastra en vacío para seleccionar un grupo',
+          'Toca para elegir • Arrastra en vacío para marcar un grupo',
         hint_plant_single:
           'Toca para seleccionar • Mantén y arrastra para mover una planta',
         hint_plant_brush: 'Arrastra para sembrar siguiendo el trazo',

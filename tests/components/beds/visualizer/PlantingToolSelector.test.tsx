@@ -5,16 +5,11 @@ import { describe, expect, it, vi } from 'vitest';
 import PlantingToolSelector from '../../../../src/components/beds/visualizer/PlantingToolSelector';
 
 describe('PlantingToolSelector', () => {
-  it('renders the three tools as labelled icon buttons', () => {
-    render(
-      <PlantingToolSelector activeMode="plant-single" onSelectMode={vi.fn()} />
-    );
+  it('renders select and brush tools as labelled icon buttons', () => {
+    render(<PlantingToolSelector activeMode="brush" onSelectMode={vi.fn()} />);
 
     expect(
       screen.getByRole('button', { name: /Seleccionar y mover/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /Siembra individual/i })
     ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /Brochas de siembra/i })
@@ -28,9 +23,6 @@ describe('PlantingToolSelector', () => {
       screen.getByRole('button', { name: /Seleccionar y mover/i })
     ).toHaveAttribute('aria-pressed', 'true');
     expect(
-      screen.getByRole('button', { name: /Siembra individual/i })
-    ).toHaveAttribute('aria-pressed', 'false');
-    expect(
       screen.getByRole('button', { name: /Brochas de siembra/i })
     ).toHaveAttribute('aria-pressed', 'false');
   });
@@ -40,10 +32,7 @@ describe('PlantingToolSelector', () => {
     const onSelectMode = vi.fn();
 
     render(
-      <PlantingToolSelector
-        activeMode="plant-single"
-        onSelectMode={onSelectMode}
-      />
+      <PlantingToolSelector activeMode="select" onSelectMode={onSelectMode} />
     );
 
     await user.click(

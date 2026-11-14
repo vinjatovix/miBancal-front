@@ -11,6 +11,7 @@ export interface LayoutBrushPatternBarProps {
   readonly activePattern: BrushPatternType;
   readonly onSelectPattern: (pattern: BrushPatternType) => void;
   readonly disabled?: boolean;
+  readonly isMobile?: boolean;
 }
 
 interface PatternOption {
@@ -20,6 +21,11 @@ interface PatternOption {
 }
 
 const PATTERNS: readonly PatternOption[] = [
+  {
+    key: 'individual',
+    labelKey: 'bed.placement.tool_single_plant_short',
+    glyph: 'seed'
+  },
   {
     key: 'single-row',
     labelKey: 'bed.placement.brush_single_row',
@@ -40,23 +46,31 @@ const PATTERNS: readonly PatternOption[] = [
 export default function LayoutBrushPatternBar({
   activePattern,
   onSelectPattern,
-  disabled = false
+  disabled = false,
+  isMobile = false
 }: LayoutBrushPatternBarProps): JSX.Element {
   return (
     <div
-      className="layout-brush-pattern-bar"
+      className={
+        isMobile
+          ? 'layout-brush-pattern-bar layout-brush-pattern-bar--mobile'
+          : 'layout-brush-pattern-bar'
+      }
       role="toolbar"
       aria-label={t('bed.placement.tool_brush')}
     >
-      <span className="layout-brush-pattern-bar__label">
-        {t('bed.placement.brush_pattern_label')}
-      </span>
+      {!isMobile && (
+        <span className="layout-brush-pattern-bar__label">
+          {t('bed.placement.brush_pattern_label')}
+        </span>
+      )}
       <fieldset
         className="layout-brush-pattern-bar__options"
         aria-label={t('bed.placement.tool_brush')}
       >
         {PATTERNS.map((pattern) => {
           const isActive = activePattern === pattern.key;
+          const label = t(pattern.labelKey);
           return (
             <button
               key={pattern.key}
@@ -65,11 +79,13 @@ export default function LayoutBrushPatternBar({
                 isActive ? 'is-active' : ''
               }`}
               aria-pressed={isActive}
+              aria-label={label}
+              title={label}
               disabled={disabled}
               onClick={() => onSelectPattern(pattern.key)}
             >
               <LayoutGlyph name={pattern.glyph} />
-              <span>{t(pattern.labelKey)}</span>
+              <span className={isMobile ? 'sr-only' : undefined}>{label}</span>
             </button>
           );
         })}

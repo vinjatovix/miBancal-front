@@ -29,13 +29,6 @@ const TOOLS: readonly ToolOption[] = [
     shortcut: t('bed.layout.key_v')
   },
   {
-    key: 'plant-single',
-    glyph: 'seed',
-    label: t('bed.placement.tool_single_plant_short'),
-    fullLabel: t('bed.placement.tool_single_plant'),
-    shortcut: t('bed.layout.key_p')
-  },
-  {
     key: 'brush',
     glyph: 'brush',
     label: t('bed.placement.tool_brush_short'),

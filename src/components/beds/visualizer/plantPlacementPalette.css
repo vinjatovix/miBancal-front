@@ -96,27 +96,6 @@
   outline-offset: var(--focus-ring-offset, 2px);
 }
 
-.plant-placement-palette__placing {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-sm);
-  font-family: var(--font-ui);
-  font-size: var(--type-body-sm, 0.875rem);
-  color: var(--color-fg);
-  background-color: var(--color-primary-container);
-  border-radius: var(--radius-md, 8px);
-}
-
-.plant-placement-palette__placing button {
-  display: inline-flex;
-  color: var(--color-fg);
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
 .plant-placement-palette__body {
   flex: 1;
   min-height: 0;

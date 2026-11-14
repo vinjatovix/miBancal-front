@@ -5,21 +5,34 @@ import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPla
 import { useLayoutEditHistory, type EditAction } from './useLayoutEditHistory';
 import type { LayoutCreateInput } from './layoutPlantingOperations';
 
+export type CropMoveInput = {
+  readonly id: string;
+  readonly position: Coordinates;
+};
+
 export interface PlantingDraftOps {
   readonly addCrop: (input: LayoutCreateInput) => string;
-  readonly addCrops: (inputs: readonly LayoutCreateInput[]) => readonly string[];
+  readonly addCrops: (
+    inputs: readonly LayoutCreateInput[]
+  ) => readonly string[];
   readonly moveCrop: (id: string, position: Coordinates) => void;
+  readonly moveCrops: (moves: readonly CropMoveInput[]) => void;
   readonly removeCrops: (ids: readonly string[]) => void;
   readonly restoreCrops: (crops: readonly CropPlacementItem[]) => void;
 }
 
 export interface LayoutPlantingHistory {
   readonly addCrop: (input: LayoutCreateInput) => string;
-  readonly addCrops: (inputs: readonly LayoutCreateInput[]) => readonly string[];
+  readonly addCrops: (
+    inputs: readonly LayoutCreateInput[]
+  ) => readonly string[];
   readonly moveCrop: (id: string, position: Coordinates) => void;
+  readonly moveCrops: (moves: readonly CropMoveInput[]) => void;
   readonly removeCrops: (ids: readonly string[]) => void;
   readonly canUndo: boolean;
   readonly undo: () => void;
+  readonly canRedo: boolean;
+  readonly redo: () => void;
   readonly clear: () => void;
   readonly reset: () => void;
 }
@@ -31,6 +44,7 @@ export function useLayoutPlantingHistory(
   const {
     addCrops: draftAddCrops,
     moveCrop: draftMoveCrop,
+    moveCrops: draftMoveCrops,
     removeCrops: draftRemoveCrops,
     restoreCrops: draftRestoreCrops
   } = draft;
@@ -47,21 +61,31 @@ export function useLayoutPlantingHistory(
   );
 
   const onRevert = useCallback(
-    (action: EditAction): void => {
+    (action: EditAction): (() => void) | void => {
       if (action.type === 'move-crop') {
         draftMoveCrop(action.cropId, action.from);
-      } else if (action.type === 'plant') {
-        draftRemoveCrops(action.cropIds);
-      } else if (action.type === 'remove-crop') {
-        draftRestoreCrops(action.crops);
+        return () => draftMoveCrop(action.cropId, action.to);
       }
+      if (action.type === 'plant') {
+        const planted = action.cropIds
+          .map((cropId) => findCrop(cropId))
+          .filter((crop): crop is CropPlacementItem => crop !== null);
+        draftRemoveCrops(action.cropIds);
+        return () => draftRestoreCrops(planted);
+      }
+      if (action.type === 'remove-crop') {
+        draftRestoreCrops(action.crops);
+        return () => draftRemoveCrops(action.crops.map((crop) => crop.id));
+      }
+      return undefined;
     },
-    [draftMoveCrop, draftRemoveCrops, draftRestoreCrops]
+    [draftMoveCrop, draftRemoveCrops, draftRestoreCrops, findCrop]
   );
 
-  const { push, canUndo, undo, clear, reset } = useLayoutEditHistory({
-    onRevert
-  });
+  const { push, canUndo, undo, canRedo, redo, clear, reset } =
+    useLayoutEditHistory({
+      onRevert
+    });
 
   const moveCrop = useCallback(
     (id: string, position: Coordinates): void => {
@@ -71,10 +95,39 @@ export function useLayoutPlantingHistory(
         current &&
         (current.position.x !== position.x || current.position.y !== position.y)
       ) {
-        push({ type: 'move-crop', cropId: id, from: current.position, to: position });
+        push({
+          type: 'move-crop',
+          cropId: id,
+          from: current.position,
+          to: position
+        });
       }
     },
     [draftMoveCrop, findCrop, push]
+  );
+
+  const moveCrops = useCallback(
+    (moves: readonly CropMoveInput[]): void => {
+      const origins = moves.map((move) => ({
+        current: findCrop(move.id),
+        to: move.position
+      }));
+      draftMoveCrops(moves);
+      for (const { current, to } of origins) {
+        if (
+          current &&
+          (current.position.x !== to.x || current.position.y !== to.y)
+        ) {
+          push({
+            type: 'move-crop',
+            cropId: current.id,
+            from: current.position,
+            to
+          });
+        }
+      }
+    },
+    [draftMoveCrops, findCrop, push]
   );
 
   const addCrops = useCallback(
@@ -111,12 +164,27 @@ export function useLayoutPlantingHistory(
       addCrop,
       addCrops,
       moveCrop,
+      moveCrops,
       removeCrops,
       canUndo,
       undo,
+      canRedo,
+      redo,
       clear,
       reset
     }),
-    [addCrop, addCrops, moveCrop, removeCrops, canUndo, undo, clear, reset]
+    [
+      addCrop,
+      addCrops,
+      moveCrop,
+      moveCrops,
+      removeCrops,
+      canUndo,
+      undo,
+      canRedo,
+      redo,
+      clear,
+      reset
+    ]
   );
 }

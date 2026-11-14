@@ -34,6 +34,7 @@ export interface UseLayoutBrushPlacementParams {
   readonly cropsByBed: ReadonlyMap<string, readonly CropPlacementItem[]>;
   readonly activePlant: PlantListItem | null;
   readonly activeBedId: string | null;
+  readonly initialPattern?: BrushPatternType;
   readonly onAnnounceSuccess: (message: string) => void;
   readonly onAnnounceWarning: (message: string) => void;
   readonly onAnnounceError: (message: string) => void;
@@ -46,13 +47,14 @@ export function useLayoutBrushPlacement({
   cropsByBed,
   activePlant,
   activeBedId,
+  initialPattern = 'single-row',
   onAnnounceSuccess,
   onAnnounceWarning,
   onAnnounceError,
   addCrops
 }: UseLayoutBrushPlacementParams) {
   const [brushPattern, setBrushPattern] =
-    useState<BrushPatternType>('single-row');
+    useState<BrushPatternType>(initialPattern);
   const [isDrawing, setIsDrawing] = useState(false);
   const [strokeBed, setStrokeBed] = useState<ResolvedBed | null>(null);
   const [startPoint, setStartPoint] = useState<Coordinates | null>(null);
@@ -81,6 +83,9 @@ export function useLayoutBrushPlacement({
 
   const rawPositions = useMemo(() => {
     if (!directrix || !activePlant) return [];
+    if (brushPattern === 'individual') {
+      return [{ x: directrix.end.x, y: directrix.end.y }];
+    }
     const spacing = resolveBrushStepSpacing(activePlant.traits.spacingCm?.min);
     if (brushPattern === 'double-row') {
       return generateDoubleRowPositions(directrix, spacing);

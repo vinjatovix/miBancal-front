@@ -59,11 +59,15 @@ describe('LayoutGestureHints', () => {
 
   it('shows the marquee hint while selecting groups', () => {
     render(
-      <LayoutGestureHints mode="plants" toolMode="select" onOpenHelp={vi.fn()} />
+      <LayoutGestureHints
+        mode="plants"
+        toolMode="select"
+        onOpenHelp={vi.fn()}
+      />
     );
     expect(
       screen.getByText(
-        'Toca para seleccionar • Arrastra en vacío para seleccionar un grupo'
+        'Toca para elegir • Arrastra en vacío para marcar un grupo'
       )
     ).toBeInTheDocument();
   });
