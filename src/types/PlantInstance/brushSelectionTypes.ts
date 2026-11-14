@@ -3,6 +3,7 @@ import type { Coordinates } from './PlantInstance';
 export type PlantingToolMode = 'select' | 'plant-single' | 'brush';
 
 export type BrushPatternType =
+  | 'individual'
   | 'single-row'
   | 'double-row'
   | 'staggered-triangle';

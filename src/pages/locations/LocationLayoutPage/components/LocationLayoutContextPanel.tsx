@@ -1,12 +1,14 @@
-import type { JSX } from 'react';
+import { useState, type JSX } from 'react';
 
-import BedPropertiesPanel from '../../../../components/beds/layout/BedPropertiesPanel';
 import UnplacedBedsTray from '../../../../components/beds/layout/UnplacedBedsTray';
 import PlantPlacementPalette from '../../../../components/beds/visualizer/PlantPlacementPalette';
+import Button from '../../../../shared/components/Button/Button';
+import Icon from '../../../../shared/components/Icon/Icon';
+import { t } from '../../../../i18n/core/t';
+import useMediaQuery from '../../../../shared/hooks/useMediaQuery';
 import type { ResolvedBed } from '../../../../components/beds/layout/utils/layoutTypes';
 import type { LayoutEditor } from '../hooks/useLayoutEditor';
 import type { useLayoutPlantPlacement } from '../hooks/useLayoutPlantPlacement';
-import type { useLocationBedActions } from '../hooks/useLocationBedActions';
 import LayoutContextPanel, {
   type ContextPanelVariant
 } from './LayoutContextPanel';
@@ -18,7 +20,7 @@ export interface LocationLayoutContextPanelProps {
   readonly selectedBed?: ResolvedBed;
   readonly editor: LayoutEditor;
   readonly placement: ReturnType<typeof useLayoutPlantPlacement>;
-  readonly bedActions: ReturnType<typeof useLocationBedActions>;
+  readonly isMobile?: boolean;
 }
 
 export default function LocationLayoutContextPanel({
@@ -28,8 +30,12 @@ export default function LocationLayoutContextPanel({
   selectedBed,
   editor,
   placement,
-  bedActions
+  isMobile = false
 }: LocationLayoutContextPanelProps): JSX.Element {
+  const isLandscape = useMediaQuery('(orientation: landscape)');
+  const isMobileSheet = isMobile && !isLandscape;
+  const [catalogDismissed, setCatalogDismissed] = useState(false);
+
   let panelVariant: ContextPanelVariant = 'none';
   let panelContent: JSX.Element | null = null;
 
@@ -38,23 +44,17 @@ export default function LocationLayoutContextPanel({
     panelContent = (
       <PlantPlacementPalette
         isOpen
-        onSelectPlant={placement.selectPalettePlant}
+        onClose={() => setCatalogDismissed(true)}
+        onSelectPlant={(plant) => {
+          placement.selectPalettePlant(plant);
+          if (isMobile) {
+            setCatalogDismissed(true);
+          }
+        }}
         onDragPlant={placement.dragPalettePlant}
         activePlacingPlantId={placement.activePlantId}
         activePlacingPlantName={placement.activePlantName}
         onCancelPlacing={placement.cancelPalettePlant}
-      />
-    );
-  } else if (isPosition && selectedBed) {
-    panelVariant = 'properties';
-    panelContent = (
-      <BedPropertiesPanel
-        bed={selectedBed}
-        onRenameInline={(newName) =>
-          editor.renameBedInline(selectedBed.id, newName)
-        }
-        onOpenFullEdit={() => bedActions.setIsEditOpen(true)}
-        onRotationChange={editor.setSelectedRotation}
       />
     );
   } else if (editor.unplacedBeds.length > 0) {
@@ -68,19 +68,58 @@ export default function LocationLayoutContextPanel({
     );
   }
 
-  const panelOpen = panelVariant !== 'none';
+  const suppressOnMobile = isMobile && panelVariant === 'tray';
+  const catalogCollapsed = isMobile && isPlanting && catalogDismissed;
+  const panelOpen =
+    panelVariant !== 'none' && !suppressOnMobile && !catalogCollapsed;
 
   return (
-    <LayoutContextPanel
-      mode={mode}
-      open={panelOpen}
-      variant={panelVariant}
-      onRequestClose={() => {
-        if (isPlanting) placement.cancelPalettePlant();
-        else if (isPosition && selectedBed) editor.deselectBed();
-      }}
-    >
-      {panelContent}
-    </LayoutContextPanel>
+    <>
+      <LayoutContextPanel
+        mode={mode}
+        open={panelOpen}
+        variant={panelVariant}
+        isMobileSheet={isMobileSheet}
+        onRequestClose={() => {
+          if (isPlanting) {
+            if (isMobile) {
+              setCatalogDismissed(true);
+              return;
+            }
+            placement.cancelPalettePlant();
+          } else if (isPosition && selectedBed) editor.deselectBed();
+        }}
+      >
+        {panelContent}
+      </LayoutContextPanel>
+      {catalogCollapsed && (
+        <div className="layout-catalog-reopen">
+          {placement.activePlantId && (
+            <span className="layout-catalog-reopen__active">
+              <span className="layout-catalog-reopen__active-name">
+                {t('bed.placement.placing_active_short', {
+                  name: placement.activePlantName ?? ''
+                })}
+              </span>
+              <button
+                type="button"
+                className="layout-catalog-reopen__cancel"
+                onClick={placement.cancelPalettePlant}
+                aria-label={t('bed.placement.placing_cancel')}
+              >
+                <Icon name="close" decorative />
+              </button>
+            </span>
+          )}
+          <Button
+            variant="primary"
+            size="sm"
+            icon="seedling"
+            aria-label={t('bed.placement.palette_title')}
+            onClick={() => setCatalogDismissed(false)}
+          />
+        </div>
+      )}
+    </>
   );
 }

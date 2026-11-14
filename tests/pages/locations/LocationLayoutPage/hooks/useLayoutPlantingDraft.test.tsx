@@ -83,6 +83,67 @@ describe('useLayoutPlantingDraft', () => {
     expect(mockedBatchRemove).not.toHaveBeenCalled();
   });
 
+  it('restores a deleted server crop so it reappears without pending changes', () => {
+    const crop = buildCropPlacementItem({
+      id: 'c1',
+      bedId: BED_ID,
+      position: { x: 50, y: 50 }
+    });
+    const { result } = renderDraft(buildServer([crop]));
+
+    act(() => result.current.removeCrops(['c1']));
+    expect(result.current.effectiveCropsByBed.get(BED_ID)).toHaveLength(0);
+
+    act(() => result.current.restoreCrops([crop]));
+    expect(result.current.effectiveCropsByBed.get(BED_ID)).toHaveLength(1);
+    expect(result.current.pendingCount).toBe(0);
+  });
+
+  it('drops the pending move when a server crop returns to its original position', () => {
+    const crop = buildCropPlacementItem({
+      id: 'c1',
+      bedId: BED_ID,
+      position: { x: 50, y: 50 }
+    });
+    const { result } = renderDraft(buildServer([crop]));
+
+    act(() => result.current.moveCrop('c1', { x: 70, y: 70 }));
+    expect(result.current.pendingCount).toBe(1);
+
+    act(() => result.current.moveCrop('c1', { x: 50, y: 50 }));
+
+    const reverted = result.current.effectiveCropsByBed.get(BED_ID)?.[0];
+    expect(reverted?.position).toEqual({ x: 50, y: 50 });
+    expect(reverted?.hasMoved).toBeUndefined();
+    expect(result.current.pendingCount).toBe(0);
+  });
+
+  it('restores a removed newly-created crop keeping its id', () => {
+    const { result } = renderDraft(buildServer([]));
+
+    let createdId = '';
+    act(() => {
+      createdId = result.current.addCrop({
+        bedId: BED_ID,
+        plantId: 'plant-1',
+        commonName: 'Lechuga',
+        vitalRadius: 20,
+        position: { x: 10, y: 10 }
+      });
+    });
+    const created = result.current.effectiveCropsByBed
+      .get(BED_ID)
+      ?.find((item) => item.id === createdId);
+
+    act(() => result.current.removeCrops([createdId]));
+    expect(result.current.effectiveCropsByBed.get(BED_ID)).toHaveLength(0);
+
+    act(() => result.current.restoreCrops(created ? [created] : []));
+    const restored = result.current.effectiveCropsByBed.get(BED_ID);
+    expect(restored).toHaveLength(1);
+    expect(restored?.[0].id).toBe(createdId);
+  });
+
   it('drops a staged creation entirely when it is deleted before saving', () => {
     const { result } = renderDraft(buildServer([]));
 

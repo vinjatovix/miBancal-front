@@ -1,6 +1,9 @@
 import { useCallback, useState } from 'react';
 
-import { rotatedRectVertices } from '../../../../components/beds/layout/utils/layoutGeometry';
+import {
+  calculateFitBounds,
+  rectAabb
+} from '../../../../components/beds/layout/utils/layoutGeometry';
 import type {
   LayoutMode,
   ResolvedBed
@@ -33,40 +36,7 @@ function computeBedTarget(
   viewBox: string,
   fillFactor = 0.8
 ): ViewportCoordinates | null {
-  const vertices = rotatedRectVertices(bed);
-  const xs = vertices.map((v) => v.x);
-  const ys = vertices.map((v) => v.y);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
-
-  const [vx, vy, vw, vh] = viewBox.split(/\s+/).map(Number);
-  if ([vx, vy, vw, vh].some((n) => !Number.isFinite(n))) return null;
-
-  const boundsWidth = maxX - minX;
-  const boundsHeight = maxY - minY;
-  if (boundsWidth <= 0 || boundsHeight <= 0) return null;
-
-  const zoom = Math.min(
-    5.0,
-    Math.max(
-      0.25,
-      Number(
-        (Math.min(vw / boundsWidth, vh / boundsHeight) * fillFactor).toFixed(4)
-      )
-    )
-  );
-  const viewCenterX = vx + vw / 2;
-  const viewCenterY = vy + vh / 2;
-  const boundsCenterX = (minX + maxX) / 2;
-  const boundsCenterY = (minY + maxY) / 2;
-
-  return {
-    zoom,
-    panX: Number((zoom * (viewCenterX - boundsCenterX)).toFixed(2)),
-    panY: Number((zoom * (viewCenterY - boundsCenterY)).toFixed(2))
-  };
+  return calculateFitBounds(rectAabb(bed), viewBox, fillFactor);
 }
 
 export function useLayoutModeController({
@@ -76,11 +46,11 @@ export function useLayoutModeController({
   initialMode = 'read',
   onModeChange
 }: UseLayoutModeControllerParams): LayoutModeController {
-  const [mode, setModeState] = useState<LayoutMode>(initialMode);
+  const [mode, setMode] = useState<LayoutMode>(initialMode);
 
-  const setMode = useCallback(
+  const changeMode = useCallback(
     (next: LayoutMode) => {
-      setModeState(next);
+      setMode(next);
       onModeChange?.(next);
     },
     [onModeChange]
@@ -88,7 +58,7 @@ export function useLayoutModeController({
 
   const enterPlanting = useCallback(
     (bedId: string | null) => {
-      setModeState('plants');
+      setMode('plants');
       onModeChange?.('plants');
 
       if (!bedId) return;
@@ -105,7 +75,7 @@ export function useLayoutModeController({
 
   return {
     mode,
-    setMode,
+    setMode: changeMode,
     enterPlanting
   };
 }

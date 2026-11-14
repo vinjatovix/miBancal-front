@@ -14,7 +14,9 @@ const TWEMOJI_DIR = join(ROOT, 'node_modules/@twemoji/svg');
 const OUTPUT_FILE = join(ROOT, 'src/shared/components/Icon/iconPaths.tsx');
 
 export function generateIconGlyphsContent(): string {
-  const sortedNames = Object.keys(TWEMOJI_PRIMARY_MAPPING).sort();
+  const sortedNames = Object.keys(TWEMOJI_PRIMARY_MAPPING).sort((a, b) =>
+    a.localeCompare(b)
+  );
   const declarations = sortedNames.map((name) => {
     const hex = TWEMOJI_PRIMARY_MAPPING[name];
     const filePath = join(TWEMOJI_DIR, `${hex}.svg`);
@@ -42,7 +44,7 @@ export function generateIconGlyphsContent(): string {
     ...primaryEntries,
     ...aliasEntries,
     ...customEntries
-  ].sort();
+  ].sort((a, b) => a.localeCompare(b));
 
   return `${[...declarations, ...customDeclarations].join('\n\n')}\n\nexport const ICON_GLYPHS = {\n${allEntries.join(',\n')}\n} as const;\n\nexport type IconName = keyof typeof ICON_GLYPHS;\n`;
 }

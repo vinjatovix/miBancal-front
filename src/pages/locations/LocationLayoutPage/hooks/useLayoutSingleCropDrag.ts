@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { t } from '../../../../i18n/core/t';
 import type { Point } from '../../../../components/beds/layout/utils/layoutGeometry';
@@ -7,6 +7,7 @@ import {
   globalToBedLocal,
   isLocalPointInsideBed
 } from '../../../../components/beds/layout/utils/plantPlacementGeometry';
+import { pointerKind } from '../../../../components/beds/layout/utils/pointerThreshold';
 import type { Coordinates } from '../../../../types/PlantInstance/PlantInstance';
 import type { CropPlacementItem } from '../../../../types/PlantInstance/plantPlacementTypes';
 import type { LayoutPlacementPreview } from './useLayoutPalettePlacement';
@@ -24,7 +25,10 @@ export interface UseLayoutSingleCropDragParams {
   readonly setPreview: (preview: LayoutPlacementPreview | null) => void;
   readonly onSelectSingleCrop: (cropId: string) => void;
   readonly onAnnounceError: (message: string) => void;
+  readonly longPressMs?: number;
 }
+
+const DEFAULT_LONG_PRESS_MS = 300;
 
 export function useLayoutSingleCropDrag({
   bedsById,
@@ -33,27 +37,48 @@ export function useLayoutSingleCropDrag({
   moveCrop,
   setPreview,
   onSelectSingleCrop,
-  onAnnounceError
+  onAnnounceError,
+  longPressMs = DEFAULT_LONG_PRESS_MS
 }: UseLayoutSingleCropDragParams) {
   const cropDragRef = useRef<{
     readonly cropId: string;
     readonly bedId: string;
   } | null>(null);
+  const armedRef = useRef(false);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [draggingCropId, setDraggingCropId] = useState<string | null>(null);
 
+  const clearLongPress = useCallback(() => {
+    if (longPressTimerRef.current !== null) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
   const beginCropDrag = useCallback(
-    (cropId: string, bedId: string) => {
+    (cropId: string, bedId: string, pointerType = 'mouse') => {
       cropDragRef.current = { cropId, bedId };
-      setDraggingCropId(cropId);
       onSelectSingleCrop(cropId);
+      clearLongPress();
+      if (pointerKind(pointerType) === 'mouse') {
+        armedRef.current = true;
+        setDraggingCropId(cropId);
+        return;
+      }
+      armedRef.current = false;
+      longPressTimerRef.current = setTimeout(() => {
+        longPressTimerRef.current = null;
+        armedRef.current = true;
+        setDraggingCropId(cropId);
+      }, longPressMs);
     },
-    [onSelectSingleCrop]
+    [onSelectSingleCrop, clearLongPress, longPressMs]
   );
 
   const moveCropDrag = useCallback(
     (global: Point) => {
       const drag = cropDragRef.current;
-      if (!drag) return;
+      if (!drag || !armedRef.current) return;
       const bed = bedsById.get(drag.bedId);
       if (!bed) return;
       const crops = cropsByBed.get(bed.id) ?? [];
@@ -76,10 +101,13 @@ export function useLayoutSingleCropDrag({
   const endCropDrag = useCallback(
     (global: Point | null) => {
       const drag = cropDragRef.current;
+      const wasArmed = armedRef.current;
+      clearLongPress();
+      armedRef.current = false;
       cropDragRef.current = null;
       setDraggingCropId(null);
       setPreview(null);
-      if (!drag || !global) return;
+      if (!drag || !global || !wasArmed) return;
       const bed = bedsById.get(drag.bedId);
       if (!bed) return;
       const crops = cropsByBed.get(bed.id) ?? [];
@@ -105,14 +133,19 @@ export function useLayoutSingleCropDrag({
       evaluateStored,
       moveCrop,
       setPreview,
-      onAnnounceError
+      onAnnounceError,
+      clearLongPress
     ]
   );
 
   const resetCropDrag = useCallback(() => {
+    clearLongPress();
+    armedRef.current = false;
     cropDragRef.current = null;
     setDraggingCropId(null);
-  }, []);
+  }, [clearLongPress]);
+
+  useEffect(() => clearLongPress, [clearLongPress]);
 
   return {
     beginCropDrag,

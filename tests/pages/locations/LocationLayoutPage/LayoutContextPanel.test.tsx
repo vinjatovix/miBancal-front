@@ -85,4 +85,39 @@ describe('LayoutContextPanel', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
+
+  it('renders a dedicated backdrop when rendered as a mobile sheet', () => {
+    const { container } = render(
+      <LayoutContextPanel
+        mode="plants"
+        open={true}
+        variant="palette"
+        isMobileSheet={true}
+      >
+        <p>Catálogo</p>
+      </LayoutContextPanel>
+    );
+
+    expect(
+      container.querySelector('.layout-context-panel__backdrop')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toHaveClass(
+      'layout-context-panel--sheet'
+    );
+  });
+
+  it('renders a docked region without mobile backdrop when not a mobile sheet', () => {
+    const { container } = render(
+      <LayoutContextPanel mode="position" open={true} variant="properties">
+        <p>Propiedades</p>
+      </LayoutContextPanel>
+    );
+
+    expect(
+      container.querySelector('.layout-context-panel__backdrop')
+    ).toBeNull();
+    expect(screen.getByRole('region')).toHaveClass(
+      'layout-context-panel--docked'
+    );
+  });
 });

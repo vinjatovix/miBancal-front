@@ -5,13 +5,19 @@ import {
   type RotatedRectInput
 } from '../../../../components/beds/layout/utils/layoutGeometry';
 import type {
+  DraftPlacement,
   LayoutMode,
   ResolvedBed
 } from '../../../../components/beds/layout/utils/layoutTypes';
 import {
   applySnap,
-  GRID_SPACING_CM
+  GRID_SPACING_CM,
+  snapThresholdFor
 } from '../../../../components/beds/layout/utils/snapConfig';
+import {
+  pointerKind,
+  type PointerKind
+} from '../../../../components/beds/layout/utils/pointerThreshold';
 import { t } from '../../../../i18n/core/t';
 import { useToast } from '../../../../shared/toast/useToast';
 import type {
@@ -21,7 +27,10 @@ import type {
   UnplacedBedSummary
 } from '../../../../types/Location/LocationLayout';
 import { useLayoutDraft, type GetServerPlacement } from './useLayoutDraft';
+import { useLayoutEditHistory, type EditAction } from './useLayoutEditHistory';
 import { useBedsLayoutMutation } from './useBedsLayoutMutation';
+
+const BED_LONG_PRESS_MS = 300;
 
 interface BedMeta {
   readonly id: string;
@@ -55,11 +64,19 @@ export interface LayoutEditor {
   readonly selectBed: (id: string) => void;
   readonly deselectBed: () => void;
   readonly moveBed: (id: string, dx: number, dy: number) => void;
+  readonly beginBedDrag: (id: string, pointerType?: string) => void;
+  readonly moveBedDrag: (dx: number, dy: number) => void;
+  readonly endBedDrag: () => void;
+  readonly draggingBedId: string | null;
   readonly rotateBedBy: (id: string, delta: number) => void;
   readonly setSelectedRotation: (value: number) => void;
   readonly placeBed: (id: string) => void;
   readonly unplaceSelected: () => void;
   readonly renameBedInline: (id: string, newName: string) => void;
+  readonly canUndo: boolean;
+  readonly undo: () => void;
+  readonly canRedo: boolean;
+  readonly redo: () => void;
   readonly save: () => void;
 }
 
@@ -96,10 +113,22 @@ export function useLayoutEditor(
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [discardOpen, setDiscardOpen] = useState(false);
   const rawDragPositions = useRef<Map<string, BedPosition>>(new Map());
+  const bedDragRef = useRef<{ id: string; from: DraftPlacement } | null>(null);
+  const bedArmedRef = useRef(false);
+  const bedDragPointerRef = useRef<PointerKind>('mouse');
+  const bedLongPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [draggingBedId, setDraggingBedId] = useState<string | null>(null);
   const toast = useToast();
 
   const resetDragPositions = useCallback(() => {
     rawDragPositions.current.clear();
+  }, []);
+
+  const clearBedLongPress = useCallback(() => {
+    if (bedLongPressRef.current !== null) {
+      clearTimeout(bedLongPressRef.current);
+      bedLongPressRef.current = null;
+    }
   }, []);
 
   const metas = useMemo(() => buildMetas(layout), [layout]);
@@ -130,6 +159,48 @@ export function useLayoutEditor(
   const draft = useLayoutDraft(getServerPlacement);
   const { mutation, adjustedBedIds, conflict, collisionBedIds, clearNotices } =
     useBedsLayoutMutation(id, etag);
+
+  const placementsRef = useRef(draft.placements);
+  useEffect(() => {
+    placementsRef.current = draft.placements;
+  });
+
+  const currentPlacement = useCallback(
+    (bedId: string): DraftPlacement =>
+      placementsRef.current.get(bedId) ?? getServerPlacement(bedId),
+    [getServerPlacement]
+  );
+
+  const onRevert = useCallback(
+    (action: EditAction): (() => void) | void => {
+      if (action.type === 'move-bed') {
+        const to = currentPlacement(action.bedId);
+        draft.placeBed(action.bedId, action.from);
+        return () => draft.placeBed(action.bedId, to);
+      }
+      if (action.type === 'place-bed') {
+        const to = currentPlacement(action.bedId);
+        if (action.from.position === null) {
+          draft.unplaceBed(action.bedId);
+        } else {
+          draft.placeBed(action.bedId, action.from);
+        }
+        return () => {
+          if (to.position === null) {
+            draft.unplaceBed(action.bedId);
+          } else {
+            draft.placeBed(action.bedId, to);
+          }
+        };
+      }
+      return undefined;
+    },
+    [draft, currentPlacement]
+  );
+
+  const history = useLayoutEditHistory({ onRevert });
+
+  useEffect(() => clearBedLongPress, [clearBedLongPress]);
 
   const placedBeds = useMemo<readonly ResolvedBed[]>(() => {
     return [...metas.values()].flatMap((meta) => {
@@ -197,6 +268,7 @@ export function useLayoutEditor(
         neighbors,
         {
           enabled: neighborSnapEnabled,
+          threshold: snapThresholdFor(bedDragPointerRef.current),
           gridSpacing: gridSnapEnabled ? GRID_SPACING_CM : undefined
         }
       );
@@ -207,6 +279,57 @@ export function useLayoutEditor(
     },
     [placedBeds, neighborSnapEnabled, gridSnapEnabled, draft]
   );
+
+  const beginBedDrag = useCallback(
+    (bedId: string, pointerType = 'mouse') => {
+      resetDragPositions();
+      clearBedLongPress();
+      bedDragRef.current = { id: bedId, from: currentPlacement(bedId) };
+      bedDragPointerRef.current = pointerKind(pointerType);
+      if (pointerKind(pointerType) === 'mouse') {
+        bedArmedRef.current = true;
+        setDraggingBedId(bedId);
+        return;
+      }
+      bedArmedRef.current = false;
+      bedLongPressRef.current = setTimeout(() => {
+        bedLongPressRef.current = null;
+        bedArmedRef.current = true;
+        setDraggingBedId(bedId);
+      }, BED_LONG_PRESS_MS);
+    },
+    [resetDragPositions, clearBedLongPress, currentPlacement]
+  );
+
+  const moveBedDrag = useCallback(
+    (dx: number, dy: number) => {
+      const drag = bedDragRef.current;
+      if (!drag || !bedArmedRef.current) return;
+      moveBed(drag.id, dx, dy);
+    },
+    [moveBed]
+  );
+
+  const endBedDrag = useCallback(() => {
+    const drag = bedDragRef.current;
+    const wasArmed = bedArmedRef.current;
+    clearBedLongPress();
+    bedArmedRef.current = false;
+    bedDragRef.current = null;
+    setDraggingBedId(null);
+    if (!drag || !wasArmed) return;
+    const { from } = drag;
+    const to = currentPlacement(drag.id);
+    const moved =
+      from.position === null ||
+      to.position === null ||
+      from.position.x !== to.position.x ||
+      from.position.y !== to.position.y ||
+      from.rotation !== to.rotation;
+    if (moved) {
+      history.push({ type: 'move-bed', bedId: drag.id, from, to });
+    }
+  }, [clearBedLongPress, currentPlacement, history]);
 
   const rotateBedBy = useCallback(
     (bedId: string, delta: number) => {
@@ -226,11 +349,13 @@ export function useLayoutEditor(
 
   const placeBed = useCallback(
     (bedId: string) => {
+      const from = currentPlacement(bedId);
       resetDragPositions();
       draft.placeBed(bedId, { position: { x: 0, y: 0 }, rotation: 0 });
       setSelectedId(bedId);
+      history.push({ type: 'place-bed', bedId, from });
     },
-    [draft, resetDragPositions]
+    [draft, resetDragPositions, currentPlacement, history]
   );
 
   const unplaceSelected = useCallback(() => {
@@ -250,8 +375,13 @@ export function useLayoutEditor(
       rotation: placement.rotation
     }));
     if (placements.length === 0 || etag === '') return;
-    mutation.mutate(placements, { onSuccess: () => draft.markSaved() });
-  }, [draft, etag, mutation]);
+    mutation.mutate(placements, {
+      onSuccess: () => {
+        draft.markSaved();
+        history.clear();
+      }
+    });
+  }, [draft, etag, mutation, history]);
 
   const toggleMode = useCallback(() => {
     if (mode !== 'position') {
@@ -282,16 +412,18 @@ export function useLayoutEditor(
   const confirmDiscard = useCallback(() => {
     resetDragPositions();
     draft.discard();
+    history.reset();
     setDiscardOpen(false);
     setMode('read');
     setSelectedId(null);
-  }, [draft, resetDragPositions]);
+  }, [draft, resetDragPositions, history]);
 
   const discard = useCallback(() => {
     resetDragPositions();
     draft.discard();
+    history.reset();
     setSelectedId(null);
-  }, [draft, resetDragPositions]);
+  }, [draft, resetDragPositions, history]);
 
   const cancelDiscard = useCallback(() => setDiscardOpen(false), []);
   const toggleGridSnap = useCallback(
@@ -330,6 +462,7 @@ export function useLayoutEditor(
     if (!conflict) return;
     if (conflict === 'concurrency') {
       draft.discard();
+      history.reset();
       toast.showToast({
         message: t('bed.layout.concurrency_warning'),
         variant: 'warning'
@@ -354,6 +487,7 @@ export function useLayoutEditor(
     collisionBedIds,
     metas,
     draft,
+    history,
     toast,
     clearNotices,
     mutation.error
@@ -387,11 +521,19 @@ export function useLayoutEditor(
     selectBed,
     deselectBed,
     moveBed,
+    beginBedDrag,
+    moveBedDrag,
+    endBedDrag,
+    draggingBedId,
     rotateBedBy,
     setSelectedRotation,
     placeBed,
     unplaceSelected,
     renameBedInline,
+    canUndo: history.canUndo,
+    undo: history.undo,
+    canRedo: history.canRedo,
+    redo: history.redo,
     save
   };
 }

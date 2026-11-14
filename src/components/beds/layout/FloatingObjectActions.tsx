@@ -2,6 +2,7 @@ import type { CSSProperties, JSX } from 'react';
 
 import { t } from '../../../i18n/core/t';
 import Icon from '../../../shared/components/Icon/Icon';
+import LayoutGlyph from './LayoutGlyph';
 import type { AnchorPoint, FloatingAnchorKind } from './utils/layoutTypes';
 
 import './floatingObjectActions.css';
@@ -9,6 +10,7 @@ import './floatingObjectActions.css';
 export interface FloatingObjectActionsProps {
   readonly anchor: AnchorPoint | null;
   readonly kind: FloatingAnchorKind | null;
+  readonly placement?: 'above' | 'below';
   readonly onRotate?: () => void;
   readonly onUnplace?: () => void;
   readonly onEdit?: () => void;
@@ -21,6 +23,7 @@ export interface FloatingObjectActionsProps {
 export default function FloatingObjectActions({
   anchor,
   kind,
+  placement = 'above',
   onRotate,
   onUnplace,
   onEdit,
@@ -38,10 +41,15 @@ export default function FloatingObjectActions({
     top: `${anchor.y}px`
   };
 
+  const className =
+    placement === 'below'
+      ? 'floating-object-actions floating-object-actions--below'
+      : 'floating-object-actions';
+
   if (kind === 'crops') {
     return (
       <div
-        className="floating-object-actions"
+        className={className}
         role="toolbar"
         aria-label={t('bed.layout.floating_actions_label')}
         style={style}
@@ -93,7 +101,7 @@ export default function FloatingObjectActions({
 
   return (
     <div
-      className="floating-object-actions"
+      className={className}
       role="toolbar"
       aria-label={t('bed.layout.floating_actions_label')}
       style={style}
@@ -105,7 +113,7 @@ export default function FloatingObjectActions({
         onClick={onRotate}
         title={t('bed.layout.rotate_action')}
       >
-        <Icon name="repeat" decorative />
+        <LayoutGlyph name="rotate" />
         <span>{t('bed.layout.rotate_action')}</span>
         <kbd className="floating-object-actions__kbd" aria-hidden="true">
           {t('bed.layout.key_r')}
@@ -119,7 +127,7 @@ export default function FloatingObjectActions({
         onClick={onUnplace}
         title={t('bed.layout.unplace_bed')}
       >
-        <Icon name="explore" decorative />
+        <LayoutGlyph name="unplace" />
         <span>{t('bed.layout.unplace_bed')}</span>
         <kbd className="floating-object-actions__kbd" aria-hidden="true">
           {t('bed.layout.key_u')}
@@ -133,7 +141,7 @@ export default function FloatingObjectActions({
         onClick={onEdit}
         title={t('bed.layout.edit_bed_action')}
       >
-        <Icon name="edit_note" decorative />
+        <LayoutGlyph name="edit" />
         <span>{t('bed.layout.edit_bed_action')}</span>
       </button>
 
@@ -144,7 +152,7 @@ export default function FloatingObjectActions({
         onClick={onDelete}
         title={t('bed.layout.delete_bed_action')}
       >
-        <Icon name="delete" decorative />
+        <LayoutGlyph name="trash" />
         <span>{t('bed.layout.delete_bed_action')}</span>
       </button>
     </div>

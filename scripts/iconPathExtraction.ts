@@ -130,7 +130,7 @@ export const TWEMOJI_MAPPING: Record<string, string> = {
 };
 
 export function extractSvgInner(svgContent: string): string {
-  const match = svgContent.match(/<svg[^>]*>([\s\S]*?)<\/svg>/i);
+  const match = /<svg[^>]*>([\s\S]*?)<\/svg>/i.exec(svgContent);
   if (!match?.[1]) {
     throw new Error('No SVG inner markup found');
   }
@@ -141,11 +141,11 @@ export function hasMultipleRootElements(xml: string): boolean {
   const trimmed = xml.trim();
   let depth = 0;
   let rootCount = 0;
-  const tagRegex = /<\/?([a-zA-Z0-9_-]+)[^>]*?(\/?)>/g;
+  const tagRegex = /<\/?[a-zA-Z0-9_-][^>]*>/g;
   let match: RegExpExecArray | null;
 
   while ((match = tagRegex.exec(trimmed)) !== null) {
-    const isSelfClosing = match[2] === '/' || match[0].endsWith('/>');
+    const isSelfClosing = match[0].endsWith('/>');
     const isClosing = match[0].startsWith('</');
 
     if (depth === 0) {

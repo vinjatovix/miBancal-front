@@ -87,6 +87,12 @@ export default function LocationCropsLayer({
                   onKeyDown={handleKeyDown}
                 >
                   <circle
+                    className="location-crops-layer__hit"
+                    cx={0}
+                    cy={0}
+                    r={Math.max(crop.vitalRadius, 8)}
+                  />
+                  <circle
                     className="location-crops-layer__radius"
                     cx={0}
                     cy={0}

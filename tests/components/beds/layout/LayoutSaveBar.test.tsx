@@ -15,12 +15,8 @@ describe('LayoutSaveBar', () => {
       />
     );
 
-    expect(
-      screen.getByRole('button', { name: 'Guardar disposición' })
-    ).toBeDisabled();
-    expect(
-      screen.getByRole('button', { name: 'Descartar cambios' })
-    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Guardar' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Descartar' })).toBeDisabled();
   });
 
   it('invokes onSave when save button is clicked while dirty', async () => {
@@ -31,9 +27,7 @@ describe('LayoutSaveBar', () => {
       <LayoutSaveBar dirty saving={false} onSave={onSave} onDiscard={vi.fn()} />
     );
 
-    await user.click(
-      screen.getByRole('button', { name: 'Guardar disposición' })
-    );
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
 
     expect(onSave).toHaveBeenCalledTimes(1);
   });
@@ -51,7 +45,7 @@ describe('LayoutSaveBar', () => {
       />
     );
 
-    await user.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+    await user.click(screen.getByRole('button', { name: 'Descartar' }));
 
     expect(onDiscard).toHaveBeenCalledTimes(1);
   });
@@ -60,5 +54,55 @@ describe('LayoutSaveBar', () => {
     render(<LayoutSaveBar dirty saving onSave={vi.fn()} onDiscard={vi.fn()} />);
 
     expect(screen.getByRole('button', { name: 'Guardando...' })).toBeDisabled();
+  });
+
+  it('does not render an undo action when no undo handler is provided', () => {
+    render(
+      <LayoutSaveBar
+        dirty
+        saving={false}
+        onSave={vi.fn()}
+        onDiscard={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.queryByRole('button', { name: 'Deshacer' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('disables the undo action when there is nothing to undo', () => {
+    render(
+      <LayoutSaveBar
+        dirty
+        saving={false}
+        onSave={vi.fn()}
+        onDiscard={vi.fn()}
+        canUndo={false}
+        onUndo={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Deshacer' })).toBeDisabled();
+  });
+
+  it('invokes onUndo when the undo button is clicked', async () => {
+    const onUndo = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <LayoutSaveBar
+        dirty
+        saving={false}
+        onSave={vi.fn()}
+        onDiscard={vi.fn()}
+        canUndo
+        onUndo={onUndo}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Deshacer' }));
+
+    expect(onUndo).toHaveBeenCalledTimes(1);
   });
 });

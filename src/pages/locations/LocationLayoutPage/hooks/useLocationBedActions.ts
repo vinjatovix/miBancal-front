@@ -35,9 +35,7 @@ export function useLocationBedActions({
   const { bed: selectedBedDetail, etag: selectedBedEtag } =
     useBedForEdit(selectedBedId);
 
-  const canDeleteSelectedBed =
-    selectedBedDetail !== undefined &&
-    selectedBedDetail.plantInstances.length === 0;
+  const canDeleteSelectedBed = selectedBedDetail?.plantInstances.length === 0;
 
   const handleDeselectBed = useCallback(() => {
     onDeselectBed();

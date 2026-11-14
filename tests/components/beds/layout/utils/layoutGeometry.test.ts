@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  calculateFitBounds,
   computeViewBox,
   diffAdjustedBedIds,
   pixelToCm,
   rectAabb,
-  rotatedRectVertices
+  rotatedRectVertices,
+  unionAabb
 } from '../../../../../src/components/beds/layout/utils/layoutGeometry';
 
 describe('rotatedRectVertices', () => {
@@ -142,5 +144,66 @@ describe('diffAdjustedBedIds', () => {
     const server = [{ id: 'a', position: { x: 10.1, y: 9.9 }, rotation: 0 }];
 
     expect(diffAdjustedBedIds(sent, server, 0.5)).toEqual([]);
+  });
+});
+
+describe('unionAabb', () => {
+  it('returns null for an empty list', () => {
+    expect(unionAabb([])).toBeNull();
+  });
+
+  it('merges several boxes into their enclosing bounds', () => {
+    expect(
+      unionAabb([
+        { minX: 0, minY: 0, maxX: 100, maxY: 100 },
+        { minX: 200, minY: 50, maxX: 400, maxY: 300 }
+      ])
+    ).toEqual({ minX: 0, minY: 0, maxX: 400, maxY: 300 });
+  });
+});
+
+describe('calculateFitBounds', () => {
+  it('centers and zooms onto a single bed target with a 15% margin', () => {
+    const target = calculateFitBounds(
+      { minX: 0, minY: 0, maxX: 400, maxY: 300 },
+      '0 0 1000 800',
+      0.85
+    );
+
+    expect(target).toEqual({ zoom: 2.125, panX: 637.5, panY: 531.25 });
+  });
+
+  it('fits the union of all placed beds', () => {
+    const bounds = unionAabb([
+      { minX: 0, minY: 0, maxX: 200, maxY: 150 },
+      { minX: 200, minY: 150, maxX: 400, maxY: 300 }
+    ]);
+
+    const target = calculateFitBounds(bounds, '0 0 1000 800', 0.85);
+
+    expect(target).toEqual({ zoom: 2.125, panX: 637.5, panY: 531.25 });
+  });
+
+  it('resets the viewport when the layout is empty', () => {
+    expect(calculateFitBounds(null, '0 0 1000 800', 0.85)).toEqual({
+      zoom: 1,
+      panX: 0,
+      panY: 0
+    });
+  });
+
+  it('returns null for an invalid view box', () => {
+    expect(
+      calculateFitBounds({ minX: 0, minY: 0, maxX: 100, maxY: 100 }, 'nope')
+    ).toBeNull();
+  });
+
+  it('returns null for degenerate bounds', () => {
+    expect(
+      calculateFitBounds(
+        { minX: 10, minY: 10, maxX: 10, maxY: 20 },
+        '0 0 100 100'
+      )
+    ).toBeNull();
   });
 });

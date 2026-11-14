@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useLayoutSingleCropDrag } from '../../../../../src/pages/locations/LocationLayoutPage/hooks/useLayoutSingleCropDrag';
 import type { ResolvedBed } from '../../../../../src/components/beds/layout/utils/layoutTypes';
@@ -147,5 +147,63 @@ describe('useLayoutSingleCropDrag', () => {
     act(() => result.current.beginCropDrag('crop-a1', 'bed-a'));
     act(() => result.current.resetCropDrag());
     expect(result.current.draggingCropId).toBeNull();
+  });
+});
+
+describe('useLayoutSingleCropDrag long-press to drag', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
+  });
+
+  it('selects on a short touch without ever moving the crop', () => {
+    const { result, moveCrop, onSelectSingleCrop, setPreview } = setup();
+    act(() => result.current.beginCropDrag('crop-a1', 'bed-a', 'touch'));
+    expect(onSelectSingleCrop).toHaveBeenCalledWith('crop-a1');
+    expect(result.current.draggingCropId).toBeNull();
+
+    act(() => result.current.moveCropDrag({ x: 70, y: 70 }));
+    expect(setPreview).not.toHaveBeenCalled();
+
+    act(() => result.current.endCropDrag({ x: 70, y: 70 }));
+    expect(moveCrop).not.toHaveBeenCalled();
+
+    act(() => vi.advanceTimersByTime(300));
+    expect(result.current.draggingCropId).toBeNull();
+    expect(moveCrop).not.toHaveBeenCalled();
+  });
+
+  it('moves a crop on touch only after the long-press has elapsed', () => {
+    const { result, moveCrop, setPreview } = setup();
+    act(() => result.current.beginCropDrag('crop-a1', 'bed-a', 'touch'));
+    act(() => vi.advanceTimersByTime(300));
+    expect(result.current.draggingCropId).toBe('crop-a1');
+
+    act(() => result.current.moveCropDrag({ x: 70, y: 70 }));
+    expect(setPreview).toHaveBeenLastCalledWith(
+      expect.objectContaining({ bedId: 'bed-a', commonName: crop.commonName })
+    );
+
+    act(() => result.current.endCropDrag({ x: 70, y: 70 }));
+    expect(moveCrop).toHaveBeenCalledWith('crop-a1', { x: 70, y: 70 });
+  });
+
+  it('drags directly with a mouse pointer without waiting for a long-press', () => {
+    const { result, moveCrop, setPreview } = setup();
+    act(() => result.current.beginCropDrag('crop-a1', 'bed-a', 'mouse'));
+    expect(result.current.draggingCropId).toBe('crop-a1');
+
+    act(() => result.current.moveCropDrag({ x: 70, y: 70 }));
+    expect(setPreview).toHaveBeenLastCalledWith(
+      expect.objectContaining({ bedId: 'bed-a', commonName: crop.commonName })
+    );
+
+    act(() => result.current.endCropDrag({ x: 70, y: 70 }));
+    expect(moveCrop).toHaveBeenCalledWith('crop-a1', { x: 70, y: 70 });
   });
 });

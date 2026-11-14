@@ -9,6 +9,12 @@
   box-shadow: var(--elevation-2);
   gap: 0.375rem;
   user-select: none;
+  pointer-events: none;
+}
+
+.bed-compass-hud__dial--interactive,
+.bed-compass-hud__info button {
+  pointer-events: auto;
 }
 
 .bed-compass-hud__dial {
@@ -105,4 +111,25 @@
 .bed-compass-hud__hint {
   font: var(--type-label-sm);
   color: var(--color-fg-muted);
+}
+
+@media (pointer: coarse), (pointer: none) {
+  .bed-compass-hud {
+    padding: var(--space-2xs);
+    gap: var(--space-2xs);
+  }
+
+  .bed-compass-hud__svg {
+    width: 52px;
+    height: 52px;
+  }
+
+  .bed-compass-hud__title,
+  .bed-compass-hud__hint {
+    display: none;
+  }
+
+  .bed-compass-hud__info:empty {
+    display: none;
+  }
 }

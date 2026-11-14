@@ -149,7 +149,7 @@ describe('LocationLayoutPage', () => {
     expect(mockedGetLocationLayout).not.toHaveBeenCalled();
   });
 
-  it('reveals bed properties panel in context panel when selecting a bed in position mode', async () => {
+  it('keeps the properties panel closed and offers edit on demand when selecting a bed in position mode', async () => {
     mockedGetLocationLayout.mockResolvedValueOnce({
       layout: buildLocationLayout(),
       etag: '"1"'
@@ -166,14 +166,14 @@ describe('LocationLayoutPage', () => {
     fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
 
     expect(
-      await screen.findByRole('heading', {
-        name: 'Propiedades del bancal'
-      })
+      await screen.findByRole('button', { name: 'Editar bancal' })
     ).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Bancal Tomates 1')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Editar medidas completas' })
-    ).toBeInTheDocument();
+      screen.queryByRole('heading', { name: 'Propiedades del bancal' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Editar medidas completas' })
+    ).not.toBeInTheDocument();
   });
 
   it('asks for confirmation when leaving position mode with pending changes', async () => {
@@ -212,6 +212,43 @@ describe('LocationLayoutPage', () => {
     expect(
       await screen.findByText('¿Descartar los cambios?')
     ).toBeInTheDocument();
+  });
+
+  it('prompts confirmation when switching from position to plants mode with pending changes', async () => {
+    const layout = buildLocationLayout();
+    mockedGetLocationLayout.mockResolvedValue({
+      layout,
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    await screen.findByRole('heading', {
+      name: 'Disposición de Huerto de casa'
+    });
+
+    await user.click(screen.getByRole('radio', { name: 'Colocar' }));
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Colocar el bancal Bancal Vivero Auxiliar en el plano'
+      })
+    );
+
+    expect(
+      screen.getAllByRole('button', { name: 'Guardar disposición' })[0]
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: 'Sembrar' }));
+
+    expect(
+      await screen.findByText('¿Descartar los cambios?')
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Descartar' }));
+
+    expect(
+      await screen.findByRole('radio', { name: 'Sembrar' })
+    ).toHaveAttribute('aria-checked', 'true');
   });
 
   it('deletes selected bed and invalidates layout query', async () => {
@@ -336,14 +373,14 @@ describe('LocationLayoutPage', () => {
     });
     fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
 
-    const rotationInput = screen.getByRole('spinbutton', {
-      name: 'Rotación'
-    });
-    await user.click(rotationInput);
-    await user.keyboard('{ArrowUp}');
+    expect(
+      await screen.findByText('Rumbo del bancal: 135° Sureste')
+    ).toBeInTheDocument();
+
+    await user.keyboard('r');
 
     expect(
-      await screen.findByText('Rumbo del bancal: 136° Sureste')
+      await screen.findByText('Rumbo del bancal: 225° Suroeste')
     ).toBeInTheDocument();
   });
 
@@ -395,7 +432,7 @@ describe('LocationLayoutPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders viewport controls in the top bar right zone', async () => {
+  it('renders the viewport controls in the floating canvas dock', async () => {
     mockedGetLocationLayout.mockResolvedValueOnce({
       layout: buildLocationLayout(),
       etag: '"1"'
@@ -403,14 +440,21 @@ describe('LocationLayoutPage', () => {
 
     renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
 
-    const topBar = await screen.findByRole('toolbar', {
-      name: 'Modo del diseñador'
-    });
-    const viewportControls = screen.getByRole('toolbar', {
-      name: 'Controles del plano'
+    const dock = await screen.findByRole('toolbar', {
+      name: 'Controles del lienzo'
     });
 
-    expect(topBar).toContainElement(viewportControls);
+    expect(
+      within(dock).getByRole('button', { name: 'Acercar' })
+    ).toBeInTheDocument();
+    expect(
+      within(dock).getByRole('button', {
+        name: 'Centrar y restablecer el zoom'
+      })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('toolbar', { name: 'Controles del plano' })
+    ).not.toBeInTheDocument();
   });
 
   it('calibrates terrain north when dragging compass dial in position mode', async () => {
@@ -611,16 +655,25 @@ describe('LocationLayoutPage', () => {
     });
     const user = userEvent.setup();
 
-    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+    const { container } = renderWithProviders(<LocationLayoutPage />, {
+      path: PATH,
+      route: ROUTE
+    });
 
+    await screen.findByRole('img');
+    const readTransform = () =>
+      container
+        .querySelector('[transform*="scale("]')
+        ?.getAttribute('transform');
     await user.click(await screen.findByRole('button', { name: 'Acercar' }));
-    expect(screen.getByText('125%')).toBeInTheDocument();
+    const transformAfterZoom = readTransform();
+    expect(transformAfterZoom).toMatch(/scale\(/);
 
     await user.click(screen.getByRole('radio', { name: 'Colocar' }));
-    expect(screen.getByText('125%')).toBeInTheDocument();
+    expect(readTransform()).toBe(transformAfterZoom);
 
     await user.click(screen.getByRole('radio', { name: 'Ver' }));
-    expect(screen.getByText('125%')).toBeInTheDocument();
+    expect(readTransform()).toBe(transformAfterZoom);
   });
 
   it('rotates selected bed on key R and unplaces it on key U in position mode', async () => {
@@ -642,13 +695,14 @@ describe('LocationLayoutPage', () => {
     });
     fireEvent.pointerDown(bed, { pointerId: 1, clientX: 0, clientY: 0 });
 
-    const rotationInput = screen.getByRole('spinbutton', {
-      name: 'Rotación'
-    });
-    expect(rotationInput).toHaveValue(90);
+    expect(
+      await screen.findByText('Rumbo del bancal: 135° Sureste')
+    ).toBeInTheDocument();
 
     await user.keyboard('r');
-    expect(rotationInput).toHaveValue(180);
+    expect(
+      await screen.findByText('Rumbo del bancal: 225° Suroeste')
+    ).toBeInTheDocument();
 
     await user.keyboard('u');
     expect(

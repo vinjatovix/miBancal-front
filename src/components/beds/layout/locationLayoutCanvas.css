@@ -16,15 +16,26 @@
   opacity: 0.85;
 }
 
+.location-layout-canvas__bed-hit {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 24;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: all;
+}
+
 .location-layout-canvas__rect {
   fill: var(--color-bg-surface);
   stroke: var(--color-primary);
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
+  pointer-events: none;
 }
 
 .location-layout-canvas__bed {
   cursor: inherit;
+  touch-action: none;
 }
 
 .location-layout-canvas__bed[role='button'] {
