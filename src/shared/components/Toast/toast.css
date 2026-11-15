@@ -14,6 +14,8 @@
 
 .toast-item {
   pointer-events: auto;
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: var(--space-sm);
@@ -26,6 +28,43 @@
   animation: toast-in var(--motion-enter) ease;
   box-sizing: border-box;
   width: 100%;
+}
+
+.toast-item__progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-success-border);
+  transform-origin: left;
+  animation: toast-progress linear forwards;
+  pointer-events: none;
+}
+
+.toast-item__progress--info {
+  background: var(--color-info-border);
+}
+
+.toast-item__progress--warning {
+  background: var(--color-warning-border);
+}
+
+.toast-item__progress--error {
+  background: var(--color-error-border);
+}
+
+.toast-item--paused .toast-item__progress {
+  animation-play-state: paused;
+}
+
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
 
 .toast-item--success {
@@ -69,6 +108,11 @@
 @media (prefers-reduced-motion: reduce) {
   .toast-item {
     animation: none;
+  }
+
+  .toast-item__progress {
+    animation: none;
+    display: none;
   }
 }
 

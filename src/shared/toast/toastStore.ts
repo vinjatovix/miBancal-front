@@ -26,6 +26,7 @@ export interface ToastStore {
 }
 
 export const MAX_VISIBLE_TOASTS = 3;
+export const DEFAULT_SUCCESS_TOAST_DURATION = 5000;
 
 class ReactiveToastStore implements ToastStore {
   private toasts: readonly ToastItem[] = [];
@@ -45,7 +46,9 @@ class ReactiveToastStore implements ToastStore {
   public addToast = (input: ToastInput): string => {
     const id = input.id ?? crypto.randomUUID();
     const variant = input.variant ?? 'error';
-    const duration = input.duration ?? 0;
+    const defaultDuration =
+      variant === 'success' ? DEFAULT_SUCCESS_TOAST_DURATION : 0;
+    const duration = input.duration ?? defaultDuration;
     const createdAt = Date.now();
 
     const newToast: ToastItem = {

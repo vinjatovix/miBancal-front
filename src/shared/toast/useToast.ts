@@ -1,6 +1,11 @@
 import { useSyncExternalStore } from 'react';
 import { showErrorToast } from './showErrorToast';
-import { toastStore, type ToastInput, type ToastItem } from './toastStore';
+import {
+  toastStore,
+  DEFAULT_SUCCESS_TOAST_DURATION,
+  type ToastInput,
+  type ToastItem
+} from './toastStore';
 
 export interface ToastActions {
   readonly showToast: (input: ToastInput) => string;
@@ -17,7 +22,11 @@ export interface UseToastReturn extends ToastActions {
 export const toastActions: ToastActions = {
   showToast: toastStore.addToast,
   showSuccessToast: (message: string) =>
-    toastStore.addToast({ message, variant: 'success' }),
+    toastStore.addToast({
+      message,
+      variant: 'success',
+      duration: DEFAULT_SUCCESS_TOAST_DURATION
+    }),
   showErrorToast,
   dismissToast: toastStore.dismissToast,
   dismissAll: toastStore.clearToasts
