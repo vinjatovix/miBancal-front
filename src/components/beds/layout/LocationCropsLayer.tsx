@@ -9,6 +9,7 @@ import './locationCropsLayer.css';
 export interface LocationCropsLayerProps {
   readonly beds: readonly ResolvedBed[];
   readonly cropsByBed: ReadonlyMap<string, readonly CropPlacementItem[]>;
+  readonly decorative?: boolean;
   readonly onInspectCrop?: (cropId: string) => void;
   readonly onSelectCrop?: (cropId: string) => void;
   readonly onCropHoverEnter?: (
@@ -23,18 +24,24 @@ export interface LocationCropsLayerProps {
 export default function LocationCropsLayer({
   beds,
   cropsByBed,
+  decorative = false,
   onInspectCrop,
   onSelectCrop,
   onCropHoverEnter,
   onCropHoverMove,
   onCropHoverLeave
 }: LocationCropsLayerProps): JSX.Element {
+  const rootClassName = decorative
+    ? 'location-crops-layer location-crops-layer--decorative'
+    : 'location-crops-layer';
+  const rootAriaProps = decorative
+    ? { 'aria-hidden': true }
+    : {
+        role: 'group',
+        'aria-label': t('bed.layout.plants_layer_label')
+      };
   return (
-    <g
-      className="location-crops-layer"
-      role="group"
-      aria-label={t('bed.layout.plants_layer_label')}
-    >
+    <g className={rootClassName} {...rootAriaProps}>
       {beds.map((bed) => {
         const crops = cropsByBed.get(bed.id) ?? [];
         if (crops.length === 0) return null;
@@ -65,26 +72,31 @@ export default function LocationCropsLayer({
                 }
               };
 
+              const interactiveProps = decorative
+                ? { 'aria-hidden': true }
+                : {
+                    role: 'button',
+                    tabIndex: 0,
+                    'aria-label': t('bed.placement.crop_label', {
+                      name: crop.commonName,
+                      x: String(Math.round(crop.position.x)),
+                      y: String(Math.round(crop.position.y))
+                    }),
+                    onPointerDown: handlePointerDown,
+                    onPointerEnter: (event: PointerEvent<SVGGElement>) =>
+                      onCropHoverEnter?.(crop.id, crop.commonName, event),
+                    onPointerMove: onCropHoverMove,
+                    onPointerLeave: onCropHoverLeave,
+                    onClick: handleClick,
+                    onKeyDown: handleKeyDown
+                  };
+
               return (
                 <g
                   key={crop.id}
                   className="location-crops-layer__node"
                   transform={`translate(${local.x} ${local.y})`}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={t('bed.placement.crop_label', {
-                    name: crop.commonName,
-                    x: String(Math.round(crop.position.x)),
-                    y: String(Math.round(crop.position.y))
-                  })}
-                  onPointerDown={handlePointerDown}
-                  onPointerEnter={(event) =>
-                    onCropHoverEnter?.(crop.id, crop.commonName, event)
-                  }
-                  onPointerMove={onCropHoverMove}
-                  onPointerLeave={onCropHoverLeave}
-                  onClick={handleClick}
-                  onKeyDown={handleKeyDown}
+                  {...interactiveProps}
                 >
                   <circle
                     className="location-crops-layer__hit"

@@ -5,6 +5,7 @@ import LocationLayoutCanvas from '../../../../src/components/beds/layout/Locatio
 import type { BedViewportState } from '../../../../src/components/beds/visualizer/hooks/useBedViewport';
 import type { ResolvedBed } from '../../../../src/components/beds/layout/utils/layoutTypes';
 import type { CropPlacementItem } from '../../../../src/types/PlantInstance/plantPlacementTypes';
+import type { ActiveAssociationLink } from '../../../../src/components/beds/associations/types/cropAssociationTypes';
 import { buildCropPlacementItem } from '../../../fixtures/plantInstances/buildPlantInstance';
 
 function buildViewport(): BedViewportState {
@@ -470,6 +471,121 @@ describe('LocationLayoutCanvas', () => {
       });
 
       expect(onCropDragStart).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('occupancy hint in position mode', () => {
+    const occupiedCrop = buildCropPlacementItem({
+      id: 'crop-occupied',
+      bedId: 'bed-1',
+      commonName: 'Berenjena',
+      position: { x: 30, y: 25 }
+    });
+    const cropsByBed = new Map<string, readonly CropPlacementItem[]>([
+      ['bed-1', [occupiedCrop]]
+    ]);
+
+    const associationLink: ActiveAssociationLink = {
+      id: 'link-1',
+      cropA: {
+        id: 'crop-occupied',
+        plantId: 'plant-a',
+        bedId: 'bed-1',
+        commonName: 'Berenjena',
+        x: 30,
+        y: 25,
+        vitalRadius: 10
+      },
+      cropB: {
+        id: 'crop-other',
+        plantId: 'plant-b',
+        bedId: 'bed-1',
+        commonName: 'Albahaca',
+        x: 60,
+        y: 25,
+        vitalRadius: 10
+      },
+      distanceCm: 30,
+      effectiveReachCm: 100,
+      scope: 'intra_bed',
+      relations: [],
+      visualPolarity: 'beneficial',
+      isWarningPriority: false,
+      midpoint: { x: 45, y: 25 }
+    };
+
+    it('shows a decorative crops layer so occupied beds are visible', () => {
+      const { container } = render(
+        <LocationLayoutCanvas
+          beds={BEDS}
+          viewBox="0 0 400 400"
+          label="Layout"
+          mode="position"
+          cropsByBed={cropsByBed}
+          viewport={buildViewport()}
+        />
+      );
+
+      const cropsLayer = container.querySelector(
+        '.location-crops-layer--decorative'
+      );
+      expect(cropsLayer).toBeInTheDocument();
+      expect(
+        container.querySelector('.location-crops-layer__node')
+      ).toBeInTheDocument();
+    });
+
+    it('does not expose crops as interactive buttons in position mode', () => {
+      render(
+        <LocationLayoutCanvas
+          beds={BEDS}
+          viewBox="0 0 400 400"
+          label="Layout"
+          mode="position"
+          cropsByBed={cropsByBed}
+          viewport={buildViewport()}
+        />
+      );
+
+      expect(
+        screen.queryByRole('button', { name: /Berenjena/ })
+      ).not.toBeInTheDocument();
+    });
+
+    it('hides plant association links in position mode', () => {
+      const { container } = render(
+        <LocationLayoutCanvas
+          beds={BEDS}
+          viewBox="0 0 400 400"
+          label="Layout"
+          mode="position"
+          cropsByBed={cropsByBed}
+          associationLinks={[associationLink]}
+          viewport={buildViewport()}
+        />
+      );
+
+      expect(
+        container.querySelector('.location-associations-layer')
+      ).not.toBeInTheDocument();
+    });
+
+    it('still renders association links in read mode', () => {
+      const { container } = render(
+        <LocationLayoutCanvas
+          beds={BEDS}
+          viewBox="0 0 400 400"
+          label="Layout"
+          mode="read"
+          cropsByBed={cropsByBed}
+          associationLinks={[associationLink]}
+          viewport={buildViewport()}
+        />
+      );
+
+      expect(
+        container.querySelector('.location-associations-layer')
+      ).toBeInTheDocument();
     });
   });
 });

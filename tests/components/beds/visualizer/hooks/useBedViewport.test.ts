@@ -213,4 +213,39 @@ describe('useBedViewport', () => {
     expect(result.current.zoom).toBeCloseTo(1.1, 4);
     expect(result.current.panX).toBeCloseTo(-20, 1);
   });
+
+  it('scales single-pointer drag deltas from screen pixels to user units via the screen CTM', () => {
+    const { result } = renderHook(() => useBedViewport());
+    const svg = {
+      setPointerCapture: () => {},
+      hasPointerCapture: () => true,
+      releasePointerCapture: () => {},
+      getScreenCTM: () => ({ a: 2, d: 4 })
+    } as unknown as SVGSVGElement;
+
+    act(() => {
+      result.current.onPointerDown(pointer(svg, 1, 100, 100));
+    });
+    act(() => {
+      result.current.onPointerMove(pointer(svg, 1, 160, 140));
+    });
+
+    expect(result.current.panX).toBeCloseTo(30, 5);
+    expect(result.current.panY).toBeCloseTo(10, 5);
+  });
+
+  it('falls back to raw screen deltas when the screen CTM is unavailable', () => {
+    const { result } = renderHook(() => useBedViewport());
+    const svg = createMockSvg();
+
+    act(() => {
+      result.current.onPointerDown(pointer(svg, 1, 100, 100));
+    });
+    act(() => {
+      result.current.onPointerMove(pointer(svg, 1, 160, 140));
+    });
+
+    expect(result.current.panX).toBeCloseTo(60, 5);
+    expect(result.current.panY).toBeCloseTo(40, 5);
+  });
 });

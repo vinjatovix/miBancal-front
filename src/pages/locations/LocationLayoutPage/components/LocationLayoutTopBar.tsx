@@ -134,7 +134,8 @@ export default function LocationLayoutTopBar({
               <SnapToggle
                 enabled={gridSnapEnabled}
                 onToggle={onToggleGridSnap}
-                glyph="magnet-grid"
+                glyph="magnet"
+                secondaryGlyph="magnet-grid"
                 label={t('bed.layout.grid_snap_label')}
                 shortLabel={t('bed.layout.grid_snap_short')}
                 iconOnly={isMobile}
@@ -142,7 +143,8 @@ export default function LocationLayoutTopBar({
               <SnapToggle
                 enabled={neighborSnapEnabled}
                 onToggle={onToggleNeighborSnap}
-                glyph="magnet-beds"
+                glyph="magnet"
+                secondaryGlyph="magnet-beds"
                 label={t('bed.layout.neighbor_snap_label')}
                 shortLabel={t('bed.layout.neighbor_snap_short')}
                 iconOnly={isMobile}

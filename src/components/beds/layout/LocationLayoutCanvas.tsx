@@ -240,7 +240,13 @@ export default function LocationLayoutCanvas({
   const interactive = mode === 'position';
   const isPlanting = mode === 'plants';
   const showCrops = mode === 'read' && showPlants && cropsByBed !== undefined;
+  const showOccupancyHint = interactive && cropsByBed !== undefined;
   const showPlacementLayer = isPlanting && cropsByBed !== undefined;
+  const showAssociationsLayer =
+    showAssociations &&
+    !interactive &&
+    associationLinks !== undefined &&
+    associationLinks.length > 0;
   const floor = floorBounds(viewBox, floorWidth, floorHeight);
   const selectedBed = beds.find((bed) => bed.id === selectedId);
   const showGrid =
@@ -826,16 +832,21 @@ export default function LocationLayoutCanvas({
                 />
               </g>
             ))}
-          {showAssociations &&
-            associationLinks &&
-            associationLinks.length > 0 && (
-              <LocationAssociationsLayer
-                links={associationLinks}
-                filterMode={associationFilterMode}
-                highlightCropId={showCrops ? hoveredCropId : null}
-                onSelectLink={onSelectAssociationLink}
-              />
-            )}
+          {showAssociationsLayer && associationLinks && (
+            <LocationAssociationsLayer
+              links={associationLinks}
+              filterMode={associationFilterMode}
+              highlightCropId={showCrops ? hoveredCropId : null}
+              onSelectLink={onSelectAssociationLink}
+            />
+          )}
+          {showOccupancyHint && cropsByBed && (
+            <LocationCropsLayer
+              beds={beds}
+              cropsByBed={cropsByBed}
+              decorative
+            />
+          )}
           {showCrops && cropsByBed && (
             <LocationCropsLayer
               beds={beds}

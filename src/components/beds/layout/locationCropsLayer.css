@@ -2,6 +2,14 @@
   pointer-events: auto;
 }
 
+.location-crops-layer--decorative {
+  pointer-events: none;
+}
+
+.location-crops-layer--decorative .location-crops-layer__node {
+  cursor: default;
+}
+
 .location-crops-layer__node {
   cursor: pointer;
   outline: none;

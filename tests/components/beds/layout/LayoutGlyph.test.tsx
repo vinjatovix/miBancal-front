@@ -11,6 +11,7 @@ describe('LayoutGlyph', () => {
     'redo',
     'fullscreen',
     'fullscreen-exit',
+    'magnet',
     'magnet-grid',
     'magnet-beds'
   ])('renders a decorative svg for the %s glyph', (name) => {

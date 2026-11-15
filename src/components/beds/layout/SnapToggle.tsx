@@ -9,6 +9,7 @@ export interface SnapToggleProps {
   readonly enabled: boolean;
   readonly onToggle: () => void;
   readonly glyph: LayoutGlyphName;
+  readonly secondaryGlyph?: LayoutGlyphName;
   readonly label?: string;
   readonly shortLabel?: string;
   readonly iconOnly?: boolean;
@@ -18,6 +19,7 @@ export default function SnapToggle({
   enabled,
   onToggle,
   glyph,
+  secondaryGlyph,
   label,
   shortLabel,
   iconOnly = false
@@ -38,7 +40,10 @@ export default function SnapToggle({
       title={resolvedLabel}
       onClick={onToggle}
     >
-      <LayoutGlyph name={glyph} />
+      <span className="layout-snap-icon-toggle__icons">
+        <LayoutGlyph name={glyph} />
+        {secondaryGlyph && <LayoutGlyph name={secondaryGlyph} />}
+      </span>
       {shortLabel && !iconOnly && (
         <span className="layout-snap-icon-toggle__label">{shortLabel}</span>
       )}

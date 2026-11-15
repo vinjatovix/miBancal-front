@@ -14,6 +14,7 @@ export type LayoutGlyphName =
   | 'zoom-out'
   | 'fit'
   | 'info'
+  | 'magnet'
   | 'magnet-grid'
   | 'magnet-beds'
   | 'rotate'
@@ -188,64 +189,40 @@ const GLYPHS: Record<LayoutGlyphName, JSX.Element> = {
       <rect x="11" y="10.6" width="2" height="7" rx="1" fill="currentColor" />
     </g>
   ),
+  magnet: (
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 18V10a7 7 0 0 1 14 0v8h-4V10a3 3 0 0 0-6 0v8Z" />
+      <path d="M5 14h4M15 14h4" />
+    </g>
+  ),
   'magnet-grid': (
-    <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path
-        d="M3 15.4 V10 a3.7 3.7 0 0 1 7.4 0 V15.4"
-        fill="none"
-        strokeWidth={2.6}
-      />
-      <rect
-        x="1.4"
-        y="15"
-        width="3.2"
-        height="3.4"
-        rx="0.5"
-        fill="currentColor"
-      />
-      <rect
-        x="8.8"
-        y="15"
-        width="3.2"
-        height="3.4"
-        rx="0.5"
-        fill="currentColor"
-      />
-      <g fill="none" strokeWidth={1.8}>
-        <path d="M16.2 8 L15.2 19" />
-        <path d="M20.8 8 L19.8 19" />
-        <path d="M14 11.8 H21.4" />
-        <path d="M13.5 15.4 H20.9" />
-      </g>
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 8.5h16M4 15.5h16M8.5 4v16M15.5 4v16" />
     </g>
   ),
   'magnet-beds': (
-    <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path
-        d="M3 15.4 V10 a3.7 3.7 0 0 1 7.4 0 V15.4"
-        fill="none"
-        strokeWidth={2.6}
-      />
-      <rect
-        x="1.4"
-        y="15"
-        width="3.2"
-        height="3.4"
-        rx="0.5"
-        fill="currentColor"
-      />
-      <rect
-        x="8.8"
-        y="15"
-        width="3.2"
-        height="3.4"
-        rx="0.5"
-        fill="currentColor"
-      />
-      <g fill="none" strokeWidth={1.8}>
-        <rect x="13.6" y="7.6" width="7.8" height="4.4" rx="1" />
-        <rect x="13.6" y="13.4" width="7.8" height="4.4" rx="1" />
-      </g>
+    <g
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="6" width="7" height="12" rx="1.5" />
+      <rect x="14" y="6" width="7" height="12" rx="1.5" />
+      <path d="M12 2.5v19" />
     </g>
   ),
   undo: (

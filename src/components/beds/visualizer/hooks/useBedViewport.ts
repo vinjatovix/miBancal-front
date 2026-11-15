@@ -228,10 +228,13 @@ export function useBedViewport(): BedViewportState {
       if (handlePinchMove(e)) return;
 
       if (!dragStartRef.current) return;
-      const dx = e.clientX - dragStartRef.current.x;
-      const dy = e.clientY - dragStartRef.current.y;
+      const dxScreen = e.clientX - dragStartRef.current.x;
+      const dyScreen = e.clientY - dragStartRef.current.y;
       dragStartRef.current = { x: e.clientX, y: e.clientY };
-      panBy(dx, dy);
+      const ctm = e.currentTarget.getScreenCTM?.();
+      const unitsPerPixelX = ctm && ctm.a !== 0 ? 1 / ctm.a : 1;
+      const unitsPerPixelY = ctm && ctm.d !== 0 ? 1 / ctm.d : 1;
+      panBy(dxScreen * unitsPerPixelX, dyScreen * unitsPerPixelY);
     },
     [handlePinchMove, panBy]
   );
