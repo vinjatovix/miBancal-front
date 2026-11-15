@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { t } from '../../../../src/i18n/core/t';
@@ -6,6 +6,7 @@ import { ToastContainer } from '../../../../src/shared/components/Toast/ToastCon
 import { ToastItemView } from '../../../../src/shared/components/Toast/ToastItemView';
 import {
   toastStore,
+  DEFAULT_SUCCESS_TOAST_DURATION,
   type ToastItem
 } from '../../../../src/shared/toast/toastStore';
 
@@ -147,6 +148,151 @@ describe('ToastItemView', () => {
     expect(onDismiss).toHaveBeenCalledWith('toast-timed');
     vi.useRealTimers();
   });
+
+  it('renders a progress bar with matching animation duration when toast duration is positive', () => {
+    const toast: ToastItem = {
+      id: 'toast-progress',
+      message: 'Operación con éxito',
+      variant: 'success',
+      duration: 5000,
+      createdAt: Date.now()
+    };
+    const onDismiss = vi.fn();
+
+    const { container } = render(
+      <ToastItemView toast={toast} onDismiss={onDismiss} />
+    );
+
+    const progressBar = container.querySelector('.toast-item__progress');
+    expect(progressBar).toBeInTheDocument();
+    expect(progressBar).toHaveClass('toast-item__progress--success');
+    expect(progressBar).toHaveStyle({ animationDuration: '5000ms' });
+  });
+
+  it('does not render a progress bar when toast duration is zero', () => {
+    const toast: ToastItem = {
+      id: 'toast-no-progress',
+      message: 'Error permanente',
+      variant: 'error',
+      duration: 0,
+      createdAt: Date.now()
+    };
+    const onDismiss = vi.fn();
+
+    const { container } = render(
+      <ToastItemView toast={toast} onDismiss={onDismiss} />
+    );
+
+    expect(
+      container.querySelector('.toast-item__progress')
+    ).not.toBeInTheDocument();
+  });
+
+  it('pauses auto-dismiss timer and adds paused class when pointer enters toast', () => {
+    vi.useFakeTimers();
+    const toast: ToastItem = {
+      id: 'toast-hover-pause',
+      message: 'Mensaje con pausa',
+      variant: 'success',
+      duration: 5000,
+      createdAt: Date.now()
+    };
+    const onDismiss = vi.fn();
+    const { container } = render(
+      <ToastItemView toast={toast} onDismiss={onDismiss} />
+    );
+    const toastElement = container.querySelector('.toast-item') as HTMLElement;
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+      fireEvent.mouseEnter(toastElement);
+      vi.advanceTimersByTime(4000);
+    });
+
+    expect(toastElement).toHaveClass('toast-item--paused');
+    expect(onDismiss).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it('resumes auto-dismiss timer from remaining time when pointer leaves toast', () => {
+    vi.useFakeTimers();
+    const toast: ToastItem = {
+      id: 'toast-hover-resume',
+      message: 'Mensaje con reanudación',
+      variant: 'success',
+      duration: 5000,
+      createdAt: Date.now()
+    };
+    const onDismiss = vi.fn();
+    const { container } = render(
+      <ToastItemView toast={toast} onDismiss={onDismiss} />
+    );
+    const toastElement = container.querySelector('.toast-item') as HTMLElement;
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+      fireEvent.mouseEnter(toastElement);
+      vi.advanceTimersByTime(4000);
+      fireEvent.mouseLeave(toastElement);
+      vi.advanceTimersByTime(3000);
+    });
+
+    expect(onDismiss).toHaveBeenCalledWith('toast-hover-resume');
+    vi.useRealTimers();
+  });
+
+  it('pauses auto-dismiss timer and adds paused class when toast receives focus', () => {
+    vi.useFakeTimers();
+    const toast: ToastItem = {
+      id: 'toast-focus-pause',
+      message: 'Mensaje con foco',
+      variant: 'success',
+      duration: 5000,
+      createdAt: Date.now()
+    };
+    const onDismiss = vi.fn();
+    const { container } = render(
+      <ToastItemView toast={toast} onDismiss={onDismiss} />
+    );
+    const toastElement = container.querySelector('.toast-item') as HTMLElement;
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+      fireEvent.focus(toastElement);
+      vi.advanceTimersByTime(4000);
+    });
+
+    expect(toastElement).toHaveClass('toast-item--paused');
+    expect(onDismiss).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it('resumes auto-dismiss timer from remaining time when toast loses focus', () => {
+    vi.useFakeTimers();
+    const toast: ToastItem = {
+      id: 'toast-focus-resume',
+      message: 'Mensaje con pérdida de foco',
+      variant: 'success',
+      duration: 5000,
+      createdAt: Date.now()
+    };
+    const onDismiss = vi.fn();
+    const { container } = render(
+      <ToastItemView toast={toast} onDismiss={onDismiss} />
+    );
+    const toastElement = container.querySelector('.toast-item') as HTMLElement;
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+      fireEvent.focus(toastElement);
+      vi.advanceTimersByTime(4000);
+      fireEvent.blur(toastElement);
+      vi.advanceTimersByTime(3000);
+    });
+
+    expect(onDismiss).toHaveBeenCalledWith('toast-focus-resume');
+    vi.useRealTimers();
+  });
 });
 
 describe('ToastContainer', () => {
@@ -229,6 +375,29 @@ describe('ToastContainer', () => {
     });
 
     expect(screen.queryByText('Éxito temporal')).not.toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it('auto-dismisses success toast after default 5000ms duration', () => {
+    vi.useFakeTimers();
+    toastStore.addToast({
+      message: 'Éxito con tiempo por defecto',
+      variant: 'success'
+    });
+
+    render(<ToastContainer />);
+
+    expect(
+      screen.getByText('Éxito con tiempo por defecto')
+    ).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(DEFAULT_SUCCESS_TOAST_DURATION);
+    });
+
+    expect(
+      screen.queryByText('Éxito con tiempo por defecto')
+    ).not.toBeInTheDocument();
     vi.useRealTimers();
   });
 });

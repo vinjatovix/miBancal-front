@@ -1,7 +1,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useToast } from '../../../src/shared/toast/useToast';
-import { toastStore } from '../../../src/shared/toast/toastStore';
+import {
+  toastStore,
+  DEFAULT_SUCCESS_TOAST_DURATION
+} from '../../../src/shared/toast/toastStore';
 
 describe('useToast', () => {
   beforeEach(() => {
@@ -67,8 +70,38 @@ describe('useToast', () => {
     expect(result.current.toasts[0]).toMatchObject({
       id: toastId,
       message: 'Operación completada',
-      variant: 'success'
+      variant: 'success',
+      duration: DEFAULT_SUCCESS_TOAST_DURATION
     });
+  });
+
+  it('assigns default success duration when duration is omitted in showToast with success variant', () => {
+    const { result } = renderHook(() => useToast());
+
+    act(() => {
+      result.current.showToast({
+        message: 'Guardado con éxito',
+        variant: 'success'
+      });
+    });
+
+    expect(result.current.toasts[0].duration).toBe(
+      DEFAULT_SUCCESS_TOAST_DURATION
+    );
+  });
+
+  it('preserves custom duration when provided for success variant in showToast', () => {
+    const { result } = renderHook(() => useToast());
+
+    act(() => {
+      result.current.showToast({
+        message: 'Guardado rápido',
+        variant: 'success',
+        duration: 2500
+      });
+    });
+
+    expect(result.current.toasts[0].duration).toBe(2500);
   });
 
   it('removes a specific toast via dismissToast', () => {
