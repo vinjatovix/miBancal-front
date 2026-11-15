@@ -1,4 +1,4 @@
-import type { RefObject, JSX } from 'react';
+import type { JSX } from 'react';
 
 import BedCompassHud from '../../../../components/beds/layout/BedCompassHud';
 import LayoutFloatingToolDock from '../../../../components/beds/layout/LayoutFloatingToolDock';
@@ -20,7 +20,6 @@ import type { useLayoutVisibilityControls } from '../hooks/useLayoutVisibilityCo
 import type { useLocationBedActions } from '../hooks/useLocationBedActions';
 
 export interface LocationLayoutWorkspaceProps {
-  readonly canvasContainerRef: RefObject<HTMLDivElement | null>;
   readonly editor: LayoutEditor;
   readonly viewport: BedViewportState;
   readonly visibility: ReturnType<typeof useLayoutVisibilityControls>;
@@ -52,7 +51,6 @@ export interface LocationLayoutWorkspaceProps {
 }
 
 export default function LocationLayoutWorkspace({
-  canvasContainerRef,
   editor,
   viewport,
   visibility,
@@ -84,7 +82,7 @@ export default function LocationLayoutWorkspace({
 
   return (
     <>
-      <div ref={canvasContainerRef} className="location-layout-page__canvas">
+      <div className="location-layout-page__canvas">
         <LayoutFloatingToolDock
           className={
             isMobile && editor.mode !== 'read'

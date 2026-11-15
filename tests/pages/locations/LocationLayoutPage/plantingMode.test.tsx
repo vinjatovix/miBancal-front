@@ -178,4 +178,45 @@ describe('LocationLayoutPage - Planting Mode', () => {
 
     expect(plantCard).toHaveAttribute('aria-pressed', 'true');
   });
+
+  it('preserves canvas transform when switching from view to planting mode without bed selection', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+    renderWithProviders(<LocationLayoutPage />, {
+      path: PATH,
+      route: ROUTE,
+      initialToken: VALID_TEST_TOKEN
+    });
+    const svg = await screen.findByRole('img');
+    const transformGroup = svg.querySelector('g[transform]');
+    const initialTransform = transformGroup?.getAttribute('transform');
+
+    await user.click(screen.getByRole('radio', { name: 'Sembrar' }));
+
+    expect(transformGroup?.getAttribute('transform')).toBe(initialTransform);
+  });
+
+  it('preserves canvas transform when returning from planting to view mode without bed selection', async () => {
+    mockedGetLocationLayout.mockResolvedValueOnce({
+      layout: buildLocationLayout(),
+      etag: '"1"'
+    });
+    const user = userEvent.setup();
+    renderWithProviders(<LocationLayoutPage />, {
+      path: PATH,
+      route: ROUTE,
+      initialToken: VALID_TEST_TOKEN
+    });
+    const svg = await screen.findByRole('img');
+    const transformGroup = svg.querySelector('g[transform]');
+    const initialTransform = transformGroup?.getAttribute('transform');
+    await user.click(screen.getByRole('radio', { name: 'Sembrar' }));
+
+    await user.click(screen.getByRole('radio', { name: 'Ver' }));
+
+    expect(transformGroup?.getAttribute('transform')).toBe(initialTransform);
+  });
 });
