@@ -87,16 +87,6 @@ describe('useBedViewport', () => {
     expect(result.current.zoomPercent).toBe(100);
   });
 
-  it('compensates width change by shifting panX proportionally', () => {
-    const { result } = renderHook(() => useBedViewport());
-
-    act(() => {
-      result.current.compensateWidthChange(1200, 880);
-    });
-
-    expect(result.current.panX).toBe(-160);
-  });
-
   it('animates smoothly to target coordinates with animateTo', () => {
     vi.useFakeTimers();
     try {

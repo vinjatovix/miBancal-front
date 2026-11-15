@@ -156,9 +156,7 @@ export default function LocationLayoutView({
   const viewport = useBedViewport();
   const isMobile = !useIsDesktop();
   const [searchParams] = useSearchParams();
-  const canvasContainerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLElement>(null);
-  const prevWidthRef = useRef<number | null>(null);
   const fullscreen = useLayoutFullscreen(pageRef);
 
   const modeController = useLayoutModeController({
@@ -241,27 +239,6 @@ export default function LocationLayoutView({
   useEffect(() => {
     if (bedParam) selectBed(bedParam);
   }, [bedParam, selectBed]);
-
-  useEffect(() => {
-    const el = canvasContainerRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const nextWidth = entry.contentRect.width;
-        if (
-          prevWidthRef.current !== null &&
-          prevWidthRef.current !== nextWidth
-        ) {
-          viewport.compensateWidthChange(prevWidthRef.current, nextWidth);
-        }
-        prevWidthRef.current = nextWidth;
-      }
-    });
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [viewport]);
 
   const [pendingLeaveMode, setPendingLeaveMode] = useState<LayoutMode | null>(
     null
@@ -504,7 +481,6 @@ export default function LocationLayoutView({
 
       <div className="location-layout-page__workspace">
         <LocationLayoutWorkspace
-          canvasContainerRef={canvasContainerRef}
           editor={editor}
           viewport={viewport}
           visibility={visibility}

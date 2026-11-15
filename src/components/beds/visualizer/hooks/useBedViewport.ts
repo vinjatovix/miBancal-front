@@ -41,10 +41,6 @@ export interface BedViewportState {
     target: ViewportCoordinates,
     durationMs?: number
   ) => void;
-  readonly compensateWidthChange: (
-    prevWidth: number,
-    nextWidth: number
-  ) => void;
   readonly onPointerDown: (e: PointerEvent<SVGSVGElement>) => void;
   readonly onPointerMove: (e: PointerEvent<SVGSVGElement>) => void;
   readonly onPointerUp: (e: PointerEvent<SVGSVGElement>) => void;
@@ -116,15 +112,6 @@ export function useBedViewport(): BedViewportState {
       );
     },
     [zoom, panX, panY, cancelActiveAnimation]
-  );
-
-  const compensateWidthChange = useCallback(
-    (prevWidth: number, nextWidth: number) => {
-      if (prevWidth <= 0 || nextWidth <= 0 || prevWidth === nextWidth) return;
-      const deltaX = (nextWidth - prevWidth) / 2;
-      setPanX((prev) => Number((prev + deltaX).toFixed(2)));
-    },
-    []
   );
 
   const fitToBounds = useCallback(
@@ -293,7 +280,6 @@ export function useBedViewport(): BedViewportState {
     fitToBounds,
     panBy,
     animateTo,
-    compensateWidthChange,
     onPointerDown,
     onPointerMove,
     onPointerUp,

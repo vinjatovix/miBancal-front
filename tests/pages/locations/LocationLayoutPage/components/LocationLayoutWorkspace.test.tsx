@@ -62,7 +62,6 @@ function buildProps(
   };
 
   return {
-    canvasContainerRef: { current: null },
     editor: editor as unknown as LocationLayoutWorkspaceProps['editor'],
     viewport: {
       zoom: 1,
