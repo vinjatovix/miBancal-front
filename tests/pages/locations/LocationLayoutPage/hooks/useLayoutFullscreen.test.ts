@@ -80,4 +80,25 @@ describe('useLayoutFullscreen', () => {
 
     expect(result.current.supportsNativeFullscreen).toBe(false);
   });
+
+  it('resets target scrollTop to zero when entering fullscreen', () => {
+    const target = buildTarget();
+    target.current.scrollTop = 48;
+    const { result } = renderHook(() => useLayoutFullscreen(target));
+
+    act(() => result.current.enterFullscreen());
+
+    expect(target.current.scrollTop).toBe(0);
+  });
+
+  it('resets target scrollTop to zero when exiting fullscreen', () => {
+    const target = buildTarget();
+    const { result } = renderHook(() => useLayoutFullscreen(target));
+    act(() => result.current.enterFullscreen());
+    target.current.scrollTop = 48;
+
+    act(() => result.current.exitFullscreen());
+
+    expect(target.current.scrollTop).toBe(0);
+  });
 });

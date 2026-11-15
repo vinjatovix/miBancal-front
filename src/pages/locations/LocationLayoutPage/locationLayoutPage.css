@@ -377,6 +377,22 @@
     flex-direction: row;
     align-items: stretch;
   }
+
+  .location-layout-page--fullscreen .layout-top-bar {
+    position: static;
+    top: auto;
+  }
+
+  .location-layout-page--fullscreen .location-layout-page__workspace {
+    flex: 1 1 0;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+  }
+
+  .location-layout-page--fullscreen .layout-floating-tool-dock {
+    top: var(--space-lg);
+  }
 }
 
 @media (max-width: 768px) {

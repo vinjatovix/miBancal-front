@@ -42,7 +42,7 @@ describe('SnapToggle', () => {
   it.each([
     { glyph: 'magnet-grid', label: 'Ajustar a la rejilla' },
     { glyph: 'magnet-beds', label: 'Ajustar a bancales vecinos' }
-  ] as const)('renders the U-magnet glyph for $label', ({ glyph, label }) => {
+  ] as const)('renders the snap glyph for $label', ({ glyph, label }) => {
     const { container } = render(
       <SnapToggle enabled onToggle={vi.fn()} glyph={glyph} label={label} />
     );
@@ -80,5 +80,19 @@ describe('SnapToggle', () => {
     const toggle = screen.getByRole('switch', { name: 'Ajustar a la rejilla' });
     expect(toggle).toBeInTheDocument();
     expect(screen.queryByText('Rejilla')).not.toBeInTheDocument();
+  });
+
+  it('renders both primary and secondary glyphs when secondaryGlyph is provided', () => {
+    const { container } = render(
+      <SnapToggle
+        enabled
+        onToggle={vi.fn()}
+        glyph="magnet"
+        secondaryGlyph="magnet-grid"
+      />
+    );
+
+    const glyphs = container.querySelectorAll('svg.layout-glyph');
+    expect(glyphs).toHaveLength(2);
   });
 });

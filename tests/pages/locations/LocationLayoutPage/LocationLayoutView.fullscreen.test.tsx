@@ -119,4 +119,23 @@ describe('LocationLayoutView - fullscreen mode', () => {
       expect(readPage()).not.toHaveClass('location-layout-page--fullscreen');
     });
   });
+
+  it('resets page scrollTop to zero upon entering fullscreen', async () => {
+    const user = userEvent.setup();
+    const { container } = renderWithProviders(<LocationLayoutPage />, {
+      path: PATH,
+      route: ROUTE,
+      initialToken: VALID_TEST_TOKEN
+    });
+    const button = await screen.findByRole('button', {
+      name: 'Pantalla completa'
+    });
+    const page = container.querySelector<HTMLElement>('.location-layout-page');
+    expect(page).not.toBeNull();
+    page!.scrollTop = 48;
+
+    await user.click(button);
+
+    expect(page!.scrollTop).toBe(0);
+  });
 });

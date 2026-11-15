@@ -32,6 +32,9 @@ export function useLayoutFullscreen(
   const enterFullscreen = useCallback(() => {
     setIsFullscreen(true);
     const element = targetRef.current;
+    if (element) {
+      element.scrollTop = 0;
+    }
     if (
       supportsNativeFullscreen &&
       element &&
@@ -44,6 +47,9 @@ export function useLayoutFullscreen(
 
   const exitFullscreen = useCallback(() => {
     setIsFullscreen(false);
+    if (targetRef.current) {
+      targetRef.current.scrollTop = 0;
+    }
     if (
       typeof document !== 'undefined' &&
       document.fullscreenElement !== null &&
@@ -51,7 +57,7 @@ export function useLayoutFullscreen(
     ) {
       void document.exitFullscreen().catch(() => undefined);
     }
-  }, []);
+  }, [targetRef]);
 
   const toggleFullscreen = useCallback(() => {
     if (isFullscreenRef.current) {
@@ -81,13 +87,16 @@ export function useLayoutFullscreen(
     const handleFullscreenChange = (): void => {
       if (document.fullscreenElement === null && isFullscreenRef.current) {
         setIsFullscreen(false);
+        if (targetRef.current) {
+          targetRef.current.scrollTop = 0;
+        }
       }
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () =>
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
+  }, [targetRef]);
 
   return {
     isFullscreen,

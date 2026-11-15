@@ -119,4 +119,58 @@ describe('LocationCropsLayer', () => {
 
     expect(onInspectCrop).toHaveBeenCalledWith('crop-42');
   });
+
+  it('renders a decorative layer hidden from accessibility when decorative is true', () => {
+    const bed: ResolvedBed = {
+      id: 'bed-1',
+      name: 'Tomates',
+      width: 100,
+      height: 50,
+      position: { x: 0, y: 0 },
+      rotation: 0
+    };
+
+    const { container } = render(
+      <svg>
+        <LocationCropsLayer
+          beds={[bed]}
+          cropsByBed={new Map([['bed-1', [buildCrop()]]])}
+          decorative
+        />
+      </svg>
+    );
+
+    const layer = container.querySelector('.location-crops-layer');
+    expect(layer).toHaveClass('location-crops-layer--decorative');
+    expect(layer).toHaveAttribute('aria-hidden', 'true');
+    expect(layer).not.toHaveAttribute('role');
+  });
+
+  it('does not trigger crop callbacks when clicked in decorative mode', () => {
+    const bed: ResolvedBed = {
+      id: 'bed-1',
+      name: 'Tomates',
+      width: 100,
+      height: 50,
+      position: { x: 0, y: 0 },
+      rotation: 0
+    };
+    const onInspectCrop = vi.fn();
+    const { container } = render(
+      <svg>
+        <LocationCropsLayer
+          beds={[bed]}
+          cropsByBed={new Map([['bed-1', [buildCrop({ id: 'crop-42' })]]])}
+          decorative
+          onInspectCrop={onInspectCrop}
+        />
+      </svg>
+    );
+
+    const node = container.querySelector('.location-crops-layer__node');
+    expect(node).not.toBeNull();
+    fireEvent.click(node as Element);
+
+    expect(onInspectCrop).not.toHaveBeenCalled();
+  });
 });
