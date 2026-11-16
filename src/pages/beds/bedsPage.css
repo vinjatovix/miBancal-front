@@ -1,0 +1,101 @@
+.beds-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  max-width: var(--container-max-width, 1280px);
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.beds-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.beds-page__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.beds-page__title {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-fg);
+}
+
+.beds-page__subtitle {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
+}
+
+.beds-page__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.beds-page__filter-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-fg);
+}
+
+.beds-page__filter-select {
+  padding: var(--space-2xs) var(--space-sm);
+  border: 1px solid var(--color-border-decor);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-surface);
+  color: var(--color-fg);
+  font-size: var(--font-size-sm);
+  min-height: 2.5rem;
+}
+
+.beds-page__loading,
+.beds-page__error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl);
+  color: var(--color-fg-muted);
+}
+
+.beds-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl);
+  text-align: center;
+  gap: var(--space-md);
+  background-color: var(--color-bg-surface);
+  border: 1px dashed var(--color-border-decor);
+  border-radius: var(--radius-lg);
+}
+
+.beds-page__empty-title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-fg);
+}
+
+.beds-page__empty-desc {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
+  max-width: 400px;
+}
+
+.beds-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}

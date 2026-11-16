@@ -1,0 +1,87 @@
+.bed-technical-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border-decor);
+}
+
+.bed-technical-header__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-family: var(--font-ui);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  color: var(--color-fg-muted);
+  text-decoration: none;
+  transition: color var(--motion-fade, 150ms) ease;
+}
+
+.bed-technical-header__back-link:hover {
+  color: var(--color-primary);
+}
+
+.bed-technical-header__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.bed-technical-header__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 2.25rem;
+  color: var(--color-fg);
+}
+
+.bed-technical-header__meta-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bed-technical-header__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-2xs) var(--space-sm);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-fg-muted);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-decor);
+  border-radius: var(--radius-full);
+}
+
+.bed-technical-header__meta-item--highlight {
+  color: var(--color-fg);
+  font-weight: 600;
+  border-color: var(--color-border-control);
+}
+
+.bed-technical-header__layout-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  margin-top: var(--space-xs);
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.bed-technical-header__layout-link:hover {
+  text-decoration: underline;
+}
+
+.bed-technical-header__layout-link:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset, 2px);
+}

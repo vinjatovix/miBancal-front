@@ -1,0 +1,554 @@
+import { fireEvent, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { useLocation } from 'react-router-dom';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import AccountDropdown, {
+  type AccountDropdownProps
+} from '../../../src/components/layout/AccountDropdown/AccountDropdown';
+import {
+  clearStoredToken,
+  setStoredToken
+} from '../../../src/shared/auth/session';
+import {
+  ADMIN_TEST_TOKEN,
+  VALID_TEST_TOKEN
+} from '../../fixtures/auth/authFixtures';
+import { renderWithProviders } from '../../test-utils/renderWithProviders';
+
+describe('AccountDropdown', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    clearStoredToken();
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    window.scrollY = 0;
+  });
+
+  it('does not render menu when isOpen is false', () => {
+    const triggerRef = { current: document.createElement('button') };
+    renderWithProviders(
+      <AccountDropdown
+        isOpen={false}
+        onClose={vi.fn()}
+        triggerRef={triggerRef}
+      />
+    );
+
+    const menu = screen.queryByRole('menu');
+
+    expect(menu).toBeNull();
+  });
+
+  it('renders menu container with accessible label when isOpen is true', () => {
+    const triggerRef = { current: document.createElement('button') };
+    renderWithProviders(
+      <AccountDropdown
+        isOpen={true}
+        onClose={vi.fn()}
+        triggerRef={triggerRef}
+      />
+    );
+
+    const menu = screen.getByRole('menu', {
+      name: 'Menú de cuenta y configuración'
+    });
+
+    expect(menu).toBeInTheDocument();
+  });
+
+  describe('unauthenticated state', () => {
+    it('renders login link pointing to /login', () => {
+      const triggerRef = { current: document.createElement('button') };
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />
+      );
+
+      const loginLink = screen.getByRole('menuitem', {
+        name: /Iniciar sesión/i
+      });
+
+      expect(loginLink).toBeInTheDocument();
+      expect(loginLink).toHaveAttribute('href', '/login');
+    });
+
+    it('renders register link pointing to /register', () => {
+      const triggerRef = { current: document.createElement('button') };
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />
+      );
+
+      const registerLink = screen.getByRole('menuitem', {
+        name: /Crear cuenta/i
+      });
+
+      expect(registerLink).toBeInTheDocument();
+      expect(registerLink).toHaveAttribute('href', '/register');
+    });
+
+    it.each([
+      ['configuración de cuenta', /Configuración de la cuenta/i],
+      ['cerrar sesión', /Cerrar sesión/i],
+      ['administración', /Administración/i]
+    ] as const)(
+      'does not render %s menu item when unauthenticated',
+      (_label, pattern) => {
+        const triggerRef = { current: document.createElement('button') };
+        renderWithProviders(
+          <AccountDropdown
+            isOpen={true}
+            onClose={vi.fn()}
+            triggerRef={triggerRef}
+          />
+        );
+
+        const menuItem = screen.queryByRole('menuitem', { name: pattern });
+
+        expect(menuItem).toBeNull();
+      }
+    );
+  });
+
+  describe('authenticated regular user state', () => {
+    it('renders user identification text', () => {
+      setStoredToken(VALID_TEST_TOKEN);
+      const triggerRef = { current: document.createElement('button') };
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { initialToken: VALID_TEST_TOKEN }
+      );
+
+      const userInfo = screen.getByText(/hortelano/i);
+
+      expect(userInfo).toBeInTheDocument();
+    });
+
+    it('renders settings link pointing to /settings', () => {
+      setStoredToken(VALID_TEST_TOKEN);
+      const triggerRef = { current: document.createElement('button') };
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { initialToken: VALID_TEST_TOKEN }
+      );
+
+      const settingsLink = screen.getByRole('menuitem', {
+        name: /Configuración de la cuenta/i
+      });
+
+      expect(settingsLink).toBeInTheDocument();
+      expect(settingsLink).toHaveAttribute('href', '/settings');
+    });
+
+    it('renders logout button', () => {
+      setStoredToken(VALID_TEST_TOKEN);
+      const triggerRef = { current: document.createElement('button') };
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { initialToken: VALID_TEST_TOKEN }
+      );
+
+      const logoutButton = screen.getByRole('menuitem', {
+        name: /Cerrar sesión/i
+      });
+
+      expect(logoutButton).toBeInTheDocument();
+    });
+
+    it('does not render admin link for regular user', () => {
+      setStoredToken(VALID_TEST_TOKEN);
+      const triggerRef = { current: document.createElement('button') };
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { initialToken: VALID_TEST_TOKEN }
+      );
+
+      const adminLink = screen.queryByRole('menuitem', {
+        name: /Administración/i
+      });
+
+      expect(adminLink).toBeNull();
+    });
+  });
+
+  describe('authenticated admin user state', () => {
+    it('renders administration link pointing to /admin', () => {
+      setStoredToken(ADMIN_TEST_TOKEN);
+      const triggerRef = { current: document.createElement('button') };
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { initialToken: ADMIN_TEST_TOKEN }
+      );
+
+      const adminLink = screen.getByRole('menuitem', {
+        name: /Administración/i
+      });
+
+      expect(adminLink).toBeInTheDocument();
+      expect(adminLink).toHaveAttribute('href', '/admin');
+    });
+  });
+
+  describe('catalog isolation invariant', () => {
+    it.each([
+      ['anónimo', undefined],
+      ['usuario estándar', VALID_TEST_TOKEN],
+      ['administrador', ADMIN_TEST_TOKEN]
+    ] as const)(
+      'never renders catalog links (/plants, /families) for session state %s',
+      (_stateName, token) => {
+        if (token) {
+          setStoredToken(token);
+        }
+        const triggerRef = { current: document.createElement('button') };
+        renderWithProviders(
+          <AccountDropdown
+            isOpen={true}
+            onClose={vi.fn()}
+            triggerRef={triggerRef}
+          />,
+          { initialToken: token }
+        );
+
+        expect(screen.queryByRole('link', { name: /Plantas/i })).toBeNull();
+        expect(screen.queryByRole('link', { name: /Familias/i })).toBeNull();
+      }
+    );
+  });
+
+  describe('interactions and accessibility', () => {
+    it('closes menu and restores focus to triggerRef when Escape is pressed', () => {
+      const trigger = document.createElement('button');
+      document.body.appendChild(trigger);
+      const triggerRef = { current: trigger };
+      const onClose = vi.fn();
+      try {
+        renderWithProviders(
+          <AccountDropdown
+            isOpen={true}
+            onClose={onClose}
+            triggerRef={triggerRef}
+          />
+        );
+
+        fireEvent.keyDown(window, { key: 'Escape' });
+
+        expect(onClose).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(trigger);
+      } finally {
+        document.body.removeChild(trigger);
+      }
+    });
+
+    it('closes menu when clicking outside', () => {
+      const trigger = document.createElement('button');
+      document.body.appendChild(trigger);
+      const triggerRef = { current: trigger };
+      const onClose = vi.fn();
+      try {
+        renderWithProviders(
+          <AccountDropdown
+            isOpen={true}
+            onClose={onClose}
+            triggerRef={triggerRef}
+          />
+        );
+
+        fireEvent.pointerDown(document.body);
+
+        expect(onClose).toHaveBeenCalledTimes(1);
+      } finally {
+        document.body.removeChild(trigger);
+      }
+    });
+
+    it('invokes onClose when a menu link is clicked', async () => {
+      const user = userEvent.setup();
+      const triggerRef = { current: document.createElement('button') };
+      const onClose = vi.fn();
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={onClose}
+          triggerRef={triggerRef}
+        />
+      );
+
+      const loginLink = screen.getByRole('menuitem', {
+        name: /Iniciar sesión/i
+      });
+      await user.click(loginLink);
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('invokes logout and onClose when logout button is clicked', async () => {
+      const user = userEvent.setup();
+      setStoredToken(VALID_TEST_TOKEN);
+      const triggerRef = { current: document.createElement('button') };
+      const onClose = vi.fn();
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={onClose}
+          triggerRef={triggerRef}
+        />,
+        { initialToken: VALID_TEST_TOKEN }
+      );
+
+      const logoutButton = screen.getByRole('menuitem', {
+        name: /Cerrar sesión/i
+      });
+      await user.click(logoutButton);
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('preserves public location on logout without redirecting to root', async () => {
+      const user = userEvent.setup();
+      const triggerRef = { current: document.createElement('button') };
+
+      function DropdownWithLocation(props: AccountDropdownProps) {
+        const location = useLocation();
+        return (
+          <>
+            <span data-testid="current-pathname">{location.pathname}</span>
+            <AccountDropdown {...props} />
+          </>
+        );
+      }
+
+      renderWithProviders(
+        <DropdownWithLocation
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { initialToken: VALID_TEST_TOKEN, route: '/plants' }
+      );
+
+      const logoutButton = screen.getByRole('menuitem', {
+        name: /Cerrar sesión/i
+      });
+      await user.click(logoutButton);
+
+      expect(screen.getByTestId('current-pathname').textContent).toBe(
+        '/plants'
+      );
+    });
+
+    it('redirects to root when logging out from a private route', async () => {
+      const user = userEvent.setup();
+      const triggerRef = { current: document.createElement('button') };
+
+      function DropdownWithLocation(props: AccountDropdownProps) {
+        const location = useLocation();
+        return (
+          <>
+            <span data-testid="current-pathname">{location.pathname}</span>
+            <AccountDropdown {...props} />
+          </>
+        );
+      }
+
+      renderWithProviders(
+        <DropdownWithLocation
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { initialToken: VALID_TEST_TOKEN, route: '/settings' }
+      );
+
+      const logoutButton = screen.getByRole('menuitem', {
+        name: /Cerrar sesión/i
+      });
+      await user.click(logoutButton);
+
+      expect(screen.getByTestId('current-pathname').textContent).toBe('/');
+    });
+
+    it('passes current location and scrollY to login link navigation state', async () => {
+      const user = userEvent.setup();
+      const triggerRef = { current: document.createElement('button') };
+      Object.defineProperty(window, 'scrollY', { value: 300, writable: true });
+
+      function DropdownWithLocation(props: AccountDropdownProps) {
+        const location = useLocation();
+        return (
+          <>
+            <span data-testid="current-pathname">{location.pathname}</span>
+            <span data-testid="current-state">
+              {JSON.stringify(location.state)}
+            </span>
+            <AccountDropdown {...props} />
+          </>
+        );
+      }
+
+      renderWithProviders(
+        <DropdownWithLocation
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+        { route: '/plants/tomate' }
+      );
+
+      const loginLink = screen.getByRole('menuitem', {
+        name: /Iniciar sesión/i
+      });
+      await user.click(loginLink);
+
+      expect(screen.getByTestId('current-pathname').textContent).toBe('/login');
+      expect(screen.getByTestId('current-state').textContent).toContain(
+        '"pathname":"/plants/tomate"'
+      );
+      expect(screen.getByTestId('current-state').textContent).toContain(
+        '"scrollY":300'
+      );
+    });
+
+    it('focuses the first menu item when opened', () => {
+      const triggerRef = { current: document.createElement('button') };
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />
+      );
+
+      const loginLink = screen.getByRole('menuitem', {
+        name: /Iniciar sesión/i
+      });
+
+      expect(document.activeElement).toBe(loginLink);
+    });
+
+    it.each([
+      ['ArrowDown', 1, /Crear cuenta/i],
+      ['ArrowDown, wraps to first', 2, /Iniciar sesión/i],
+      ['ArrowUp, wraps to last', -1, /Crear cuenta/i],
+      ['ArrowDown, then ArrowUp', [1, -1], /Iniciar sesión/i],
+      ['ArrowDown, then Home', [1, 'Home'], /Iniciar sesión/i],
+      ['End', 'End', /Crear cuenta/i]
+    ])('moves focus correctly on %s', (_label, actions, expectedName) => {
+      const triggerRef = { current: document.createElement('button') };
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={vi.fn()}
+          triggerRef={triggerRef}
+        />
+      );
+
+      const applyAction = (action: number | string) => {
+        if (typeof action === 'number') {
+          for (let i = 0; i < Math.abs(action); i++) {
+            fireEvent.keyDown(window, {
+              key: action > 0 ? 'ArrowDown' : 'ArrowUp'
+            });
+          }
+        } else {
+          fireEvent.keyDown(window, { key: action });
+        }
+      };
+
+      if (Array.isArray(actions)) {
+        for (const action of actions) applyAction(action);
+      } else {
+        applyAction(actions);
+      }
+
+      const expectedLink = screen.getByRole('menuitem', {
+        name: expectedName
+      });
+      expect(document.activeElement).toBe(expectedLink);
+    });
+
+    it('closes menu on Tab key', () => {
+      const triggerRef = { current: document.createElement('button') };
+      const onClose = vi.fn();
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={onClose}
+          triggerRef={triggerRef}
+        />
+      );
+
+      fireEvent.keyDown(window, { key: 'Tab' });
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('closes menu and restores focus to trigger on Shift+Tab key', () => {
+      const trigger = document.createElement('button');
+      document.body.appendChild(trigger);
+      const triggerRef = { current: trigger };
+      const onClose = vi.fn();
+      try {
+        renderWithProviders(
+          <AccountDropdown
+            isOpen={true}
+            onClose={onClose}
+            triggerRef={triggerRef}
+          />
+        );
+
+        fireEvent.keyDown(window, { key: 'Tab', shiftKey: true });
+
+        expect(onClose).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(trigger);
+      } finally {
+        document.body.removeChild(trigger);
+      }
+    });
+
+    it('activates anchor menu item when Space key is pressed', () => {
+      const triggerRef = { current: document.createElement('button') };
+      const onClose = vi.fn();
+      renderWithProviders(
+        <AccountDropdown
+          isOpen={true}
+          onClose={onClose}
+          triggerRef={triggerRef}
+        />
+      );
+
+      fireEvent.keyDown(window, { key: ' ' });
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+  });
+});

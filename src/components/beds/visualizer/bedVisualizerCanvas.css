@@ -1,0 +1,47 @@
+.bed-visualizer-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
+  background-color: var(--color-bg-sunken);
+  background-image: radial-gradient(
+    var(--color-border-decor) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+  border: 1px solid var(--color-border-decor);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-1);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  touch-action: none;
+}
+
+.bed-visualizer-canvas:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  border-radius: 0;
+  border: none;
+}
+
+.bed-visualizer-canvas__svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+.bed-visualizer-canvas__svg--dragging {
+  cursor: grabbing;
+}
+
+.bed-canvas__bed-rect {
+  fill: var(--color-bg-surface);
+  stroke: var(--color-primary);
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}

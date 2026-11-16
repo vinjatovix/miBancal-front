@@ -1,0 +1,31 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+
+  font: var(--type-label-md);
+  letter-spacing: var(--tracking-label-md);
+
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface-variant);
+}
+.badge--family,
+.badge--scientific {
+  background: var(--color-secondary-container);
+  border-color: var(--color-secondary-fixed-dim);
+  color: var(--color-on-secondary-container);
+}
+.badge--unavailable {
+  color: var(--color-on-surface-variant);
+  background: transparent;
+  border: 1px dashed var(--color-outline-variant);
+}
+.badge--deleted {
+  color: var(--color-on-error-container);
+  background: var(--color-error-container);
+  border-color: var(--color-on-error-container);
+}

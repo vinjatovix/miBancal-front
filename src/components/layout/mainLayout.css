@@ -1,0 +1,133 @@
+.app-shell {
+  --app-header-height: 48px;
+  --app-nav-rail-width: 56px;
+  --app-nav-rail-expanded-width: 240px;
+  --bottom-nav-height: 56px;
+}
+
+.app-shell--dev {
+  --dev-banner-height: 22px;
+  padding-bottom: var(--dev-banner-height);
+  box-sizing: border-box;
+}
+
+.app-shell:has(.location-layout-page) {
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+}
+
+.app-body:has(.location-layout-page) {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-body > .app-content:has(.location-layout-page) {
+  padding: 0;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 768px), (pointer: coarse), (pointer: none) {
+  .app-body > .app-content:has(.location-layout-page) {
+    padding: 0;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .app-nav-rail {
+    display: none;
+  }
+
+  .app-bottom-nav {
+    display: block;
+  }
+
+  .app-body > .app-content {
+    padding-bottom: calc(var(--bottom-nav-height, 0px) + var(--space-md));
+  }
+
+  .app-body > .app-content:has(.location-layout-page) {
+    padding: 0;
+    padding-bottom: var(--bottom-nav-height, 56px);
+    box-sizing: border-box;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 768px), (orientation: landscape) {
+  .app-nav-rail {
+    display: flex;
+  }
+
+  .app-bottom-nav {
+    display: none;
+  }
+}
+
+@media (pointer: coarse), (pointer: none) {
+  .app-shell {
+    --app-header-height: 48px;
+  }
+
+  .app-header {
+    padding: 0 var(--space-md);
+  }
+
+  .app-brand {
+    font-size: var(--font-size-lg);
+  }
+}
+
+.app-header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.app-menu-toggle {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.app-menu-toggle:hover {
+  background-color: var(--color-surface-container-high);
+}
+
+.app-menu-bar {
+  display: block;
+  width: 1.25rem;
+  height: 2px;
+  background-color: var(--color-on-surface);
+  border-radius: 1px;
+}

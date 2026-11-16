@@ -1,0 +1,11 @@
+.anomaly-sections__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.anomaly-sections__empty {
+  margin-top: var(--space-md);
+  font: var(--type-body-lg);
+  color: var(--color-on-surface-variant);
+}

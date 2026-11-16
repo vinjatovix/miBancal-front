@@ -1,0 +1,295 @@
+.plant-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  width: 100%;
+}
+
+.plant-form__section {
+  background-color: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-surface-container-high);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flow-root;
+}
+
+.plant-form__section > * + * {
+  margin-top: 1.25rem;
+}
+
+.plant-form__section-title {
+  float: left;
+  width: 100%;
+  font-family: var(--font-display, 'Newsreader', serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-surface-container-high);
+}
+
+.plant-form__section-title + * {
+  clear: both;
+}
+
+.plant-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.plant-form__label {
+  font-family: var(--font-ui, 'Manrope', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.plant-form__input,
+.plant-form__select,
+.plant-form__textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-family: var(--font-ui, 'Manrope', sans-serif);
+  font-size: 0.875rem;
+  color: var(--color-fg);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-sm);
+}
+
+.plant-form__select {
+  padding-right: 2.25rem;
+}
+
+.plant-form__input[aria-invalid='true'],
+.plant-form__select[aria-invalid='true'],
+.plant-form__textarea[aria-invalid='true'] {
+  border: 2px solid var(--color-error-border);
+}
+
+.plant-form__error {
+  font-size: 0.75rem;
+  color: var(--color-error-text);
+}
+
+.plant-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.plant-form__checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.plant-form__month-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 0.5rem;
+}
+
+.plant-form__month-grid--invalid {
+  padding: 0.375rem;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-error-container);
+}
+
+.plant-form__month-btn {
+  padding: 0.375rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-outline);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.plant-form__month-btn--selected {
+  background-color: var(--color-selected-bg);
+  color: var(--color-on-selected);
+  border: 2px solid var(--color-selected-indicator);
+  font-weight: 700;
+}
+
+.plant-family-select__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: 0.125rem;
+}
+
+.plant-family-select__new-link {
+  font-family: var(--font-ui, 'Manrope', sans-serif);
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.plant-family-select__refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  background: transparent;
+  border: none;
+  font-family: var(--font-ui, 'Manrope', sans-serif);
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.plant-family-select__refresh-btn:disabled {
+  color: var(--color-on-disabled);
+  cursor: not-allowed;
+}
+
+.plant-form__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.plant-form__btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.plant-form__conflict-banner {
+  padding: 1rem;
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plant-form__validation-summary {
+  padding: 0.875rem 1rem;
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui, 'Manrope', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.plant-form__subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-surface-container-high);
+}
+
+.plant-form__subsection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.plant-form__items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.plant-form__item-card {
+  background-color: var(--color-surface-container-low);
+  border: 1px solid var(--color-surface-container-high);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.plant-form__item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.plant-form__empty-text {
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .plant-form {
+    gap: 1.25rem;
+  }
+
+  .plant-form__section {
+    padding: 1rem;
+  }
+
+  .plant-form__section > * + * {
+    margin-top: 1rem;
+  }
+
+  .plant-form__section-title {
+    font-size: 1.125rem;
+  }
+
+  .plant-form__month-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.375rem;
+  }
+
+  .plant-form__month-btn {
+    padding: 0.5rem 0.25rem;
+    min-height: 40px;
+  }
+
+  .plant-form__actions {
+    flex-direction: column-reverse;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .plant-form__btn {
+    width: 100%;
+    min-height: 44px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .plant-form__btn--delete {
+    margin-right: 0;
+  }
+
+  .plant-form__subsection-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .plant-form__btn--add {
+    align-self: stretch;
+    text-align: center;
+    min-height: 40px;
+  }
+
+  .plant-form__item-header {
+    flex-wrap: wrap;
+  }
+}

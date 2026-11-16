@@ -1,0 +1,17 @@
+.location-form-modal__body {
+  padding: 8px 0;
+}
+
+.location-form-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.location-form-modal__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}

@@ -1,0 +1,29 @@
+:root {
+  --palette-forest-500: #1f5038;
+  --palette-neutral-900: #13201a;
+  --palette-border-decor-light: #c4d0c7;
+
+  --color-fg: var(--palette-neutral-900);
+  --color-action-bg: var(--palette-forest-500);
+  --color-border-decor: var(--palette-border-decor-light);
+  --color-bg-page: #f3f8f4;
+  --color-bg-scrim: color-mix(in srgb, var(--color-fg) 40%, transparent);
+}
+
+[data-theme='dark'] {
+  --color-fg: #e2ebe5;
+  --color-action-bg: #8fd0a9;
+  --color-border-decor: #34443b;
+  --color-bg-page: #0f1714;
+  --color-bg-scrim: color-mix(in srgb, #000000 65%, transparent);
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --color-border-decor: #77857d;
+  }
+
+  [data-theme='dark'] {
+    --color-border-decor: #6b7c72;
+  }
+}

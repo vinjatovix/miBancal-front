@@ -1,0 +1,24 @@
+.layout-bed-cardinal-labels {
+  pointer-events: none;
+  user-select: none;
+}
+
+.layout-bed-cardinal-labels__pill {
+  fill: var(--color-bg-surface);
+  stroke: var(--color-border-strong);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.layout-bed-cardinal-labels__text {
+  fill: var(--color-fg);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.layout-bed-cardinal-labels--compact .layout-bed-cardinal-labels__badge {
+  display: none;
+}

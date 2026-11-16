@@ -1,0 +1,119 @@
+.crop-association-modal__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.crop-association-modal__header-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.crop-association-modal__polarity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.crop-association-modal__polarity-badge--beneficial {
+  background-color: var(--color-success-bg);
+  color: var(--color-on-success);
+  border: 1px solid var(--color-success-border);
+}
+
+.crop-association-modal__polarity-badge--detrimental {
+  background-color: var(--color-error-bg);
+  color: var(--color-on-error);
+  border: 1px solid var(--color-error-border);
+}
+
+.crop-association-modal__scope-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  background-color: var(--color-bg-sunken);
+  color: var(--color-fg-muted);
+  border: 1px solid var(--color-border-decor);
+}
+
+.crop-association-modal__warning-notice {
+  padding: 0.75rem;
+  border-radius: 6px;
+  background-color: var(--color-warning-bg);
+  color: var(--color-on-warning);
+  border: 1px solid var(--color-warning-border);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.crop-association-modal__metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background-color: var(--color-bg-sunken);
+  border: 1px solid var(--color-border-decor);
+  border-radius: 6px;
+}
+
+.crop-association-modal__metric-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.crop-association-modal__metric-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-fg);
+}
+
+.crop-association-modal__relations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.crop-association-modal__relation-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-decor);
+  border-radius: 6px;
+}
+
+.crop-association-modal__relation-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.crop-association-modal__mechanism {
+  font-weight: 600;
+  color: var(--color-fg);
+}
+
+.crop-association-modal__strength {
+  color: var(--color-fg-muted);
+  font-size: 0.75rem;
+}
+
+.crop-association-modal__reason {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-fg);
+  line-height: 1.4;
+}

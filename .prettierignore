@@ -1,0 +1,11 @@
+# spec-kit: archivos gestionados por la herramienta (se sobrescriben al actualizarla)
+.specify/*
+!.specify/memory/
+
+dist
+dev-dist
+coverage
+node_modules/
+dist/
+build/
+coverage/

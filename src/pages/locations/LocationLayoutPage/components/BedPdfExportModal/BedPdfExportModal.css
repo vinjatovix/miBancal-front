@@ -1,0 +1,27 @@
+.bed-pdf-export-modal__beds {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.bed-pdf-export-modal__beds-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.bed-pdf-export-modal__bed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  max-height: 11rem;
+  overflow-y: auto;
+}
+
+.bed-pdf-export-modal__empty {
+  margin: 0;
+  font: var(--type-body-md);
+  color: var(--color-fg-placeholder);
+}

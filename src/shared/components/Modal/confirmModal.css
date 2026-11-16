@@ -1,0 +1,116 @@
+.confirm-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.confirm-modal-prompt {
+  font: var(--type-body-lg);
+  color: var(--color-on-surface);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-modal-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed);
+  border-radius: var(--radius-lg);
+}
+
+.confirm-modal-warning--danger {
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+}
+
+.confirm-modal-warning-icon {
+  color: inherit;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.confirm-modal-warning-text {
+  font: var(--type-body-sm);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.modal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  padding: var(--space-xs) var(--space-lg);
+  border-radius: var(--radius-md);
+  font: var(--type-label-lg);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.modal-btn--cancel {
+  background: transparent;
+  color: var(--color-fg);
+  border: 1px solid var(--color-border-control);
+}
+
+.modal-btn--cancel:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+}
+
+.modal-btn--confirm {
+  background: var(--color-action-bg);
+  color: var(--color-on-action);
+}
+
+.modal-btn--confirm:hover:not(:disabled) {
+  background: var(--color-action-bg-hover);
+}
+
+.modal-btn--confirm.modal-btn--danger {
+  background: var(--color-danger-bg);
+  color: var(--color-on-danger);
+}
+
+.modal-btn--confirm.modal-btn--danger:hover:not(:disabled) {
+  background: var(--color-danger-bg-hover);
+}
+
+.modal-btn--confirm.modal-btn--warning {
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed);
+}
+
+.modal-btn--confirm.modal-btn--warning:hover:not(:disabled) {
+  background: var(--color-tertiary-fixed-dim);
+}
+
+.modal-btn:disabled {
+  background: var(--color-disabled-bg);
+  border: 1px solid var(--color-disabled-border);
+  color: var(--color-on-disabled);
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .confirm-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}

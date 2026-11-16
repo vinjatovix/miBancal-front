@@ -1,0 +1,25 @@
+.clear-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  font: var(--type-label-md);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.clear-filters-btn:hover:not(:disabled) {
+  background: var(--color-primary-container);
+  border-color: var(--color-primary);
+}
+
+.clear-filters-btn:disabled {
+  color: var(--color-on-disabled);
+  cursor: not-allowed;
+}

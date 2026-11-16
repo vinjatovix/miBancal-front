@@ -1,0 +1,43 @@
+.manual-placement-modal__fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.manual-placement-modal__field {
+  display: flex;
+  flex: 1;
+  min-width: 120px;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.manual-placement-modal__label {
+  font-family: var(--font-ui);
+  font-size: var(--type-body-sm);
+  font-weight: 500;
+  color: var(--color-fg);
+}
+
+.manual-placement-modal__input {
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--font-ui);
+  font-size: var(--type-body-md);
+  color: var(--color-fg);
+  background-color: var(--color-bg-page);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-md);
+}
+
+.manual-placement-modal__input:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+.manual-placement-modal__error {
+  margin-block-start: var(--space-sm);
+  margin-block-end: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-body-sm);
+  color: var(--color-error-border);
+}

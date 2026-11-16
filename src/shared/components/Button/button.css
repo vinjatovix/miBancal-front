@@ -1,0 +1,171 @@
+.app-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: var(--target-min);
+  font: var(--type-label-md);
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background-color var(--motion-fade) ease,
+    border-color var(--motion-fade) ease,
+    color var(--motion-fade) ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.app-button--sm {
+  padding: var(--space-2xs) var(--space-sm);
+  font: var(--type-label-sm);
+}
+
+.app-button--md {
+  padding: var(--space-xs) var(--space-md);
+  font: var(--type-label-md);
+}
+
+.app-button--lg {
+  padding: var(--space-sm) var(--space-lg);
+  font: var(--type-label-lg);
+}
+
+.app-button--primary,
+.app-button--success {
+  background-color: var(--color-action-bg);
+  color: var(--color-on-action);
+  border-color: var(--color-action-bg);
+}
+
+.app-button--primary:hover:not(:disabled, [aria-disabled='true'], .is-disabled),
+.app-button--success:hover:not(:disabled, [aria-disabled='true'], .is-disabled),
+.app-button--primary.is-hover:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ),
+.app-button--success.is-hover:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ) {
+  background-color: var(--color-action-bg-hover);
+  border-color: var(--color-action-bg-hover);
+}
+
+.app-button--primary:active:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ),
+.app-button--success:active:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ),
+.app-button--primary.is-active:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ),
+.app-button--success.is-active:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ) {
+  background-color: var(--color-action-bg-active);
+  border-color: var(--color-action-bg-active);
+}
+
+.app-button--danger {
+  background-color: var(--color-danger-bg);
+  color: var(--color-on-danger);
+  border-color: var(--color-danger-bg);
+}
+
+.app-button--danger:hover:not(:disabled, [aria-disabled='true'], .is-disabled),
+.app-button--danger.is-hover:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ) {
+  background-color: var(--color-danger-bg-hover);
+  border-color: var(--color-danger-bg-hover);
+}
+
+.app-button--danger:active:not(:disabled, [aria-disabled='true'], .is-disabled),
+.app-button--danger.is-active:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ) {
+  background-color: var(--color-danger-bg-hover);
+  border-color: var(--color-danger-bg-hover);
+}
+
+.app-button--secondary {
+  background-color: transparent;
+  color: var(--color-secondary-fg);
+  border-color: var(--color-secondary-border);
+}
+
+.app-button--secondary:hover:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ),
+.app-button--secondary.is-hover:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ) {
+  background-color: var(--color-bg-hover);
+}
+
+.app-button--neutral,
+.app-button--text {
+  background-color: transparent;
+  color: var(--color-on-surface);
+  border-color: transparent;
+}
+
+.app-button--neutral:hover:not(:disabled, [aria-disabled='true'], .is-disabled),
+.app-button--neutral.is-hover:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ),
+.app-button--text:hover:not(:disabled, [aria-disabled='true'], .is-disabled),
+.app-button--text.is-hover:not(
+    :disabled,
+    [aria-disabled='true'],
+    .is-disabled
+  ) {
+  background-color: var(--color-surface-container-high);
+}
+
+.app-button:is(:disabled, [aria-disabled='true'], .is-disabled),
+.app-button:is(:disabled, [aria-disabled='true'], .is-disabled):is(
+    :hover,
+    :active,
+    .is-hover,
+    .is-active
+  ) {
+  background-color: var(--color-disabled-bg);
+  color: var(--color-on-disabled);
+  border: 1px dashed var(--color-disabled-border);
+  cursor: not-allowed;
+}
+
+.app-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-button__label {
+  display: inline-block;
+}

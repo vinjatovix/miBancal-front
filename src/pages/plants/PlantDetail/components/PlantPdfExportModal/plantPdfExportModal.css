@@ -1,0 +1,15 @@
+.plant-pdf-export-modal__image-error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border: 1px solid var(--color-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border-radius: var(--radius-sm);
+}
+
+.plant-pdf-export-modal__image-error p {
+  margin: 0;
+  font: var(--type-body-md);
+}
