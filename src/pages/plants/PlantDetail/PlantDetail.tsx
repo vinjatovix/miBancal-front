@@ -18,6 +18,7 @@ import { readPlantSafety } from '../utils/plantSafety';
 import { useToast } from '../../../shared/toast/useToast';
 import { PlantDeleteConfirmModal } from '../components/PlantDeleteConfirmModal/PlantDeleteConfirmModal';
 
+import PlantPdfExportModal from './components/PlantPdfExportModal/PlantPdfExportModal';
 import { PlantDetailStickyHeader } from './components/PlantDetailStickyHeader';
 import PlantCalendar from './components/PlantCalendar';
 import PlantCultivation from './components/PlantCultivation';
@@ -47,6 +48,7 @@ export default function PlantDetail() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isDeleteConflict, setIsDeleteConflict] = useState<boolean>(false);
+  const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [prevSlug, setPrevSlug] = useState<string | undefined>(slug);
   const { dismissAll, showErrorToast } = useToast();
 
@@ -55,6 +57,7 @@ export default function PlantDetail() {
     setIsEditing(false);
     setIsDeleteModalOpen(false);
     setIsDeleteConflict(false);
+    setIsExportOpen(false);
   }
 
   const plantQuery = usePlant(slug);
@@ -179,6 +182,7 @@ export default function PlantDetail() {
           plant={plant}
           onEdit={() => setIsEditing(true)}
           onDelete={handleOpenDeleteModal}
+          onExport={() => setIsExportOpen(true)}
           isDeleting={deleteMutation.isPending}
           isEditing={false}
         />
@@ -224,6 +228,12 @@ export default function PlantDetail() {
         isDeleting={deleteMutation.isPending}
         isConflict={isDeleteConflict}
         onReload={handleReloadConflict}
+      />
+
+      <PlantPdfExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        plant={plant}
       />
     </div>
   );

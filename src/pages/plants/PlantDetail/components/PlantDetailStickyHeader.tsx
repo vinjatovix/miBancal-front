@@ -7,6 +7,7 @@ import {
   EditButton
 } from '../../../../shared/components/ActionButtons';
 import Badge from '../../../../shared/components/Badge/Badge';
+import Button from '../../../../shared/components/Button/Button';
 import { capitalizeFirstLetter } from '../../../../shared/utils/capitalizeFirstLetter';
 import type { Plant } from '../../../../types/Plants/Plant';
 import PlantSafetyIndicators from '../../components/PlantSafetyIndicators/PlantSafetyIndicators';
@@ -18,6 +19,7 @@ interface Props {
   readonly plant: Plant;
   readonly onEdit?: () => void;
   readonly onDelete?: () => void;
+  readonly onExport?: () => void;
   readonly isEditing?: boolean;
   readonly isDeleting?: boolean;
 }
@@ -26,6 +28,7 @@ export const PlantDetailStickyHeader = ({
   plant,
   onEdit,
   onDelete,
+  onExport,
   isEditing,
   isDeleting
 }: Props) => {
@@ -39,16 +42,27 @@ export const PlantDetailStickyHeader = ({
           {capitalizeFirstLetter(plant.identity.name.primary)}
         </h1>
         <PlantSafetyIndicators safety={readPlantSafety(plant)} />
-        {isEditor && !isEditing && (
+        {!isEditing && (
           <div className="plant-detail__sticky-actions">
-            {onEdit && (
+            {onExport && (
+              <Button
+                variant="secondary"
+                size="sm"
+                icon="save"
+                onClick={onExport}
+                aria-label={t('plant.export.button_label')}
+              >
+                {t('plant.export.button_short')}
+              </Button>
+            )}
+            {isEditor && onEdit && (
               <EditButton
                 onClick={onEdit}
                 ariaLabel={t('plant.detail.edit_plant')}
                 label={t('plant.detail.edit_plant')}
               />
             )}
-            {onDelete && (
+            {isEditor && onDelete && (
               <DeleteButton
                 onClick={onDelete}
                 isDeleting={isDeleting}

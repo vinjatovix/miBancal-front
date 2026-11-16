@@ -10,6 +10,7 @@ import {
 } from '../../../../src/services/beds.service';
 import {
   getLocationLayout,
+  updateBedsLayout,
   updateLocation
 } from '../../../../src/services/locations.service';
 import { ApiError } from '../../../../src/shared/errors/ApiError';
@@ -29,7 +30,8 @@ vi.mock('../../../../src/services/locations.service', () => ({
     data: [],
     pagination: { page: 1, limit: 100, totalPages: 1, totalItems: 0 }
   }),
-  updateLocation: vi.fn()
+  updateLocation: vi.fn(),
+  updateBedsLayout: vi.fn()
 }));
 
 vi.mock('../../../../src/services/beds.service', () => ({
@@ -63,6 +65,7 @@ vi.mock('../../../../src/services/plantRelations.service', () => ({
 
 const mockedGetLocationLayout = vi.mocked(getLocationLayout);
 const mockedUpdateLocation = vi.mocked(updateLocation);
+const mockedUpdateBedsLayout = vi.mocked(updateBedsLayout);
 const mockedDeleteBed = vi.mocked(deleteBed);
 const mockedGetBedForEdit = vi.mocked(getBedForEdit);
 const mockedCreateBed = vi.mocked(createBed);
@@ -709,6 +712,32 @@ describe('LocationLayoutPage', () => {
       screen.getByRole('button', {
         name: 'Colocar el bancal Bancal Tomates 1 en el plano'
       })
+    ).toBeInTheDocument();
+  });
+
+  it('displays success toast when saving a new bed placement in position mode', async () => {
+    const layout = buildLocationLayout();
+    mockedGetLocationLayout.mockResolvedValue({
+      layout,
+      etag: '"1"'
+    });
+    mockedUpdateBedsLayout.mockResolvedValueOnce({ etag: '"2"' });
+    const user = userEvent.setup();
+    renderWithProviders(<LocationLayoutPage />, { path: PATH, route: ROUTE });
+
+    await user.click(await screen.findByRole('radio', { name: 'Colocar' }));
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Colocar el bancal Bancal Vivero Auxiliar en el plano'
+      })
+    );
+    const saveButton = screen.getAllByRole('button', {
+      name: 'Guardar disposición'
+    })[0]!;
+    await user.click(saveButton);
+
+    expect(
+      await screen.findByText('Disposición guardada.')
     ).toBeInTheDocument();
   });
 });

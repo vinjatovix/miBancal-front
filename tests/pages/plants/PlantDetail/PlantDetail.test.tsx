@@ -110,6 +110,23 @@ describe('PlantDetail', () => {
     expect(screen.getByTestId('section-notas')).toBeInTheDocument();
   });
 
+  it('opens the PDF export modal from the detail action', async () => {
+    mockedGetPlantById.mockResolvedValue(mockPlant);
+    const user = userEvent.setup();
+
+    renderPlantDetail();
+
+    const exportButton = await screen.findByRole('button', {
+      name: t('plant.export.button_label')
+    });
+    await user.click(exportButton);
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: t('plant.export.modal_title') })
+    ).toBeInTheDocument();
+  });
+
   it('renders every section of the full plant without a section notice', async () => {
     mockedGetPlantById.mockResolvedValue(mockPlantWithVideos);
 

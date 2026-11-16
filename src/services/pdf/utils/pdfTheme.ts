@@ -8,10 +8,18 @@ export const PDF_BED_FILL: RgbColor = [252, 252, 252];
 export const PDF_GRID: RgbColor = [160, 160, 160];
 export const PDF_TABLE_HEADER_FILL: RgbColor = [232, 232, 232];
 
+export const PDF_ACCENT: RgbColor = [31, 80, 56];
+export const PDF_ACCENT_DEEP: RgbColor = [0, 39, 24];
+export const PDF_ACCENT_TINT: RgbColor = [233, 241, 236];
+export const PDF_HAIRLINE: RgbColor = [214, 219, 215];
+
 export const LINE_WEIGHT_CONTOUR_MM = 0.35;
 export const LINE_WEIGHT_DIMENSION_MM = 0.2;
 export const LINE_WEIGHT_MARKER_MM = 0.25;
 
+export const FONT_SIZE_DISPLAY_PT = 22;
+export const FONT_SIZE_SUBTITLE_PT = 12;
+export const FONT_SIZE_SECTION_PT = 12;
 export const FONT_SIZE_TITLE_PT = 14;
 export const FONT_SIZE_HEADING_PT = 11;
 export const FONT_SIZE_DIMENSION_PT = 10;

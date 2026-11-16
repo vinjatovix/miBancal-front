@@ -253,6 +253,7 @@ export const bedsMessages = {
       save: 'Guardar disposición',
       save_short: 'Guardar',
       saving: 'Guardando...',
+      save_success: 'Disposición guardada.',
       discard: 'Descartar cambios',
       discard_short: 'Descartar',
       viewport_group_label: 'Controles del plano',

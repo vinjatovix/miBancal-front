@@ -1,0 +1,49 @@
+.pdf-export-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-block: var(--space-sm);
+}
+
+.pdf-export-modal__section--divided {
+  border-bottom: 1px solid var(--color-border-decor);
+}
+
+.pdf-export-modal__section--divided:last-of-type {
+  border-bottom: none;
+}
+
+.pdf-export-modal__section-title {
+  margin: 0 0 var(--space-xs);
+  font: var(--type-label-lg);
+  color: var(--color-fg-muted);
+}
+
+.pdf-export-modal__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.pdf-export-modal__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-block: var(--space-2xs);
+  font: var(--type-body-md);
+  color: var(--color-fg);
+  cursor: pointer;
+}
+
+.pdf-export-modal__option input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-action-bg);
+  cursor: pointer;
+}
+
+.pdf-export-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
