@@ -54,7 +54,7 @@ export default function BedSelectorList({
       <ul className="bed-pdf-export-modal__bed-list">
         {beds.map((bed) => (
           <li key={bed.id}>
-            <label className="bed-pdf-export-modal__option">
+            <label className="pdf-export-modal__option">
               <input
                 type="checkbox"
                 checked={selected.has(bed.id)}

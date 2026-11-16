@@ -3,8 +3,12 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useLayoutEditor } from '../../../../../src/pages/locations/LocationLayoutPage/hooks/useLayoutEditor';
-import { updateBedsLayout } from '../../../../../src/services/locations.service';
+import {
+  getLocationLayout,
+  updateBedsLayout
+} from '../../../../../src/services/locations.service';
 import { ToastProvider } from '../../../../../src/shared/toast/ToastContext';
+import { toastStore } from '../../../../../src/shared/toast/toastStore';
 import {
   buildLocationLayout,
   buildPlacedBed,
@@ -18,6 +22,7 @@ vi.mock('../../../../../src/services/locations.service', () => ({
 }));
 
 const mockedUpdateBedsLayout = vi.mocked(updateBedsLayout);
+const mockedGetLocationLayout = vi.mocked(getLocationLayout);
 
 const PLACED_ID = '22222222-2222-4222-8222-222222222221';
 const UNPLACED_ID = '33333333-3333-4333-8333-333333333331';
@@ -43,6 +48,8 @@ function renderEditor(etag = '"1"') {
 describe('useLayoutEditor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    toastStore.clearToasts();
+    mockedGetLocationLayout.mockResolvedValue({ layout, etag: '"2"' });
   });
 
   it('starts in read mode and resolves placed and unplaced beds', () => {
@@ -172,6 +179,61 @@ describe('useLayoutEditor', () => {
     act(() => result.current.save());
     await waitFor(() => {
       expect(mockedUpdateBedsLayout).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('displays a success toast when layout is saved', async () => {
+    const savedLayout = buildLocationLayout({
+      placedBeds: [
+        buildPlacedBed({
+          id: PLACED_ID,
+          position: { x: 120, y: 120 },
+          rotation: 0
+        })
+      ],
+      unplacedBeds: [buildUnplacedBed({ id: UNPLACED_ID })]
+    });
+    mockedUpdateBedsLayout.mockResolvedValueOnce({ etag: '"2"' });
+    mockedGetLocationLayout.mockResolvedValue({
+      layout: savedLayout,
+      etag: '"2"'
+    });
+    const { result } = renderEditor();
+    act(() => result.current.moveBed(PLACED_ID, 20, 20));
+
+    act(() => result.current.save());
+
+    await waitFor(() => {
+      const toasts = toastStore.getSnapshot();
+      expect(toasts).toHaveLength(1);
+      expect(toasts[0]).toMatchObject({
+        variant: 'success',
+        message: 'Disposición guardada.'
+      });
+    });
+  });
+
+  it('displays both success toast and adjustment notice when server adjusts bed positions', async () => {
+    mockedUpdateBedsLayout.mockResolvedValueOnce({ etag: '"2"' });
+    mockedGetLocationLayout.mockResolvedValue({
+      layout,
+      etag: '"2"'
+    });
+    const { result } = renderEditor();
+    act(() => result.current.moveBed(PLACED_ID, 20, 20));
+
+    act(() => result.current.save());
+
+    await waitFor(() => {
+      const toasts = toastStore.getSnapshot();
+      expect(toasts).toHaveLength(2);
+      expect(toasts[0]).toMatchObject({
+        variant: 'success',
+        message: 'Disposición guardada.'
+      });
+      expect(toasts[1]).toMatchObject({
+        variant: 'info'
+      });
     });
   });
 });

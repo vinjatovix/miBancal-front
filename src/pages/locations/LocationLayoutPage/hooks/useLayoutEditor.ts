@@ -381,9 +381,10 @@ export function useLayoutEditor(
       onSuccess: () => {
         draft.markSaved();
         history.clear();
+        toast.showSuccessToast(t('bed.layout.save_success'));
       }
     });
-  }, [draft, etag, mutation, history]);
+  }, [draft, etag, mutation, history, toast]);
 
   const toggleMode = useCallback(() => {
     if (mode !== 'position') {
